@@ -1,4 +1,4 @@
-source("/gs/home/efournier/mugqic_utils/summarize_dge.R/)
+source("/gs/home/efournier/mugqic_utils/summarize_dge.R")
 
 test = summarize.dge("/gs/scratch/efournier/CofactorHR/A549/output/rna-pipeline", "edgeR")
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
