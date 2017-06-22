@@ -1,0 +1,5 @@
+GR_0hr	color 127,255,0
+GR_1hr	color 50,255,50
+.*	alwaysZero on
+.*	autoScale on
+(\.bw|\.bigwig|\.bb)$	maxHeightPixels 100:40:8

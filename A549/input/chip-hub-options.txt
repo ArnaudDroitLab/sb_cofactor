@@ -1,0 +1,8 @@
+MED1	color 255,0,0
+SMC1A	color 102,0,204
+NIPBL	color 255,102,0
+BRD4	color 115,255,87
+CDK9	color 87,115,255
+.*	alwaysZero on
+.*	autoScale on
+(\.bw|\.bigwig|\.bb)$	maxHeightPixels 100:40:8
