@@ -14,5 +14,5 @@ import_counts <- function(filename) {
     x
 }
 raw_counts <- Reduce("left_join", map(files, import_counts))
-dir_results <- "results/a549_0h_vs_6h_dex"
+dir_results <- "results/a549_dex_time_points"
 write_csv(raw_counts, paste0(dir_results, "/raw_counts.csv"))
