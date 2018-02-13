@@ -1,6 +1,6 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr/A549/scripts")
 
-raw_counts <- read.csv("raw_counts.csv", sep=",", header=TRUE, row.names=1)
+raw_counts <- read.csv("../results/a549_dex_time_points/raw_counts.csv", sep=",", header=TRUE, row.names=1)
 nb_genes <- nrow(raw_counts)
 nb_sample <- ncol(raw_counts)
 # 60483 genes
@@ -28,7 +28,7 @@ expressed_counts_norm <- data.frame(t(t(expressed_raw_counts) / expressed_total_
 
 ########################
 
-map_time <- read.csv("sample_sheet_ENCSR897XFT_without_h.csv", sep=",", header=TRUE)[,-3]
+map_time <- read.csv("../input/sample_sheet_ENCSR897XFT_without_h.csv", sep=",", header=TRUE)[,-3]
 
 hours <- c(0)
 for (i in 1:nb_sample) {
@@ -40,7 +40,7 @@ for (i in 1:nb_sample) {
 colnames(expressed_counts_norm) <- hours
 
 ########################
-map_ens_hgnc <- read.csv("map_ensembl_hgnc.csv", header=TRUE)
+map_ens_hgnc <- read.csv("../input/map_ensembl_hgnc.csv", header=TRUE)
 map_ens_hgnc$ensembl_gene_id <- as.character(map_ens_hgnc$ensembl_gene_id)
 map_ens_hgnc$hgnc_symbol <- as.character(map_ens_hgnc$hgnc_symbol)
 
@@ -87,6 +87,6 @@ draw_a549_dex_time_points <- function(genes_list, counts_mat, mapping) {
 }
 
 ### TO RUN
-test_genes <- c("HEXIM1", "NELFA", "NCOR1", "NCOR2", "TBL1XR1", "NR3C1", "NIPBL", "WNT7B", "FZD8", "HACD3", "FZD5", "DVL2")
+test_genes <- c("BRD4", "HEXIM1", "NELFA", "NCOR1", "NCOR2", "TBL1XR1", "NR3C1", "NIPBL", "WNT7B", "FZD8", "HACD3", "FZD5", "DVL2")
 draw_a549_dex_time_points(test_genes, expressed_counts_norm, map_ens_hgnc)
 
