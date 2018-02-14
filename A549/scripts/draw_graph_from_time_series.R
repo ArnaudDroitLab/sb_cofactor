@@ -40,13 +40,21 @@ for (i in 1:nb_sample) {
 colnames(expressed_counts_norm) <- hours
 
 ########################
-map_ens_hgnc <- read.csv("../input/map_ensembl_hgnc.csv", header=TRUE)
+source("https://bioconductor.org/biocLite.R")
+library(biomaRt)
+
+ensembl=useMart("ensembl")
+ensembl=useDataset("hsapiens_gene_ensembl", mart=ensembl) 
+mapping <- getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), mart=ensembl)
+mapping[mapping == ""] <- NA
+map_ens_hgnc <- mapping
 map_ens_hgnc$ensembl_gene_id <- as.character(map_ens_hgnc$ensembl_gene_id)
 map_ens_hgnc$hgnc_symbol <- as.character(map_ens_hgnc$hgnc_symbol)
 
 # "ENSG00000231709" not in the database
 
 ##############################
+
 library(tidyr)
 library(dplyr)
 library(ggplot2)
@@ -89,4 +97,3 @@ draw_a549_dex_time_points <- function(genes_list, counts_mat, mapping) {
 ### TO RUN
 test_genes <- c("BRD4", "HEXIM1", "NELFA", "NCOR1", "NCOR2", "TBL1XR1", "NR3C1", "NIPBL", "WNT7B", "FZD8", "HACD3", "FZD5", "DVL2")
 draw_a549_dex_time_points(test_genes, expressed_counts_norm, map_ens_hgnc)
-
