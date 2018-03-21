@@ -1,0 +1,12 @@
+Sample	GR_0hr,N	GR_1hr,N
+GR_0hr_2	2	0
+GR_0hr_3	2	0
+GR_1hr_1	0	2
+GR_1hr_2	0	2
+GR_1hr_3	0	2
+Input_1hr_1	0	1
+Input_1hr_2	0	1
+Input_1hr_3	0	1
+Input_0hr_1	1	0
+Input_0hr_2	1	0
+Input_0hr_3	1	0
