@@ -25,33 +25,84 @@ subset_metagene_df <- function(region_name) {
 
 # Function for plotting the sh effect on a group of regions.
 plot_sh_effect <- function(region_name) {
-    sh_subset = subset_metagene_df(region_name)
-    
     color_palette = c(shCTRL.1="#40C4FF", shCTRL.2="#00B0FF", shNIPBL.3="#FF8A80", shNIPBL.5="#FF5252")
-    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=sh_name, color=sh_name, fill=sh_name)) +
-        geom_line() +
-        geom_ribbon(alpha = 0.1) +
-        facet_grid(Condition~Antibody) +
-        scale_color_manual(values=color_palette) +
-        scale_fill_manual(values=color_palette)
-    file_name = paste0("Metagene sh effect ", region_name, ".pdf")
-    ggsave(file.path(output_dir, file_name))
+    do_meta_ggplot_single(region_name, "sh_name", "Condition", color_palette, "sh")
 }
 
 # Function for plotting the dex effect on a group of region.
 plot_dex_effect <- function(region_name) {
+    do_meta_ggplot_single(region_name, "Condition", "sh_name", c(EtOH="#40C4FF", Dex="#FF8A80"), "Dex")
+}
+
+do_meta_ggplot_single <- function(region_name, group_var, facet_var, color_palette, file_label) {
     sh_subset = subset_metagene_df(region_name)
+    do_meta_ggplot_generic(sh_subset, region_name, group_var, facet_var, color_palette, file_label, FacetVar~Antibody)
+}
+
+do_meta_ggplot_double <- function(region_name1, region_name2, label1, label2, facet_var, color_palette, file_label, facet_formula, group_label) {
+    subset_1 = subset_metagene_df(region_name1)
+    subset_2 = subset_metagene_df(region_name2)
+    subset_1$RegionName = label1
+    subset_2$RegionName = label2
     
-    color_palette = c(EtOH="#40C4FF", Dex="#FF8A80")
-    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=Condition, color=Condition, fill=Condition)) +
+    sh_subset = rbind(subset_1, subset_2)
+    do_meta_ggplot_generic(sh_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula)
+}
+
+do_meta_ggplot_generic <- function(sh_subset, region_label, group_var, facet_var, color_palette, file_label, facet_formula) {
+    sh_subset$GroupVar = sh_subset[[group_var]]
+    sh_subset$FacetVar = sh_subset[[facet_var]]
+    
+    if(grepl("TSS", region_label)) {
+        sh_subset$bin = (sh_subset$bin - 50) * 4
+        xlabel = "Distance from TSS (bp)"
+    } else {
+        xlabel = "Relative distance from TSS (0) to TES (100)"
+    }
+    
+    title_str = paste0("Effect of ", file_label, " on ", region_label)
+    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=GroupVar, color=GroupVar, fill=GroupVar)) +
         geom_line() +
         geom_ribbon(alpha = 0.1) +
-        facet_grid(sh_name~Antibody) +
-        scale_color_manual(values=color_palette) +
-        scale_fill_manual(values=color_palette)
-    file_name = paste0("Metagene dex effect ", region_name, ".pdf")
+        facet_grid(facet_formula) +
+        scale_color_manual(name=group_var, values=color_palette) +
+        scale_fill_manual(name=group_var, values=color_palette) +
+        ylab("Mean coverage (RPM)") +
+        xlab(xlabel) +
+        ggtitle(title_str) +
+        theme(plot.title = element_text(hjust = 0.5))
+    
+    file_name = paste0("Metagene - ", title_str, ".pdf")
     ggsave(file.path(output_dir, file_name))
 }
+
+#do_meta_ggplot <- function(region_name, group_var, facet_var, color_palette, file_label) {
+#    sh_subset = subset_metagene_df(region_name)
+#    sh_subset$GroupVar = sh_subset[[group_var]]
+#    sh_subset$FacetVar = sh_subset[[facet_var]]
+#    
+#    if(grepl("TSS", region_name)) {
+#        sh_subset$bin = (sh_subset$bin - 50) * 4
+#        xlabel = "Distance from TSS (bp)"
+#    } else {
+#        xlabel = "Relative distance from TSS (0) to TES (100)"
+#    }
+#    
+#    title_str = paste0("Effect of ", file_label, " on ", region_name)
+#    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=GroupVar, color=GroupVar, fill=GroupVar)) +
+#        geom_line() +
+#        geom_ribbon(alpha = 0.1) +
+#        facet_grid(FacetVar~Antibody) +
+#        scale_color_manual(name=group_var, values=color_palette) +
+#        scale_fill_manual(name=group_var, values=color_palette) +
+#        ylab("Mean coverage (RPM)") +
+#        xlab(xlabel) +
+#        ggtitle(title_str) +
+#        theme(plot.title = element_text(hjust = 0.5))
+#    
+#    file_name = paste0("Metagene - ", title_str, ".pdf")
+#    ggsave(file.path(output_dir, file_name))
+#}
 
 
 
@@ -114,8 +165,8 @@ unbound_TSS = GenomicRanges::promoters(unbound_genes, upstream=200, downstream=2
 de_results = read.csv("results/a549_dex_time_points/1h", header=TRUE)
 de_results$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(de_results$gene_id), keytype="ENSEMBL", column="ENTREZID")
 de_gene_ids = subset(de_results, abs(log2FoldChange) >= log2(1.5) & padj <= 0.05)$ENTREZID
-up_gene_ids = subset(de_results, log2FoldChange <= log2(1.5) & padj <= 0.05)$ENTREZID
-down_gene_ids = subset(de_results, log2FoldChange >= -log2(1.5) & padj <= 0.05)$ENTREZID
+up_gene_ids = subset(de_results, log2FoldChange <= -log2(1.5) & padj <= 0.05)$ENTREZID
+down_gene_ids = subset(de_results, log2FoldChange >= log2(1.5) & padj <= 0.05)$ENTREZID
 
 # Define group of regions based on DE status.
 de_genes = all_genes[all_genes$gene_id %in% de_gene_ids]
@@ -125,9 +176,9 @@ up_TSS = GenomicRanges::promoters(up_genes, upstream=200, downstream=200)
 down_genes = all_genes[all_genes$gene_id %in% down_gene_ids]
 down_TSS = GenomicRanges::promoters(down_genes, upstream=200, downstream=200)
 
-region_list = list(#AllGeneBodies=all_genes, AllTSS=all_TSS, 
-                   #BoundGeneBodies=bound_genes, BoundTSS=bound_TSS, 
-                   #UnboundGeneBodies=unbound_genes, UnboundTSS=unbound_TSS,
+region_list = list(AllGeneBodies=all_genes, AllTSS=all_TSS, 
+                   BoundGeneBodies=bound_genes, BoundTSS=bound_TSS, 
+                   UnboundGeneBodies=unbound_genes, UnboundTSS=unbound_TSS,
                    DEGeneBodies=de_genes, DETSS=de_TSS,
                    UpRegulatedGeneBodies=up_genes, UpRegulatedTSS=up_TSS,
                    DownRegulatedGeneBodies=down_genes, DownRegulatedTSS=down_TSS)
@@ -172,33 +223,72 @@ for(region_name in names(region_list)) {
 
 
 # Plot bound/unbound differences.
-#for(region_type in c("GeneBodies", "TSS")) {
-#    bound_subset = subset_metagene_df(paste0("Bound", region_type))
-#    unbound_subset = subset_metagene_df(paste0("Unbound", region_type))
-#    bound_subset$Bound = "GR-Bound"
-#    unbound_subset$Bound = "GR-Unbound"
-#    
-#    sh_subset = rbind(bound_subset, unbound_subset)
-#    
-#    # Plot sh effect
-#    color_palette = c(shCTRL.1="#40C4FF", shCTRL.2="#00B0FF", shNIPBL.3="#FF8A80", shNIPBL.5="#FF5252")
-#    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=sh_name, color=sh_name, fill=sh_name, linetype=Bound)) +
-#        geom_line() +
-#        geom_ribbon(alpha = 0.1) +
-#        facet_grid(Condition~Antibody) +
-#        scale_color_manual(values=color_palette) +
-#        scale_fill_manual(values=color_palette)
-#    file_name = paste0("Metagene sh effect GR-bound vs GR-unbound ", region_type, ".pdf")
-#    ggsave(file.path(output_dir, file_name))
-#    
-#    # Plot dex effect
-#    color_palette = c(EtOH="#40C4FF", Dex="#FF8A80")
-#    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=Condition, color=Condition, fill=Condition, linetype=Bound)) +
-#        geom_line() +
-#        geom_ribbon(alpha = 0.1) +
-#        facet_grid(sh_name~Antibody) +
-#        scale_color_manual(values=color_palette) +
-#        scale_fill_manual(values=color_palette)
-#    file_name = paste0("Metagene dex effect GR-bound vs GR-unbound ", region_name, ".pdf")
-#    ggsave(file.path(output_dir, file_name))
-#}
+for(region_type in c("GeneBodies", "TSS")) {
+    bound_subset = subset_metagene_df(paste0("Bound", region_type))
+    unbound_subset = subset_metagene_df(paste0("Unbound", region_type))
+    bound_subset$Bound = "GR-Bound"
+    unbound_subset$Bound = "GR-Unbound"
+    
+    sh_subset = rbind(bound_subset, unbound_subset)
+    
+    # Plot sh effect
+    color_palette = c(shCTRL.1="#40C4FF", shCTRL.2="#00B0FF", shNIPBL.3="#FF8A80", shNIPBL.5="#FF5252")
+    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=sh_name, color=sh_name, fill=sh_name, linetype=Bound)) +
+        geom_line() +
+        geom_ribbon(alpha = 0.1) +
+        facet_grid(Condition~Antibody) +
+        scale_color_manual(values=color_palette) +
+        scale_fill_manual(values=color_palette)
+    file_name = paste0("Metagene sh effect GR-bound vs GR-unbound ", region_type, ".pdf")
+    ggsave(file.path(output_dir, file_name))
+    
+    # Plot dex effect
+    color_palette = c(EtOH="#40C4FF", Dex="#FF8A80")
+    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=Condition, color=Condition, fill=Condition, linetype=Bound)) +
+        geom_line() +
+        geom_ribbon(alpha = 0.1) +
+        facet_grid(sh_name~Antibody) +
+        scale_color_manual(values=color_palette) +
+        scale_fill_manual(values=color_palette)
+    file_name = paste0("Metagene dex effect GR-bound vs GR-unbound ", region_name, ".pdf")
+    ggsave(file.path(output_dir, file_name))
+}
+
+for(region_type in c("GeneBodies", "TSS")) {
+    color_palette = c(Downregulated="#40C4FF", Upregulated="#FF8A80")
+    do_meta_ggplot_double(region_name1=paste0("UpRegulated", region_type), region_name2=paste0("DownRegulated", region_type),
+                          label1="Upregulated", label2="Downregulated", 
+                          facet_var="sh_name", color_palette=color_palette, 
+                          file_label="DE direction", facet_formula=sh_name~Antibody*Condition,
+                          group_label="Upregulated vs Downregulated")
+    
+    bound_subset = subset_metagene_df(paste0("UpRegulated", region_type))
+    unbound_subset = subset_metagene_df(paste0("DownRegulated", region_type))
+    bound_subset$DEType = "Upregulated"
+    unbound_subset$DEType = "Downregulated"
+    
+    sh_subset = rbind(bound_subset, unbound_subset)
+    
+    # Plot sh effect
+    color_palette = c(shCTRL.1="#40C4FF", shCTRL.2="#00B0FF", shNIPBL.3="#FF8A80", shNIPBL.5="#FF5252")
+    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup, color=sh_name, fill=sh_name, linetype=DEType)) +
+        geom_line() +
+        geom_ribbon(alpha = 0.1) +
+        facet_grid(Condition~Antibody) +
+        scale_color_manual(values=color_palette) +
+        scale_fill_manual(values=color_palette)
+    file_name = paste0("Metagene sh effect upregulated vs downregulated ", region_type, ".pdf")
+    ggsave(file.path(output_dir, file_name))
+    
+    # Plot dex effect
+    color_palette = c(Downregulated="#40C4FF", Upregulated="#FF8A80")
+    ggplot(sh_subset, aes(x=bin, y=value, ymin=qinf, ymax=qsup,  group=DEType, color=DEType, fill=DEType)) +
+        geom_line() +
+        geom_ribbon(alpha = 0.1) +
+        facet_grid(sh_name~Antibody*Condition) +
+        scale_color_manual(values=color_palette) +
+        scale_fill_manual(values=color_palette)
+    file_name = paste0("Metagene dex effect upregulated vs downregulated ", region_type, ".pdf")
+    ggsave(file.path(output_dir, file_name), width=14)
+}
+
