@@ -1,0 +1,12 @@
+DETime	HourBefore	SameHour
+0.5h	5 minutes	30 minutes
+1h	30 minutes	1 hour
+2h	1 hour	2 hours
+3h	2 hours	3 hours
+4h	3 hours	4 hours
+5h	4 hours	5 hours
+6h	5 hours	6 hours
+7h	6 hours	7 hours
+8h	7 hours	8 hours
+10h	8 hours	10 hours
+12h	10 hours	12 hours
