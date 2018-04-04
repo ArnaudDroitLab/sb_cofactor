@@ -56,7 +56,7 @@ all_regions_annotation = ChIPseeker::annotatePeak(intersect_all$Regions, TxDb=Tx
 all_gr_regions = GRanges(as.data.frame(all_regions_annotation))
 
 pdf(file.path(output_dir, "Heatmap of GR-binding sites.pdf"))
-heatmap(intersect_all$Matrix, Rowv=NA, Colv=NULL)
+heatmap.2(intersect_all$Matrix, dendrogram="column", scale="none", trace="none")
 dev.off()    
     
 # Load DE results
@@ -104,8 +104,16 @@ for(de_item in names(de_results)) {
     all_fc[[de_item]] = de_results[[de_item]]$Full$log2FoldChange[match(all_fc$gene_id, de_results[[de_item]]$Full$gene_id)]
 }   
 
+heatmap_matrix = as.matrix(all_fc[,-1])
+heatmap_matrix[is.na(heatmap_matrix)] = 0
+heatmap_matrix[heatmap_matrix < -5] = -5
+heatmap_matrix[heatmap_matrix > 5] = 5
+
+color_breaks = seq(-5,5,length=40)
+color_palette = colorRampPalette(c("red", "white", "green"))(n = 39)
+
 pdf(file.path(output_dir, "DE heatmap.pdf"))
-heatmap(as.matrix(all_fc[,-1]), Rowv=NA, Colv=NULL)
+heatmap.2(heatmap_matrix, dendrogram="column", scale="none", trace="none", col=color_palette, breaks=color_breaks)
 dev.off()
     
 # Perform enrichment of GR binding
