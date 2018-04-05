@@ -59,6 +59,22 @@ pdf(file.path(output_dir, "Heatmap of GR-binding sites.pdf"))
 heatmap.2(intersect_all$Matrix, dendrogram="column", scale="none", trace="none")
 dev.off()    
     
+# Do the type of GR binding change over time?
+gr_binding_type_df = data.frame()
+for(i in names(intersect_all$List)) {
+    which_regions = all_gr_regions[intersect_all$List[[i]]]
+    row_df = data.frame(Time=i,
+                        Promoter=sum(which_regions$annotation=="Promoter (<=1kb)"),
+                        Other=sum(which_regions$annotation!="Promoter (<=1kb)"))
+    gr_binding_type_df = rbind(gr_binding_type_df, row_df)                    
+                        
+}
+gr_binding_type_df = melt(gr_binding_type_df, id.vars="Time", variable.name="BindingLocation", value.name="NumberOfRegions")    
+gr_binding_type_df$Time = factor(gr_binding_type_df$Time, levels=gr_accession$Time)
+
+ggplot(gr_binding_type_df, aes(x=Time, y=NumberOfRegions, fill=BindingLocation)) +
+    geom_bar(stat="identity", color="black")
+    
 # Load DE results
 de_results = list()
 for(de_result_file in Sys.glob("results/a549_dex_time_points/*h")) {
