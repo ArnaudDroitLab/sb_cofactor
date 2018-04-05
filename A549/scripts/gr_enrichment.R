@@ -33,7 +33,7 @@ for(i in 1:nrow(gr_accession)) {
     
     # Download and import peak calls for the time point.
     encodeResults = queryEncodeGeneric(accession=encode_accession, file_type="bed narrowPeak", assembly="GRCh38")
-    downloaded_files = downloadEncode(encodeResults, dir=chip_dir)
+    downloaded_files = downloadEncode(encodeResults, dir=chip_dir, force=FALSE)
     names(downloaded_files) = gsub(".*\\/(.*).bed.gz", "\\1", downloaded_files)
     
     extraCols <- c(signalValue = "numeric", pValue = "numeric", qValue = "numeric", peak = "integer")
@@ -81,7 +81,7 @@ ggplot(gr_binding_type_df, aes(x=Time, fill=Annotation)) +
     labs(x="Time", y="Number of identified GR-binding sites", title="GR-binding over time in Reddy dataset") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust=1, vjust=1), plot.title = element_text(hjust=0.5))
-ggsave(file.path(output_dir, "GR-binding over time in Reddy dataset (absolute).pdf"))
+ggsave(file.path(output_dir, "GR-bound regions over time in Reddy dataset (absolute).pdf"))
     
 # Plot GR binding type as proportion of current GR-bindings.
 gr_proportions = gr_binding_type_df %>% 
@@ -93,8 +93,29 @@ ggplot(gr_proportions, aes(x=Time, fill=Annotation, y=freq*100)) +
     labs(x="Time", y="Percentage of identified GR-binding sites", title="GR-binding over time in Reddy dataset") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust=1, vjust=1), plot.title = element_text(hjust=0.5))
-ggsave(file.path(output_dir, "GR-binding over time in Reddy dataset (proportions).pdf"))
+ggsave(file.path(output_dir, "GR-bound regions over time in Reddy dataset (proportions).pdf"))
 
+# Plot the number of genes bound by GR
+gr_bound_genes = data.frame(Gene=unique(all_gr_regions[all_gr_regions$annotation=="Promoter (<=1kb)"]$geneId))
+for(i in names(intersect_all$List)) {
+    which_regions = all_gr_regions[intersect_all$List[[i]]]
+    gr_bound_genes[[i]] = gr_bound_genes$Gene %in% which_regions[which_regions$annotation=="Promoter (<=1kb)"]$geneId
+}
+
+pdf(file.path(output_dir, "Heatmap of GR-bound genes.pdf"))
+heatmap.2(gr_bound_genes[,-1], dendrogram="column", scale="none", trace="none")
+dev.off() 
+
+gr_bound_number = data.frame(Time=colnames(gr_bound_genes)[-1], 
+                             Genes=apply(gr_bound_genes[-1], 2, sum))
+gr_bound_number$Time = factor(gr_bound_number$Time, levels=gr_accession$Time)
+ggplot(gr_bound_number, aes(x=Time, y=Genes)) +
+    geom_bar(color="black", stat="identity", fill="#4FC3F7") +
+    labs(x="Time", y="Number of genes with GR-binding at their TSS", title="GR-binding over time in Reddy dataset") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1, vjust=1), plot.title = element_text(hjust=0.5))    
+ggsave(file.path(output_dir, "GR-bound genes over time in Reddy dataset.pdf"))   
+    
 ###############################################################################
 # Load DE results
 ###############################################################################
