@@ -184,57 +184,97 @@ dev.off()
     
 pdf(file.path(output_dir, "Heatmap of GR-bound genes (2).pdf"))
 # Get an overall DE status for all genes.
-directions = ifelse(apply(all_fc[,-1], 1, mean, na.rm=TRUE)<0, "Red", "Green")
+directions = ifelse(apply(all_fc[,-1], 1, mean, na.rm=TRUE)<0, "Green", "Red")
 gr_genes_directions = directions[match(gr_bound_genes$Gene, all_fc$ENTREZID)]
 heatmap.2(as.matrix(gr_bound_genes[,-1])+0, dendrogram="column", scale="none", trace="none", RowSideColors=gr_genes_directions)
 dev.off()     
 ###############################################################################
 # Perform enrichment of GR binding.
 ############################################################################    
+
+get_gr_genes_at_time_point <- function(gr_time) {
+    gr_ranges = all_gr_regions[intersect_all$List[[as.character(gr_time)]]]
+    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
     
-time_matches = read.table("input/TimeMatches.txt", sep="\t", header=TRUE)
-enrich_df = data.frame()
-for(de_index in 1:nrow(time_matches)) {
-    for(direction in c("Up", "Down")) {
-        de_time = time_matches$DETime[de_index]
-        gr_time = time_matches$HourBefore[de_index]
-        
-        # Get total number of genes.
-        n_total_genes = length(unique(de_results[[de_time]]$Full$ENTREZID))
-        
-        # Get the number of DEregulated genes.
-        de_genes = de_results[[de_time]][[direction]]$ENTREZID
-        n_de_genes = length(unique(de_genes))
-        
-        # Get the list of GR-bound genes.
-        gr_ranges = all_gr_regions[intersect_all$List[[gr_time]]]
-        gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
-        
-        # Get the total number of GR-bound genes
-        gr_genes = gr_promoters$geneId
-        n_gr_genes = length(unique(gr_genes))
-        
-        # Get the total number of GR-bound de-regulated genes.
-        n_gr_de_genes = length(unique(intersect(de_genes, gr_genes)))
-        
-        # Do hyper geometric enrichment.
-        enrichment_pval = phyper(n_gr_de_genes, n_gr_genes, n_total_genes - n_gr_genes, n_de_genes, lower.tail=FALSE)
-        
-        row_df = data.frame(Direction=direction,
-                            DETime=de_time,
-                            GRTime=gr_time,
-                            DEGenes = n_de_genes,
-                            GRGenes = n_gr_genes,
-                            GRDEGenes = n_gr_de_genes,
-                            TotalGenes = n_total_genes, 
-                            DEProportion = n_de_genes / n_total_genes,
-                            GRProportionAll = n_gr_genes / n_total_genes,
-                            GRProportionDE = n_gr_de_genes / n_de_genes,
-                            PVal=enrichment_pval)
-                            
-        enrich_df = rbind(enrich_df, row_df)
+    # Get the total number of GR-bound genes
+    gr_genes = gr_promoters$geneId
+    
+    return(gr_genes)
+}
+
+get_gr_genes_at_or_before_time_point <- function(gr_time) {
+    # Find all applicable time points
+    before_levels = 1:which(as.character(gr_time)==levels(gr_accession$Time))
+    before_times = levels(gr_accession$Time)[before_levels]
+    
+    before_regions = c()
+    for(i in before_times) {
+        before_regions = c(before_regions, intersect_all$List[[as.character(i)]])
     }
+    
+    gr_ranges = all_gr_regions[unique(before_regions)]
+    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
+    
+    # Get the total number of GR-bound genes
+    gr_genes = gr_promoters$geneId
+    
+    return(gr_genes)
+}
+
+get_gr_genes_any_time_point <- function(gr_time) {
+    gr_promoters = all_gr_regions[all_gr_regions$annotation=="Promoter (<=1kb)"]
+    
+    # Get the total number of GR-bound genes
+    gr_genes = gr_promoters$geneId
+    
+    return(gr_genes)
 }
     
-enrich_df$Enrichment = log2(enrich_df$GRProportionDE / enrich_df$GRProportionAll)
-write.table(enrich_df, row.names=FALSE, col.names=TRUE, sep="\t", file=file.path(output_dir, "Enrichment.txt"))
+perform_gr_enrichment <- function(gr_function, time_match_column, label) {
+    time_matches = read.table("input/TimeMatches.txt", sep="\t", header=TRUE)
+    enrich_df = data.frame()
+    for(de_index in 1:nrow(time_matches)) {
+        for(direction in c("Up", "Down")) {
+            de_time = time_matches$DETime[de_index]
+            gr_time = time_matches[[time_match_column]][de_index]
+            
+            # Get total number of genes.
+            n_total_genes = length(unique(de_results[[de_time]]$Full$ENTREZID))
+            
+            # Get the number of DEregulated genes.
+            de_genes = de_results[[de_time]][[direction]]$ENTREZID
+            n_de_genes = length(unique(de_genes))
+            
+            # Get the list of GR-bound genes.
+            gr_genes = gr_function(gr_time)
+            n_gr_genes = length(unique(gr_genes))
+            
+            # Get the total number of GR-bound de-regulated genes.
+            n_gr_de_genes = length(unique(intersect(de_genes, gr_genes)))
+            
+            # Do hyper geometric enrichment.
+            enrichment_pval = phyper(n_gr_de_genes, n_gr_genes, n_total_genes - n_gr_genes, n_de_genes, lower.tail=FALSE)
+            
+            row_df = data.frame(Direction=direction,
+                                DETime=de_time,
+                                GRTime=gr_time,
+                                DEGenes = n_de_genes,
+                                GRGenes = n_gr_genes,
+                                GRDEGenes = n_gr_de_genes,
+                                TotalGenes = n_total_genes, 
+                                DEProportion = n_de_genes / n_total_genes,
+                                GRProportionAll = n_gr_genes / n_total_genes,
+                                GRProportionDE = n_gr_de_genes / n_de_genes,
+                                PVal=enrichment_pval)
+                                
+            enrich_df = rbind(enrich_df, row_df)
+        }
+    }
+        
+    enrich_df$Enrichment = log2(enrich_df$GRProportionDE / enrich_df$GRProportionAll)
+    write.table(enrich_df, row.names=FALSE, col.names=TRUE, sep="\t", file=file.path(output_dir, paste0("Enrichment ", label, ".txt")))
+}
+
+perform_gr_enrichment(get_gr_genes_at_time_point, "HourBefore", "GR-bound 1 hour before")
+perform_gr_enrichment(get_gr_genes_any_time_point, "HourBefore", "any GR binding")
+perform_gr_enrichment(get_gr_genes_at_or_before_time_point, "SameHour", "GR-bound any time before")
