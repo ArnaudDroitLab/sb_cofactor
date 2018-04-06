@@ -102,10 +102,12 @@ for(i in names(intersect_all$List)) {
     gr_bound_genes[[i]] = gr_bound_genes$Gene %in% which_regions[which_regions$annotation=="Promoter (<=1kb)"]$geneId
 }
 
+# Plot a heatmap of GR-bound genes.
 pdf(file.path(output_dir, "Heatmap of GR-bound genes.pdf"))
-heatmap.2(gr_bound_genes[,-1], dendrogram="column", scale="none", trace="none")
+heatmap.2(as.matrix(gr_bound_genes[,-1])+0, dendrogram="column", scale="none", trace="none")
 dev.off() 
 
+# Plot a bar graph of the number of GR-bound genes.
 gr_bound_number = data.frame(Time=colnames(gr_bound_genes)[-1], 
                              Genes=apply(gr_bound_genes[-1], 2, sum))
 gr_bound_number$Time = factor(gr_bound_number$Time, levels=gr_accession$Time)
@@ -156,11 +158,11 @@ ggplot(de_over_time, aes(x=Time, y=NumberOfGenes, fill=Direction)) +
 ggsave(file.path(output_dir, "DE over time in Reddy dataset.pdf"))
 
 # Make a matrix of fold-changes so we can plot a heatmap.
-all_de = unique(unlist(lapply(de_results, function(x) { c(x[["Up"]]$gene_id, x[["Down"]]$gene_id) })))
-all_fc = data.frame(gene_id=all_de)
+all_de = unique(unlist(lapply(de_results, function(x) { c(as.character(x[["Up"]]$ENTREZID), as.character(x[["Down"]]$ENTREZID)) })))
+all_fc = data.frame(ENTREZID=all_de)
 for(de_item in names(de_results)) {
     cur_fc = de_results[[de_item]]$Full
-    all_fc[[de_item]] = cur_fc$log2FoldChange[match(all_fc$gene_id, cur_fc$gene_id)]
+    all_fc[[de_item]] = cur_fc$log2FoldChange[match(all_fc$ENTREZID, cur_fc$ENTREZID)]
 }   
 
 # Remove NAs, and cap FC values at +/-5 to keep the color scale more useful.
@@ -176,7 +178,16 @@ pdf(file.path(output_dir, "DE heatmap.pdf"))
 heatmap.2(heatmap_matrix, dendrogram="column", scale="none", trace="none", col=color_palette, breaks=color_breaks)
 dev.off()
     
-
+###############################################################################
+# Plot a combined GR-binding/DE heatmap.
+###############################################################################
+    
+pdf(file.path(output_dir, "Heatmap of GR-bound genes (2).pdf"))
+# Get an overall DE status for all genes.
+directions = ifelse(apply(all_fc[,-1], 1, mean, na.rm=TRUE)<0, "Red", "Green")
+gr_genes_directions = directions[match(gr_bound_genes$Gene, all_fc$ENTREZID)]
+heatmap.2(as.matrix(gr_bound_genes[,-1])+0, dendrogram="column", scale="none", trace="none", RowSideColors=gr_genes_directions)
+dev.off()     
 ###############################################################################
 # Perform enrichment of GR binding.
 ############################################################################    
