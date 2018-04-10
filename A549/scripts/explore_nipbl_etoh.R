@@ -21,6 +21,22 @@ get_sig_entrez <- functon(contrast, direction="both", fc_threshold=log2(1.5), p_
     
 }
 
+
+etoh_filter <- function(x, assembly) {
+    x <- default_download_filter_chip(x, assembly)
+    x <- subset(x, is.na(treatment) | treatment=="ethanol")
+    return(x)
+}
+
+dex_filter <- function(x, assembly) {
+    x <- default_download_filter_chip(x, assembly)
+    x <- subset(x, treatment=="dexamethasone")
+    return(x)
+}
+
+etoh_tf = download_encode_chip("A549", "GRCh38", download.filter=etoh_filter)
+dex_tf = download_encode_chip("A549", "GRCh38", download.filter=dex_filter)
+
 sum(get_sig("shNIPBL_vs_shMamm-EtOH", "up"), na.rm=TRUE)
 sum(get_sig("shNIPBL_vs_shMamm-EtOH", "down"), na.rm=TRUE)
 sum(get_sig("shNIPBL_vs_shMamm-EtOH"), na.rm=TRUE)

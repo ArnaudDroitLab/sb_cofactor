@@ -201,7 +201,7 @@ for(region_type in c("GeneBodies", "TSS")) {
                           group_label=region_type)
 }
 
-# Make combined plots comparing GR-bound genes to those nto bound by GR.
+# Make combined plots comparing GR-bound genes to those not bound by GR.
 for(region_type in c("GeneBodies", "TSS")) {
     color_palette = c("GR-Unbound"="#40C4FF", "GR-Bound"="#FF8A80")
     do_meta_ggplot_double(region_name1=paste0("Bound", region_type), region_name2=paste0("Unbound", region_type),
