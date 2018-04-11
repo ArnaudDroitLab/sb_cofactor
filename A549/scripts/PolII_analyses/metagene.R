@@ -8,9 +8,17 @@ library(org.Hs.eg.db)
 # Define functions for alter analysis.
 ###############################################################################
 
+get_gene_bodies <- function(all_genes, ...) {
+    return(all_genes[all_genes$gene_id %in% Reduce(intersect, list(...))])
+}
+
+get_tss <- function(all_genes, ...) {
+    return(GenomicRanges::promoters(get_gene_bodies(all_genes, ...), upstream=200, downstream=200))
+}
+
 # Function for subsetting the metagene data-frame and associating
 # sample conditions to profiles.
-subset_metagene_df <- function(region_name) {
+subset_metagene_df <- function(region_name, antibody=NA) {
     metagene.obj = metagenes[[region_name]]
     
     sh_subset = subset(metagene.obj$get_data_frame(), grepl("sh(C..L|NIPBL).._", group))
@@ -19,7 +27,13 @@ subset_metagene_df <- function(region_name) {
     sh_subset$Condition = ifelse(grepl("Dex", sh_subset$group), "Dex", "EtOH")
     sh_subset$Antibody = ifelse(grepl("POL2.ser2", sh_subset$group), "PolII-ser2", "PolII")
     sh_subset$sh_name = gsub("POL.*(sh.*)_.*", "\\1", sh_subset$group)
-
+    sh_subset$Direction = ifelse(grepl("Regulated", region_name), gsub("(.*Regulated).*", "\\1", region_name), NA)
+    sh_subset$Bound = ifelse(grepl("ound", region_name), gsub(".*((Unb|B)ound).*", "\\1", region_name), NA)
+    
+    if(!is.na(antibody)) {
+        sh_subset = sh_subset[sh_subset$Antibody==antibody,]
+    }
+    
     return(sh_subset)
 }
 
@@ -34,20 +48,32 @@ plot_dex_effect <- function(region_name) {
     do_meta_ggplot_single(region_name, "Condition", "sh_name", c(EtOH="#40C4FF", Dex="#FF8A80"), "Dex")
 }
 
-do_meta_ggplot_single <- function(region_name, group_var, facet_var, color_palette, file_label) {
-    sh_subset = subset_metagene_df(region_name)
+do_meta_ggplot_single <- function(region_name, group_var, facet_var, color_palette, file_label, antibody=NA) {
+    sh_subset = subset_metagene_df(region_name, antibody)
     do_meta_ggplot_generic(sh_subset, region_name, group_var, facet_var, color_palette, file_label, FacetVar~Antibody)
 }
 
-do_meta_ggplot_double <- function(region_name1, region_name2, label1, label2, facet_var, color_palette, file_label, facet_formula, group_label) {
-    subset_1 = subset_metagene_df(region_name1)
-    subset_2 = subset_metagene_df(region_name2)
+do_meta_ggplot_double <- function(region_name1, region_name2, label1, label2, facet_var, color_palette, file_label, facet_formula, group_label, antibody=NA) {
+    subset_1 = subset_metagene_df(region_name1, antibody)
+    subset_2 = subset_metagene_df(region_name2, antibody)
     subset_1$RegionName = label1
     subset_2$RegionName = label2
     
     sh_subset = rbind(subset_1, subset_2)
     do_meta_ggplot_generic(sh_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula)
 }
+
+do_meta_ggplot_any <- function(name_list, facet_var, color_palette, file_label, facet_formula, group_label, antibody="both") {
+    all_subset = data.frame()
+    for(name_index in 1:length(name_list)) {
+        this_subset = subset_metagene_df(name_list[[name_index]], antibody)
+        this_subset$RegionName = names(name_list)[name_index]
+        all_subset = rbind(all_subset, this_subset)
+    }
+
+    do_meta_ggplot_generic(all_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula)
+}
+
 
 do_meta_ggplot_generic <- function(sh_subset, region_label, group_var, facet_var, color_palette, file_label, facet_formula) {
     sh_subset$GroupVar = sh_subset[[group_var]]
@@ -124,12 +150,7 @@ gr_regions = rtracklayer::import("output/ENCODE-chip/peak_call/GR_1hr/GR_1hr_pea
 # Determine which genes overlap GR regions.
 annotated_gr = ChIPseeker::annotatePeak(gr_regions, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
 bound_gene_ids = subset(as.data.frame(annotated_gr), annotation=="Promoter (<=1kb)")$geneId
-
-# Determine which genes are bound by GR.
-bound_genes = all_genes[all_genes$gene_id %in% bound_gene_ids]
-bound_TSS = GenomicRanges::promoters(bound_genes, upstream=200, downstream=200)
-unbound_genes = all_genes[!(all_genes$gene_id %in% bound_gene_ids)]
-unbound_TSS = GenomicRanges::promoters(unbound_genes, upstream=200, downstream=200)
+unbound_gene_ids = setdiff(all_genes$gene_id, bound_gene_ids)
 
 # Determine differentially expressed genes at 1 hour.
 de_results = read.csv("results/a549_dex_time_points/1h", header=TRUE)
@@ -138,20 +159,35 @@ de_gene_ids = subset(de_results, abs(log2FoldChange) >= log2(1.5) & padj <= 0.05
 up_gene_ids = subset(de_results, log2FoldChange <= -log2(1.5) & padj <= 0.05)$ENTREZID
 down_gene_ids = subset(de_results, log2FoldChange >= log2(1.5) & padj <= 0.05)$ENTREZID
 
-# Define group of regions based on DE status.
-de_genes = all_genes[all_genes$gene_id %in% de_gene_ids]
-de_TSS = GenomicRanges::promoters(de_genes, upstream=200, downstream=200)
-up_genes = all_genes[all_genes$gene_id %in% up_gene_ids]
-up_TSS = GenomicRanges::promoters(up_genes, upstream=200, downstream=200)
-down_genes = all_genes[all_genes$gene_id %in% down_gene_ids]
-down_TSS = GenomicRanges::promoters(down_genes, upstream=200, downstream=200)
+# Define group of regions based on DE status AND GR-binding status.
+de_bound_gene_ids = intersect(de_gene_ids, bound_gene_ids)
+up_bound_gene_ids = intersect(up_gene_ids, bound_gene_ids)
+down_bound_gene_ids = intersect(down_gene_ids, bound_gene_ids)
+de_unbound_gene_ids = intersect(de_gene_ids, unbound_gene_ids)
+up_unbound_gene_ids = intersect(up_gene_ids, unbound_gene_ids)
+down_unbound_gene_ids = intersect(down_gene_ids, unbound_gene_ids)
 
-region_list = list(AllGeneBodies=all_genes, AllTSS=all_TSS, 
-                   BoundGeneBodies=bound_genes, BoundTSS=bound_TSS, 
-                   UnboundGeneBodies=unbound_genes, UnboundTSS=unbound_TSS,
-                   DEGeneBodies=de_genes, DETSS=de_TSS,
-                   UpRegulatedGeneBodies=up_genes, UpRegulatedTSS=up_TSS,
-                   DownRegulatedGeneBodies=down_genes, DownRegulatedTSS=down_TSS)
+
+region_list = list(#AllGeneBodies=all_genes,
+                   #AllTSS=all_TSS, 
+                   #BoundGeneBodies=get_gene_bodies(all_genes, bound_gene_ids),
+                   #BoundTSS=get_tss(all_genes, bound_gene_ids), 
+                   #UnboundGeneBodies=get_gene_bodies(all_genes, unbound_gene_ids),
+                   #UnboundTSS=get_tss(all_genes, unbound_gene_ids),
+                   #DEGeneBodies=get_gene_bodies(all_genes, de_gene_ids),
+                   #DETSS=get_tss(all_genes, de_gene_ids),
+                   #UpRegulatedGeneBodies=get_gene_bodies(all_genes, up_gene_ids),
+                   #UpRegulatedTSS=get_tss(all_genes, up_gene_ids),
+                   #DownRegulatedGeneBodies=get_gene_bodies(all_genes, down_gene_ids),
+                   #DownRegulatedTSS=get_tss(all_genes, down_gene_ids),
+                   UpRegulatedBoundGeneBodies=get_gene_bodies(all_genes, up_gene_ids, bound_gene_ids),
+                   UpRegulatedBoundTSS=get_tss(all_genes, up_gene_ids, bound_gene_ids),
+                   UpRegulatedUnboundGeneBodies=get_gene_bodies(all_genes, up_gene_ids, unbound_gene_ids),
+                   UpRegulatedUnboundTSS=get_tss(all_genes, up_gene_ids, unbound_gene_ids),                   
+                   DownRegulatedBoundGeneBodies=get_gene_bodies(all_genes, down_gene_ids, bound_gene_ids),
+                   DownRegulatedBoundTSS=get_tss(all_genes, down_gene_ids, bound_gene_ids),
+                   DownRegulatedUnboundGeneBodies=get_gene_bodies(all_genes, down_gene_ids, unbound_gene_ids),
+                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids))
          
 
 ###############################################################################
@@ -209,4 +245,19 @@ for(region_type in c("GeneBodies", "TSS")) {
                           facet_var="sh_name", color_palette=color_palette, 
                           file_label="GR binding", facet_formula=sh_name~Antibody*Condition,
                           group_label=region_type)
+}
+
+# Compare GR-Bound*Direction interaction.
+for(antibody in c("PolII", "PolII-ser2")) {
+    for(region_type in c("TSS", "GeneBodies")) {
+        region_list = list("GR-Bound"   = paste0("UpRegulatedBound", region_type),
+                           "GR-Unbound" = paste0("UpRegulatedUnbound", region_type),
+                           "GR-Bound"   = paste0("DownRegulatedBound", region_type),
+                           "GR-Unbound" = paste0("DownRegulatedUnbound", region_type))
+        file_label = paste0("on ", antibody, " of GR-Binding")
+        do_meta_ggplot_any(region_list,
+                           facet_var="Direction", color_palette=c("GR-Unbound"="#40C4FF", "GR-Bound"="#FF8A80"),
+                           file_label=file_label, facet_formula=sh_name~Direction*Condition,
+                           group_label=region_type, antibody=antibody)
+    }
 }
