@@ -1,0 +1,6 @@
+Sample	Dex_vs_EtOH-All	Dex_vs_EtOH-nonMamm	Dex_vs_EtOH-shMED1	Dex_vs_EtOH-shNIPBL	Dex_vs_EtOH-shSMC1A	Dex_vs_EtOH-shSMC1A-3	Dex_vs_EtOH-shSMC1A-2	shMED1_vs_shMamm-Dex	shMED1_vs_shMamm-EtOH	shNIPBL_vs_shMamm-Dex	shNIPBL_vs_shMamm-EtOH	shSMC1A-3_vs_shMamm-Dex	shSMC1A-2_vs_shMamm-Dex	shSMC1A_vs_shMamm-EtOH	shSMC1A-3_vs_shMamm-EtOH	shSMC1A-2_vs_shMamm-EtOH
+DEX_shNIPBL_2	2	0	0	2	0	0	0	0	0	2	0	0	0	0	0	0
+DEX_shMED1_2	2	0	2	0	0	0	0	2	0	0	0	0	0	0	0	0
+DEX_shSMC1A_4	2	0	0	0	2	0	2	0	0	0	0	0	2	0	0	0
+DEX_nonMamm_2	2	2	0	0	0	0	0	1	0	1	0	1	1	0	0	0
+
