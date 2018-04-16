@@ -3,17 +3,18 @@ library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(ChIPseeker)
 library(ggplot2)
 library(org.Hs.eg.db)
+library(dplyr)
 
 ###############################################################################
 # Define functions for alter analysis.
 ###############################################################################
 
 get_gene_bodies <- function(all_genes, ...) {
-    return(all_genes[all_genes$gene_id %in% Reduce(intersect, list(...))])
+    return(all_genes[all_genes$entrezgene %in% Reduce(intersect, list(...))])
 }
 
-get_tss <- function(all_genes, ...) {
-    return(GenomicRanges::promoters(get_gene_bodies(all_genes, ...), upstream=200, downstream=200))
+get_tss <- function(all_genes, ..., flank_size=200) {
+    return(GenomicRanges::promoters(get_gene_bodies(all_genes, ...), upstream=flank_size, downstream=flank_size))
 }
 
 # Function for subsetting the metagene data-frame and associating
@@ -132,7 +133,8 @@ design[design==3] = 2
 # Define regions over which metagenes will be plotted.
 ###############################################################################
 
-all_genes = genes(TxDb.Hsapiens.UCSC.hg38.knownGene)
+most_expressed = read.table("output/analyses/tss_gene_coorindates.txt", sep="\t", header=TRUE)
+all_genes = GRanges(most_expressed)
 
 # Remove all regions not on the main chromosomes.
 all_genes = all_genes[!grepl("_", seqnames(all_genes))]
@@ -141,7 +143,7 @@ all_genes = all_genes[!grepl("_", seqnames(all_genes))]
 all_genes = all_genes[width(all_genes) >= 200]
 
 # Define TSS regions based on all kept gene locations.
-all_TSS = GenomicRanges::promoters(all_genes, upstream=200, downstream=200)
+all_TSS = GenomicRanges::promoters(all_genes, upstream=1000, downstream=1000)
 
 # Import GR binding regions.
 extraCols <- c(signalValue = "numeric", pValue = "numeric", qValue = "numeric", peak = "integer")
@@ -150,7 +152,7 @@ gr_regions = rtracklayer::import("output/ENCODE-chip/peak_call/GR_1hr/GR_1hr_pea
 # Determine which genes overlap GR regions.
 annotated_gr = ChIPseeker::annotatePeak(gr_regions, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
 bound_gene_ids = subset(as.data.frame(annotated_gr), annotation=="Promoter (<=1kb)")$geneId
-unbound_gene_ids = setdiff(all_genes$gene_id, bound_gene_ids)
+unbound_gene_ids = setdiff(all_genes$entrezgene, bound_gene_ids)
 
 # Determine differentially expressed genes at 1 hour.
 de_results = read.csv("results/a549_dex_time_points/1h", header=TRUE)
@@ -166,6 +168,18 @@ down_bound_gene_ids = intersect(down_gene_ids, bound_gene_ids)
 de_unbound_gene_ids = intersect(de_gene_ids, unbound_gene_ids)
 up_unbound_gene_ids = intersect(up_gene_ids, unbound_gene_ids)
 down_unbound_gene_ids = intersect(down_gene_ids, unbound_gene_ids)
+
+# Import regions based on expression level
+raw_counts = read.csv("results/a549_dex_time_points/raw_counts.csv")
+filter_df = data.frame(gene_id=raw_counts$gene_id, mean=rowMeans(raw_counts[,-1]))
+filter_df = filter_df[filter_df$mean >= 10,]
+filter_df$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(filter_df$gene_id), keytype="ENSEMBL", column="ENTREZID")
+filter_df$quartile = cut(filter_df$mean, breaks=quantile(filter_df$mean, probs=seq(0,1, 1/15)), labels=paste0("Q", 1:15))
+
+
+q1_gene_ids = filter_df$ENTREZID[filter_df$quartile=="Q1"]
+q8_gene_ids = filter_df$ENTREZID[filter_df$quartile=="Q8"]
+q15_gene_ids = filter_df$ENTREZID[filter_df$quartile=="Q15"]
 
 
 region_list = list(#AllGeneBodies=all_genes,
@@ -187,7 +201,11 @@ region_list = list(#AllGeneBodies=all_genes,
                    DownRegulatedBoundGeneBodies=get_gene_bodies(all_genes, down_gene_ids, bound_gene_ids),
                    DownRegulatedBoundTSS=get_tss(all_genes, down_gene_ids, bound_gene_ids),
                    DownRegulatedUnboundGeneBodies=get_gene_bodies(all_genes, down_gene_ids, unbound_gene_ids),
-                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids))
+                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids),
+                   Q1TSS=get_tss(all_genes, q1_gene_ids, flank_size=1000),
+                   Q8TSS=get_tss(all_genes, q8_gene_ids, flank_size=1000),
+                   Q15TSS=get_tss(all_genes, q15_gene_ids, flank_size=1000),
+                   ACTBTSS=get_tss(all_genes, 60, flank_size=1000))
          
 
 ###############################################################################
@@ -261,3 +279,15 @@ for(antibody in c("PolII", "PolII-ser2")) {
                            group_label=region_type, antibody=antibody)
     }
 }
+
+# Plot Q1, Q8 Q15 against each other.
+q_list = list("Q1"="Q1TSS", "Q8"="Q8TSS", "Q15"="Q15TSS")
+q_palette = c(Q1="#4FC3F7", Q8="#039BE5", Q15="#01579B")
+do_meta_ggplot_any(q_list, facet_var="sh_name", color_palette=q_palette,
+                   file_label="gene expression level", facet_formula=sh_name~Condition,
+                   group_label="Quantile (Out of 15)", antibody="PolII")
+
+do_meta_ggplot_any(list("ACTB"="ACTBTSS"), facet_var="sh_name", color_palette=c(ATCB="#039BE5"),
+                   file_label="ACTB", facet_formula=sh_name~Condition,
+                   group_label="ACTB", antibody="PolII")        
+                   

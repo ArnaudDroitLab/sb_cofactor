@@ -45,7 +45,7 @@ transcript_expression_evidence = transcript_expression %>% filter(grepl("tsl1", 
 # Finally, of all remaining transcript, choose the most expressed one.
 most_expressed = transcript_expression_evidence %>% group_by(gene_id) %>% dplyr::slice(which.max(TPM))                         
 most_expressed$strand = ifelse(most_expressed$strand == -1, "-", "+")
-most_expressed$start = most_expressed$transcription_start_site
+most_expressed$start = most_expressed$transcript_start
 most_expressed$end = most_expressed$transcript_end
 most_expressed$chromosome_name = paste0("chr", most_expressed$chromosome_name)
 
