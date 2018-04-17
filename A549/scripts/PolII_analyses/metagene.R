@@ -5,6 +5,7 @@ library(ggplot2)
 library(org.Hs.eg.db)
 library(dplyr)
 
+source("scripts/load_reddy.R")
 ###############################################################################
 # Define functions for alter analysis.
 ###############################################################################
@@ -133,7 +134,7 @@ design[design==3] = 2
 # Define regions over which metagenes will be plotted.
 ###############################################################################
 
-most_expressed = read.table("output/analyses/tss_gene_coorindates.txt", sep="\t", header=TRUE)
+most_expressed = read.table("output/analyses/tss_gene_coordinates.txt", sep="\t", header=TRUE)
 all_genes = GRanges(most_expressed)
 
 # Remove all regions not on the main chromosomes.
@@ -146,16 +147,15 @@ all_genes = all_genes[width(all_genes) >= 200]
 all_TSS = GenomicRanges::promoters(all_genes, upstream=1000, downstream=1000)
 
 # Import GR binding regions.
-extraCols <- c(signalValue = "numeric", pValue = "numeric", qValue = "numeric", peak = "integer")
-gr_regions = rtracklayer::import("output/ENCODE-chip/peak_call/GR_1hr/GR_1hr_peaks.narrowPeak", format="bed", extraCols=extraCols)
+gr_regions = load_reddy_gr_binding_consensus()
 
 # Determine which genes overlap GR regions.
-annotated_gr = ChIPseeker::annotatePeak(gr_regions, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
+annotated_gr = ChIPseeker::annotatePeak(gr_regions[["30 minutes"]], TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
 bound_gene_ids = subset(as.data.frame(annotated_gr), annotation=="Promoter (<=1kb)")$geneId
 unbound_gene_ids = setdiff(all_genes$entrezgene, bound_gene_ids)
 
 # Determine differentially expressed genes at 1 hour.
-de_results = read.csv("results/a549_dex_time_points/1h", header=TRUE)
+de_results = load_reddy_de_list()[["2h"]]$Full
 de_results$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(de_results$gene_id), keytype="ENSEMBL", column="ENTREZID")
 de_gene_ids = subset(de_results, abs(log2FoldChange) >= log2(1.5) & padj <= 0.05)$ENTREZID
 up_gene_ids = subset(de_results, log2FoldChange <= -log2(1.5) & padj <= 0.05)$ENTREZID
@@ -195,13 +195,13 @@ region_list = list(#AllGeneBodies=all_genes,
                    #DownRegulatedGeneBodies=get_gene_bodies(all_genes, down_gene_ids),
                    #DownRegulatedTSS=get_tss(all_genes, down_gene_ids),
                    UpRegulatedBoundGeneBodies=get_gene_bodies(all_genes, up_gene_ids, bound_gene_ids),
-                   UpRegulatedBoundTSS=get_tss(all_genes, up_gene_ids, bound_gene_ids),
+                   UpRegulatedBoundTSS=get_tss(all_genes, up_gene_ids, bound_gene_ids, flank_size=1000),
                    UpRegulatedUnboundGeneBodies=get_gene_bodies(all_genes, up_gene_ids, unbound_gene_ids),
-                   UpRegulatedUnboundTSS=get_tss(all_genes, up_gene_ids, unbound_gene_ids),                   
+                   UpRegulatedUnboundTSS=get_tss(all_genes, up_gene_ids, unbound_gene_ids, flank_size=1000),                   
                    DownRegulatedBoundGeneBodies=get_gene_bodies(all_genes, down_gene_ids, bound_gene_ids),
-                   DownRegulatedBoundTSS=get_tss(all_genes, down_gene_ids, bound_gene_ids),
+                   DownRegulatedBoundTSS=get_tss(all_genes, down_gene_ids, bound_gene_ids, flank_size=1000),
                    DownRegulatedUnboundGeneBodies=get_gene_bodies(all_genes, down_gene_ids, unbound_gene_ids),
-                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids),
+                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids, flank_size=1000),
                    Q1TSS=get_tss(all_genes, q1_gene_ids, flank_size=1000),
                    Q8TSS=get_tss(all_genes, q8_gene_ids, flank_size=1000),
                    Q15TSS=get_tss(all_genes, q15_gene_ids, flank_size=1000),

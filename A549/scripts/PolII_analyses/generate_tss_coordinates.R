@@ -51,4 +51,4 @@ most_expressed$chromosome_name = paste0("chr", most_expressed$chromosome_name)
 
 all_genes = GenomicRanges::GRanges(most_expressed)
 
-write.table(as.data.frame(all_genes), file="output/analyses/tss_gene_coorindates.txt", col.names=TRUE, row.names=FALSE, sep="\t")
+write.table(as.data.frame(all_genes), file="output/analyses/tss_gene_coordinates.txt", col.names=TRUE, row.names=FALSE, sep="\t")
