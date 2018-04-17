@@ -1,4 +1,3 @@
-library(ENCODExplorer)
 library(ef.utils)
 library(GenomicRanges)
 library(ggplot2)
@@ -9,8 +8,8 @@ library(reshape2)
 library(dplyr)
 library(gplots)
 
-# Turn off VennDiagram logging.
-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
+
+source("scripts/load_reddy.R")
 
 output_dir="output/analyses/gr_enrichment"
 dir.create(output_dir, recursive=TRUE, showWarnings=FALSE)
@@ -20,41 +19,9 @@ dir.create(output_dir, recursive=TRUE, showWarnings=FALSE)
 ###############################################################################
 
 # Get GR binding time series
-gr_accession = read.table("input/ENCODE_Reddy_GR_ChIP_experiments.txt", header=TRUE, sep="\t")
-gr_accession = gr_accession[order(gr_accession$Order),]
-gr_accession$Time = factor(gr_accession$Time, levels=gr_accession$Time)
-
-chip_dir = "input/ENCODE/A549/GRCh38/chip-seq/narrow"
-dir.create(chip_dir, recursive=TRUE, showWarnings=FALSE)
-gr_regions = list()
-for(i in 1:nrow(gr_accession)) {
-    encode_accession = gr_accession$Experiment[i]
-    time_point = as.character(gr_accession$Time[i])
-    
-    # Download and import peak calls for the time point.
-    encodeResults = queryEncodeGeneric(accession=encode_accession, file_type="bed narrowPeak", assembly="GRCh38")
-    downloaded_files = downloadEncode(encodeResults, dir=chip_dir, force=FALSE)
-    names(downloaded_files) = gsub(".*\\/(.*).bed.gz", "\\1", downloaded_files)
-    
-    extraCols <- c(signalValue = "numeric", pValue = "numeric", qValue = "numeric", peak = "integer")
-    binding_sites = GRangesList(lapply(downloaded_files, rtracklayer::import, extraCols=extraCols))
-    
-    # Only keep peak calls found in at least two replicates.
-    intersect_object = build_intersect(binding_sites)
-    two_replicates = rowSums(intersect_object$Matrix) >= 2
-    gr_regions[[time_point]] = intersect_object$Regions[two_replicates]
-    dir.create(file.path(output_dir, "Venn diagrams of peak calls"))
-    intersect_venn_plot(intersect_object, file.path(output_dir, "Venn diagrams of peak calls", paste0(time_point, ".tiff")))
-
-    # Get rid of incomplete/alternate scaffolds, since they interfere with annotation later.
-    gr_regions[[time_point]] = gr_regions[[time_point]][!grepl("_", seqnames(gr_regions[[time_point]]))]
-}
-    
-
-# Are binding regions conserved across time points?
-intersect_all = build_intersect(GRangesList(gr_regions))
-all_regions_annotation = ChIPseeker::annotatePeak(intersect_all$Regions, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
-all_gr_regions = GRanges(as.data.frame(all_regions_annotation))
+intersect_all = load_reddy_gr_binding_intersect(diagnostic_dir=output_dir)
+all_gr_regions = intersect_all$Regions
+chip_time_levels = intersect_all$Names
 
 ###############################################################################
 # Plot some basic metrics of the GR binding data.
@@ -73,7 +40,7 @@ for(i in names(intersect_all$List)) {
     gr_binding_type_df = rbind(gr_binding_type_df, row_df)                    
                         
 }
-gr_binding_type_df$Time = factor(gr_binding_type_df$Time, levels=gr_accession$Time)
+gr_binding_type_df$Time = factor(gr_binding_type_df$Time, levels=chip_time_levels)
 
 # Plot GR binding type in absolute number of regions.
 ggplot(gr_binding_type_df, aes(x=Time, fill=Annotation)) +
@@ -110,7 +77,7 @@ dev.off()
 # Plot a bar graph of the number of GR-bound genes.
 gr_bound_number = data.frame(Time=colnames(gr_bound_genes)[-1], 
                              Genes=apply(gr_bound_genes[-1], 2, sum))
-gr_bound_number$Time = factor(gr_bound_number$Time, levels=gr_accession$Time)
+gr_bound_number$Time = factor(gr_bound_number$Time, levels=chip_time_levels)
 ggplot(gr_bound_number, aes(x=Time, y=Genes)) +
     geom_bar(color="black", stat="identity", fill="#4FC3F7") +
     labs(x="Time", y="Number of genes with GR-binding at their TSS", title="GR-binding over time in Reddy dataset") +
@@ -123,21 +90,7 @@ ggsave(file.path(output_dir, "GR-bound genes over time in Reddy dataset.pdf"))
 ###############################################################################
 
  # Loop over all result files.
-de_results = list()
-for(de_result_file in Sys.glob("results/a549_dex_time_points/*h")) {
-    time_point = gsub(".*points\\/(.*h)$", "\\1", de_result_file)
-    de_results[[time_point]] = list()
-    de_results[[time_point]]$Full = read.csv(de_result_file)
-    de_results[[time_point]]$Full$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(de_results[[time_point]]$Full$gene_id), keytype="ENSEMBL", column="ENTREZID")
-    de_results[[time_point]]$DE_indices = with(de_results[[time_point]]$Full, abs(log2FoldChange) > log2(1.5) & padj < 0.05)
-    de_results[[time_point]]$DE = de_results[[time_point]]$Full[de_results[[time_point]]$DE_indices,]
-    
-    de_results[[time_point]]$Up_indices = with(de_results[[time_point]]$Full, log2FoldChange < -log2(1.5) & padj < 0.05)
-    de_results[[time_point]]$Up = de_results[[time_point]]$Full[de_results[[time_point]]$Up_indices,]
-    
-    de_results[[time_point]]$Down_indices = with(de_results[[time_point]]$Full, log2FoldChange > log2(1.5) & padj < 0.05)
-    de_results[[time_point]]$Down = de_results[[time_point]]$Full[de_results[[time_point]]$Down_indices,]    
-}    
+de_results = load_reddy_de_list()
 
 ###############################################################################
 # Plot simple DE metrics.
@@ -158,12 +111,7 @@ ggplot(de_over_time, aes(x=Time, y=NumberOfGenes, fill=Direction)) +
 ggsave(file.path(output_dir, "DE over time in Reddy dataset.pdf"))
 
 # Make a matrix of fold-changes so we can plot a heatmap.
-all_de = unique(unlist(lapply(de_results, function(x) { c(as.character(x[["Up"]]$ENTREZID), as.character(x[["Down"]]$ENTREZID)) })))
-all_fc = data.frame(ENTREZID=all_de)
-for(de_item in names(de_results)) {
-    cur_fc = de_results[[de_item]]$Full
-    all_fc[[de_item]] = cur_fc$log2FoldChange[match(all_fc$ENTREZID, cur_fc$ENTREZID)]
-}   
+all_fc = get_reddy_fc_dataframe(de_results)
 
 # Remove NAs, and cap FC values at +/-5 to keep the color scale more useful.
 heatmap_matrix = as.matrix(all_fc[,-1])
@@ -188,47 +136,10 @@ directions = ifelse(apply(all_fc[,-1], 1, mean, na.rm=TRUE)<0, "Green", "Red")
 gr_genes_directions = directions[match(gr_bound_genes$Gene, all_fc$ENTREZID)]
 heatmap.2(as.matrix(gr_bound_genes[,-1])+0, dendrogram="column", scale="none", trace="none", RowSideColors=gr_genes_directions)
 dev.off()     
+
 ###############################################################################
 # Perform enrichment of GR binding.
 ############################################################################    
-
-get_gr_genes_at_time_point <- function(gr_time) {
-    gr_ranges = all_gr_regions[intersect_all$List[[as.character(gr_time)]]]
-    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
-    
-    # Get the total number of GR-bound genes
-    gr_genes = gr_promoters$geneId
-    
-    return(gr_genes)
-}
-
-get_gr_genes_at_or_before_time_point <- function(gr_time) {
-    # Find all applicable time points
-    before_levels = 1:which(as.character(gr_time)==levels(gr_accession$Time))
-    before_times = levels(gr_accession$Time)[before_levels]
-    
-    before_regions = c()
-    for(i in before_times) {
-        before_regions = c(before_regions, intersect_all$List[[as.character(i)]])
-    }
-    
-    gr_ranges = all_gr_regions[unique(before_regions)]
-    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
-    
-    # Get the total number of GR-bound genes
-    gr_genes = gr_promoters$geneId
-    
-    return(gr_genes)
-}
-
-get_gr_genes_any_time_point <- function(gr_time) {
-    gr_promoters = all_gr_regions[all_gr_regions$annotation=="Promoter (<=1kb)"]
-    
-    # Get the total number of GR-bound genes
-    gr_genes = gr_promoters$geneId
-    
-    return(gr_genes)
-}
     
 perform_gr_enrichment <- function(gr_function, time_match_column, label) {
     time_matches = read.table("input/TimeMatches.txt", sep="\t", header=TRUE)
@@ -246,7 +157,7 @@ perform_gr_enrichment <- function(gr_function, time_match_column, label) {
             n_de_genes = length(unique(de_genes))
             
             # Get the list of GR-bound genes.
-            gr_genes = gr_function(gr_time)
+            gr_genes = gr_function(intersect_all, gr_time)
             n_gr_genes = length(unique(gr_genes))
             
             # Get the total number of GR-bound de-regulated genes.
@@ -275,6 +186,6 @@ perform_gr_enrichment <- function(gr_function, time_match_column, label) {
     write.table(enrich_df, row.names=FALSE, col.names=TRUE, sep="\t", file=file.path(output_dir, paste0("Enrichment ", label, ".txt")))
 }
 
-perform_gr_enrichment(get_gr_genes_at_time_point, "HourBefore", "GR-bound 1 hour before")
-perform_gr_enrichment(get_gr_genes_any_time_point, "HourBefore", "any GR binding")
-perform_gr_enrichment(get_gr_genes_at_or_before_time_point, "SameHour", "GR-bound any time before")
+perform_gr_enrichment(get_gr_bound_genes_at_time_point, "HourBefore", "GR-bound 1 hour before")
+perform_gr_enrichment(get_gr_bound_genes_any_time_point, "HourBefore", "any GR binding")
+perform_gr_enrichment(get_gr_bound_genes_at_or_before_time_point, "SameHour", "GR-bound any time before")

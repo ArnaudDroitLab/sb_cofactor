@@ -1,0 +1,168 @@
+###############################################################################
+# Sets of function for loading and interrogating the time-course data produced
+# by Tim Reddy's lab.
+###############################################################################
+
+library(ENCODExplorer)
+library(ef.utils)
+
+###############################################################################
+# Functions to load and query GR-binding data.
+###############################################################################
+
+# Download GR-binding peak calls at 16 time points. Each time-point is in 
+# triplicate. Only regions identified by two replicates are kept.
+# Results are provided as a named-list of GRanges object, in chronological
+# order.
+load_reddy_gr_binding_consensus <- function(diagnostic_dir=NULL) {
+    # Get ENCODE accessions for GR binding time series
+    gr_accession = read.table("input/ENCODE_Reddy_GR_ChIP_experiments.txt", header=TRUE, sep="\t")
+    gr_accession = gr_accession[order(gr_accession$Order),]
+    gr_accession$Time = factor(gr_accession$Time, levels=gr_accession$Time)
+    
+    chip_dir = "input/ENCODE/A549/GRCh38/chip-seq/narrow"
+    dir.create(chip_dir, recursive=TRUE, showWarnings=FALSE)
+    
+    # Loop over all ENCODE accessions, downloading all replicates and 
+    # extracting consensus regions.
+    gr_regions = list()
+    for(i in 1:nrow(gr_accession)) {
+        encode_accession = gr_accession$Experiment[i]
+        time_point = as.character(gr_accession$Time[i])
+        
+        # Download and import peak calls for the time point.
+        encodeResults = ENCODExplorer::queryEncodeGeneric(accession=encode_accession, file_type="bed narrowPeak", assembly="GRCh38")
+        downloaded_files = ENCODExplorer::downloadEncode(encodeResults, dir=chip_dir, force=FALSE)
+        names(downloaded_files) = gsub(".*\\/(.*).bed.gz", "\\1", downloaded_files)
+        
+        extraCols <- c(signalValue = "numeric", pValue = "numeric", qValue = "numeric", peak = "integer")
+        binding_sites = GRangesList(lapply(downloaded_files, rtracklayer::import, extraCols=extraCols))
+        
+        # Only keep peak calls found in at least two replicates.
+        intersect_object = build_intersect(binding_sites)
+        two_replicates = rowSums(intersect_object$Matrix) >= 2
+        gr_regions[[time_point]] = intersect_object$Regions[two_replicates]
+        if(!is.null(diagnostic_dir)) {
+            # Turn off VennDiagram logging.
+            futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
+        
+            dir.create(file.path(diagnostic_dir, "Venn diagrams of peak calls"))
+            intersect_venn_plot(intersect_object, file.path(diagnostic_dir, "Venn diagrams of peak calls", paste0(time_point, ".tiff")))
+        }
+    
+        # Get rid of incomplete/alternate scaffolds, since they interfere with annotation later.
+        gr_regions[[time_point]] = gr_regions[[time_point]][!grepl("_", seqnames(gr_regions[[time_point]]))]
+    }
+    
+    return(gr_regions)
+}
+
+# Loads GR-binding data the same way load_reddy_gr_binding_consensus does,
+# but create an intersection object out of all binding regions and annotate
+# them.
+load_reddy_gr_binding_intersect <- function(diagnostic_dir=NULL) {
+    gr_regions = load_reddy_gr_binding_consensus(diagnostic_dir)
+
+    # Get ENCODE accessions for GR binding time series
+    intersect_all = build_intersect(GRangesList(gr_regions))
+    all_regions_annotation = ChIPseeker::annotatePeak(intersect_all$Regions, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
+    intersect_all$Regions = GRanges(as.data.frame(all_regions_annotation))
+    
+    return(intersect_all)
+}
+
+# Returns a vector of ENTREZ gene ids of genes whose promoter is 
+# GR-bound (1kb from start site) at a given time point.
+get_gr_bound_genes_at_time_point <- function(gr_intersect, gr_time) {
+    gr_ranges = gr_intersect$Regions[gr_intersect$List[[as.character(gr_time)]]]
+    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
+    
+    # Get the total number of GR-bound genes
+    gr_genes = gr_promoters$geneId
+    
+    return(gr_genes)
+}
+
+# Returns a vector of ENTREZ gene ids of genes whose promoter is 
+# GR-bound at or before a given time point.
+get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time) {
+    # Find all applicable time points
+    before_levels = 1:which(as.character(gr_time)==gr_intersect$Name)
+    before_times = gr_intersect$Name[before_levels]
+    
+    before_regions = c()
+    for(i in before_times) {
+        before_regions = c(before_regions, gr_intersect$List[[as.character(i)]])
+    }
+    
+    gr_ranges = gr_intersect$Regions[unique(before_regions)]
+    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
+    
+    # Get the total number of GR-bound genes
+    gr_genes = gr_promoters$geneId
+    
+    return(gr_genes)
+}
+
+# Returns a vector of ENTREZ gene ids of genes whose promoter is 
+# GR-bound at any time point.
+get_gr_bound_genes_any_time_point <- function(gr_intersect, gr_time) {
+    gr_promoters = gr_intersect$Regions[gr_intersect$Regions$annotation=="Promoter (<=1kb)"]
+    
+    # Get the total number of GR-bound genes
+    gr_genes = gr_promoters$geneId
+    
+    return(gr_genes)
+}
+
+###############################################################################
+# Functions to load and query differentiall expressed genes data.
+# DE results are a reanalysis of the counts provided in ENCODE for the
+# Reddy experiments.
+###############################################################################
+
+# Loads all DE results and return them as a named list.
+# Each element is named after its time-point, and is itself a list with
+# four elements: Full, DE, Up and Down.
+load_reddy_de_list <- function() {
+     # Loop over all result files.
+    de_results = list()
+    for(de_result_file in Sys.glob("results/a549_dex_time_points/*h")) {
+        time_point = gsub(".*points\\/(.*h)$", "\\1", de_result_file)
+        de_results[[time_point]] = list()
+        de_results[[time_point]]$Full = read.csv(de_result_file)
+        de_results[[time_point]]$Full$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(de_results[[time_point]]$Full$gene_id), keytype="ENSEMBL", column="ENTREZID")
+        de_results[[time_point]]$DE_indices = with(de_results[[time_point]]$Full, abs(log2FoldChange) > log2(1.5) & padj < 0.05)
+        de_results[[time_point]]$DE = de_results[[time_point]]$Full[de_results[[time_point]]$DE_indices,]
+        
+        de_results[[time_point]]$Up_indices = with(de_results[[time_point]]$Full, log2FoldChange < -log2(1.5) & padj < 0.05)
+        de_results[[time_point]]$Up = de_results[[time_point]]$Full[de_results[[time_point]]$Up_indices,]
+        
+        de_results[[time_point]]$Down_indices = with(de_results[[time_point]]$Full, log2FoldChange > log2(1.5) & padj < 0.05)
+        de_results[[time_point]]$Down = de_results[[time_point]]$Full[de_results[[time_point]]$Down_indices,]    
+    }    
+    
+    return(de_results)
+}
+
+# Return a list of DE genes for a given time point and direction (Up, Down,
+# or "DE" for all). Can return eiher ENTREZID (id_type=ENTREZID)or ENSEMBL ids
+# (id_type=ENSEMBLID)
+get_de_genes <- function(de_results, time_point, direction="DE", id_type="ENTREZID") {
+    if(id_type=="ENSEMBLID") {
+        id_type="gene_id"
+    }
+    return(de_results[[time_point]][[direction]][[id_type]])
+}
+
+# Return a data-frame including the fold-changes of all DE genes.
+get_reddy_fc_dataframe <- function(de_results) {
+    all_de = unique(unlist(lapply(de_results, function(x) { c(as.character(x[["Up"]]$ENTREZID), as.character(x[["Down"]]$ENTREZID)) })))
+    all_fc = data.frame(ENTREZID=all_de)
+    for(de_item in names(de_results)) {
+        cur_fc = de_results[[de_item]]$Full
+        all_fc[[de_item]] = cur_fc$log2FoldChange[match(all_fc$ENTREZID, cur_fc$ENTREZID)]
+    }   
+    return(all_fc)
+}
+
