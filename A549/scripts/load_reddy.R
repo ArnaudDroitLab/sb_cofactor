@@ -5,6 +5,8 @@
 
 library(ENCODExplorer)
 library(ef.utils)
+library(GenomicFeatures)
+library(org.Hs.eg.db)
 
 ###############################################################################
 # Functions to load and query GR-binding data.
@@ -46,7 +48,7 @@ load_reddy_gr_binding_consensus <- function(diagnostic_dir=NULL) {
             # Turn off VennDiagram logging.
             futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
         
-            dir.create(file.path(diagnostic_dir, "Venn diagrams of peak calls"))
+            dir.create(file.path(diagnostic_dir, "Venn diagrams of peak calls"), recursive=TRUE, showWarnings=FALSE)
             intersect_venn_plot(intersect_object, file.path(diagnostic_dir, "Venn diagrams of peak calls", paste0(time_point, ".tiff")))
         }
     
@@ -67,25 +69,36 @@ load_reddy_gr_binding_intersect <- function(diagnostic_dir=NULL, TxDb=TxDb.Hsapi
     intersect_all = build_intersect(GRangesList(gr_regions))
     all_regions_annotation = ChIPseeker::annotatePeak(intersect_all$Regions, TxDb=TxDb)
     intersect_all$Regions = GRanges(as.data.frame(all_regions_annotation))
+
+    # Add gene id columns for unified post-processing.
+    if(grepl("^ENSG", intersect_all$Regions$geneId[1])) {
+        # Ids are ENSEMBL. Add ENTREZ ids.
+        intersect_all$Regions$ENSEMBLGENE = intersect_all$Regions$geneId
+        intersect_all$Regions$ENTREZID = mapIds(org.Hs.eg.db, intersect_all$Regions$geneId, column="ENTREZID", keytype="ENSEMBL")
+    } else {
+        # Ids are ENTREZ. Add ENSEMBL ids.
+        intersect_all$Regions$ENSEMBLGENE = mapIds(org.Hs.eg.db, intersect_all$Regions$geneId, column="ENSEMBL", keytype="ENTREZID")
+        intersect_all$Regions$ENTREZID = intersect_all$Regions$geneId
+    }
     
     return(intersect_all)
 }
 
 # Returns a vector of ENTREZ gene ids of genes whose promoter is 
 # GR-bound (1kb from start site) at a given time point.
-get_gr_bound_genes_at_time_point <- function(gr_intersect, gr_time) {
+get_gr_bound_genes_at_time_point <- function(gr_intersect, gr_time, id="geneId") {
     gr_ranges = gr_intersect$Regions[gr_intersect$List[[as.character(gr_time)]]]
     gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
     
     # Get the total number of GR-bound genes
-    gr_genes = gr_promoters$geneId
+    gr_genes = mcols(gr_promoters)[[id]]
     
     return(gr_genes)
 }
 
 # Returns a vector of ENTREZ gene ids of genes whose promoter is 
 # GR-bound at or before a given time point.
-get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time) {
+get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time, id="geneId") {
     # Find all applicable time points
     before_levels = 1:which(as.character(gr_time)==gr_intersect$Name)
     before_times = gr_intersect$Name[before_levels]
@@ -99,18 +112,18 @@ get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time) {
     gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
     
     # Get the total number of GR-bound genes
-    gr_genes = gr_promoters$geneId
+    gr_genes = mcols(gr_promoters)[[id]]
     
     return(gr_genes)
 }
 
 # Returns a vector of ENTREZ gene ids of genes whose promoter is 
 # GR-bound at any time point.
-get_gr_bound_genes_any_time_point <- function(gr_intersect, gr_time) {
+get_gr_bound_genes_any_time_point <- function(gr_intersect, gr_time, id="geneId") {
     gr_promoters = gr_intersect$Regions[gr_intersect$Regions$annotation=="Promoter (<=1kb)"]
     
     # Get the total number of GR-bound genes
-    gr_genes = gr_promoters$geneId
+    gr_genes = mcols(gr_promoters)[[id]]
     
     return(gr_genes)
 }
@@ -172,6 +185,10 @@ load_most_expressed_transcripts <- function() {
 }
 
 load_most_expressed_TxDb <- function() {
+    if(!exists("most_expressed")) {
+        most_expressed = load_most_expressed_transcripts()
+    }
+
     cache_path = "output/analyses/most_expressed_TxDb.RData"
     if(!file.exists(cache_path)) {
         most_expressed_TxDb = makeTxDbFromBiomart(transcript_ids=as.character(most_expressed$ensembl_transcript_id), host="useast.ensembl.org")

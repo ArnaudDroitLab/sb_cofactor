@@ -17,9 +17,11 @@ dir.create(output_dir, recursive=TRUE, showWarnings=FALSE)
 ###############################################################################
 # Load and annotate GR binding data.
 ###############################################################################
+most_expressed_TxDb = load_most_expressed_TxDb()
+seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
 
 # Get GR binding time series
-intersect_all = load_reddy_gr_binding_intersect(diagnostic_dir=output_dir)
+intersect_all = load_reddy_gr_binding_intersect(diagnostic_dir=output_dir, TxDb=most_expressed_TxDb)
 all_gr_regions = intersect_all$Regions
 chip_time_levels = intersect_all$Names
 
@@ -63,10 +65,10 @@ ggplot(gr_proportions, aes(x=Time, fill=Annotation, y=freq*100)) +
 ggsave(file.path(output_dir, "GR-bound regions over time in Reddy dataset (proportions).pdf"))
 
 # Plot the number of genes bound by GR
-gr_bound_genes = data.frame(Gene=unique(all_gr_regions[all_gr_regions$annotation=="Promoter (<=1kb)"]$geneId))
+gr_bound_genes = data.frame(Gene=unique(all_gr_regions[all_gr_regions$annotation=="Promoter (<=1kb)"]$ENTREZID))
 for(i in names(intersect_all$List)) {
     which_regions = all_gr_regions[intersect_all$List[[i]]]
-    gr_bound_genes[[i]] = gr_bound_genes$Gene %in% which_regions[which_regions$annotation=="Promoter (<=1kb)"]$geneId
+    gr_bound_genes[[i]] = gr_bound_genes$Gene %in% which_regions[which_regions$annotation=="Promoter (<=1kb)"]$ENTREZID
 }
 
 # Plot a heatmap of GR-bound genes.
@@ -157,7 +159,7 @@ perform_gr_enrichment <- function(gr_function, time_match_column, label) {
             n_de_genes = length(unique(de_genes))
             
             # Get the list of GR-bound genes.
-            gr_genes = gr_function(intersect_all, gr_time)
+            gr_genes = gr_function(intersect_all, gr_time, "ENTREZID")
             n_gr_genes = length(unique(gr_genes))
             
             # Get the total number of GR-bound de-regulated genes.
