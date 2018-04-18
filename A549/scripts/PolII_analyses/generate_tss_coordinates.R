@@ -40,8 +40,13 @@ gene_coordinates = getBM(attributes=attribute_set,
 transcript_expression = dplyr::left_join(transcript_expression, gene_coordinates, by="ensembl_transcript_id")
                          
 # Filter transcripts to remove those based on poor evidence.
-transcript_expression_evidence = transcript_expression %>% filter(grepl("tsl1", transcript_tsl), !is.na(entrezgene))
-                         
+# Also filter transcripts to remove those on unknown chromosome to spare us a lot of
+# pain down the line when dealing with sequence levels.
+transcript_expression_evidence = transcript_expression %>% filter(grepl("tsl1", transcript_tsl), !is.na(entrezgene), !grepl("CHR_", chromosome_name))
+        
+
+transcript_expression_evidence = transcript_expression_evidence %>% filter(!grepl("CHR_", chromosome_name), !is.na(entrezgene))
+        
 # Finally, of all remaining transcript, choose the most expressed one.
 most_expressed = transcript_expression_evidence %>% group_by(gene_id) %>% dplyr::slice(which.max(TPM))                         
 most_expressed$strand = ifelse(most_expressed$strand == -1, "-", "+")

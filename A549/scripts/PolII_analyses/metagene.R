@@ -10,14 +10,6 @@ source("scripts/load_reddy.R")
 # Define functions for alter analysis.
 ###############################################################################
 
-get_gene_bodies <- function(all_genes, ...) {
-    return(all_genes[all_genes$entrezgene %in% Reduce(intersect, list(...))])
-}
-
-get_tss <- function(all_genes, ..., flank_size=200) {
-    return(GenomicRanges::promoters(get_gene_bodies(all_genes, ...), upstream=flank_size, downstream=flank_size))
-}
-
 # Function for subsetting the metagene data-frame and associating
 # sample conditions to profiles.
 subset_metagene_df <- function(region_name, antibody=NA) {
@@ -134,8 +126,11 @@ design[design==3] = 2
 # Define regions over which metagenes will be plotted.
 ###############################################################################
 
-most_expressed = read.table("output/analyses/tss_gene_coordinates.txt", sep="\t", header=TRUE)
-all_genes = GRanges(most_expressed)
+most_expressed = load_most_expressed_transcripts()
+most_expressed_TxDb = load_most_expressed_TxDb()
+seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
+
+all_genes = most_expressed
 
 # Remove all regions not on the main chromosomes.
 all_genes = all_genes[!grepl("_", seqnames(all_genes))]
@@ -150,8 +145,10 @@ all_TSS = GenomicRanges::promoters(all_genes, upstream=1000, downstream=1000)
 gr_regions = load_reddy_gr_binding_consensus()
 
 # Determine which genes overlap GR regions.
-annotated_gr = ChIPseeker::annotatePeak(gr_regions[["30 minutes"]], TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
-bound_gene_ids = subset(as.data.frame(annotated_gr), annotation=="Promoter (<=1kb)")$geneId
+annotated_gr = ChIPseeker::annotatePeak(gr_regions[["30 minutes"]], TxDb=most_expressed_TxDb)
+annotated_gr_df = as.data.frame(annotated_gr)
+annotated_gr_df$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(annotated_gr_df$geneId), keytype="ENSEMBL", column="ENTREZID")
+bound_gene_ids = subset(annotated_gr_df, annotation=="Promoter (<=1kb)")$ENTREZID
 unbound_gene_ids = setdiff(all_genes$entrezgene, bound_gene_ids)
 
 # Determine differentially expressed genes at 1 hour.
@@ -246,24 +243,24 @@ for(region_name in names(region_list)) {
 }
 
 # Make combined plots comparing Upregulated to Downregulated genes.
-for(region_type in c("GeneBodies", "TSS")) {
-    color_palette = c(Downregulated="#40C4FF", Upregulated="#FF8A80")
-    do_meta_ggplot_double(region_name1=paste0("UpRegulated", region_type), region_name2=paste0("DownRegulated", region_type),
-                          label1="Upregulated", label2="Downregulated", 
-                          facet_var="sh_name", color_palette=color_palette, 
-                          file_label="DE direction", facet_formula=sh_name~Antibody*Condition,
-                          group_label=region_type)
-}
-
-# Make combined plots comparing GR-bound genes to those not bound by GR.
-for(region_type in c("GeneBodies", "TSS")) {
-    color_palette = c("GR-Unbound"="#40C4FF", "GR-Bound"="#FF8A80")
-    do_meta_ggplot_double(region_name1=paste0("Bound", region_type), region_name2=paste0("Unbound", region_type),
-                          label1="GR-Bound", label2="GR-Unbound", 
-                          facet_var="sh_name", color_palette=color_palette, 
-                          file_label="GR binding", facet_formula=sh_name~Antibody*Condition,
-                          group_label=region_type)
-}
+#for(region_type in c("GeneBodies", "TSS")) {
+#    color_palette = c(Downregulated="#40C4FF", Upregulated="#FF8A80")
+#    do_meta_ggplot_double(region_name1=paste0("UpRegulated", region_type), region_name2=paste0("DownRegulated", region_type),
+#                          label1="Upregulated", label2="Downregulated", 
+#                          facet_var="sh_name", color_palette=color_palette, 
+#                          file_label="DE direction", facet_formula=sh_name~Antibody*Condition,
+#                          group_label=region_type)
+#}
+#
+## Make combined plots comparing GR-bound genes to those not bound by GR.
+#for(region_type in c("GeneBodies", "TSS")) {
+#    color_palette = c("GR-Unbound"="#40C4FF", "GR-Bound"="#FF8A80")
+#    do_meta_ggplot_double(region_name1=paste0("Bound", region_type), region_name2=paste0("Unbound", region_type),
+#                          label1="GR-Bound", label2="GR-Unbound", 
+#                          facet_var="sh_name", color_palette=color_palette, 
+#                          file_label="GR binding", facet_formula=sh_name~Antibody*Condition,
+#                          group_label=region_type)
+#}
 
 # Compare GR-Bound*Direction interaction.
 for(antibody in c("PolII", "PolII-ser2")) {

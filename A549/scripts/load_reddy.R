@@ -60,12 +60,12 @@ load_reddy_gr_binding_consensus <- function(diagnostic_dir=NULL) {
 # Loads GR-binding data the same way load_reddy_gr_binding_consensus does,
 # but create an intersection object out of all binding regions and annotate
 # them.
-load_reddy_gr_binding_intersect <- function(diagnostic_dir=NULL) {
+load_reddy_gr_binding_intersect <- function(diagnostic_dir=NULL, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene) {
     gr_regions = load_reddy_gr_binding_consensus(diagnostic_dir)
 
     # Get ENCODE accessions for GR binding time series
     intersect_all = build_intersect(GRangesList(gr_regions))
-    all_regions_annotation = ChIPseeker::annotatePeak(intersect_all$Regions, TxDb=TxDb.Hsapiens.UCSC.hg38.knownGene)
+    all_regions_annotation = ChIPseeker::annotatePeak(intersect_all$Regions, TxDb=TxDb)
     intersect_all$Regions = GRanges(as.data.frame(all_regions_annotation))
     
     return(intersect_all)
@@ -164,5 +164,30 @@ get_reddy_fc_dataframe <- function(de_results) {
         all_fc[[de_item]] = cur_fc$log2FoldChange[match(all_fc$ENTREZID, cur_fc$ENTREZID)]
     }   
     return(all_fc)
+}
+
+
+load_most_expressed_transcripts <- function() {
+    return(GRanges(read.table("output/analyses/tss_gene_coordinates.txt", sep="\t", header=TRUE)))
+}
+
+load_most_expressed_TxDb <- function() {
+    cache_path = "output/analyses/most_expressed_TxDb.RData"
+    if(!file.exists(cache_path)) {
+        most_expressed_TxDb = makeTxDbFromBiomart(transcript_ids=as.character(most_expressed$ensembl_transcript_id), host="useast.ensembl.org")
+        AnnotationDbi::saveDb(most_expressed_TxDb, file=cache_path)
+    } else {
+        most_expressed_TxDb = AnnotationDbi::loadDb(cache_path)
+    }
+    
+    return(most_expressed_TxDb)
+}
+
+get_gene_bodies <- function(all_genes, ..., gene_id="entrezgene") {
+    return(all_genes[mcols(all_genes)[[gene_id]] %in% Reduce(intersect, list(...))])
+}
+
+get_tss <- function(all_genes, ..., flank_size=200) {
+    return(GenomicRanges::promoters(get_gene_bodies(all_genes, ...), upstream=flank_size, downstream=flank_size))
 }
 
