@@ -64,11 +64,31 @@ ggplot(gr_proportions, aes(x=Time, fill=Annotation, y=freq*100)) +
     theme(axis.text.x = element_text(angle = 45, hjust=1, vjust=1), plot.title = element_text(hjust=0.5))
 ggsave(file.path(output_dir, "GR-bound regions over time in Reddy dataset (proportions).pdf"))
 
-# Plot the number of genes bound by GR
-gr_bound_genes = data.frame(Gene=unique(all_gr_regions[all_gr_regions$annotation=="Promoter (<=1kb)"]$ENTREZID))
+# Zoom in on regions defined as "Promoter" (Everything within 3K of TSS)
+gr_promoter_type_df = data.frame()
 for(i in names(intersect_all$List)) {
     which_regions = all_gr_regions[intersect_all$List[[i]]]
-    gr_bound_genes[[i]] = gr_bound_genes$Gene %in% which_regions[which_regions$annotation=="Promoter (<=1kb)"]$ENTREZID
+    which_regions = which_regions[grepl("Promoter", which_regions$annotation)]
+    row_df = data.frame(Time=i, Annotation=which_regions$annotation)
+    gr_promoter_type_df = rbind(gr_promoter_type_df, row_df)                    
+                        
+}
+gr_promoter_type_df$Time = factor(gr_promoter_type_df$Time, levels=chip_time_levels)
+
+# Plot GR promoter type in absolute number of regions.
+ggplot(gr_promoter_type_df, aes(x=Time, fill=Annotation)) +
+    geom_bar(color="black") +
+    labs(x="Time", y="Number of identified GR-binding sites", title="GR-binding on promoters over time in Reddy dataset") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1, vjust=1), plot.title = element_text(hjust=0.5))
+ggsave(file.path(output_dir, "GR-bound promoters over time in Reddy dataset (absolute).pdf"))
+    
+
+# Plot the number of genes bound by GR
+gr_bound_genes = data.frame(Gene=unique(all_gr_regions[grepl("Promoter", all_gr_regions$annotation)]$ENTREZID))
+for(i in names(intersect_all$List)) {
+    which_regions = all_gr_regions[intersect_all$List[[i]]]
+    gr_bound_genes[[i]] = gr_bound_genes$Gene %in% which_regions[grepl("Promoter", which_regions$annotation)]$ENTREZID
 }
 
 # Plot a heatmap of GR-bound genes.
@@ -159,7 +179,7 @@ perform_gr_enrichment <- function(gr_function, time_match_column, label) {
             n_de_genes = length(unique(de_genes))
             
             # Get the list of GR-bound genes.
-            gr_genes = gr_function(intersect_all, gr_time, "ENTREZID")
+            gr_genes = gr_function(intersect_all, gr_time, "ENTREZID", 3000)
             n_gr_genes = length(unique(gr_genes))
             
             # Get the total number of GR-bound de-regulated genes.

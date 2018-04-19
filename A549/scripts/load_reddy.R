@@ -86,9 +86,9 @@ load_reddy_gr_binding_intersect <- function(diagnostic_dir=NULL, TxDb=TxDb.Hsapi
 
 # Returns a vector of ENTREZ gene ids of genes whose promoter is 
 # GR-bound (1kb from start site) at a given time point.
-get_gr_bound_genes_at_time_point <- function(gr_intersect, gr_time, id="geneId") {
+get_gr_bound_genes_at_time_point <- function(gr_intersect, gr_time, id="geneId", distance=1000) {
     gr_ranges = gr_intersect$Regions[gr_intersect$List[[as.character(gr_time)]]]
-    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
+    gr_promoters = gr_ranges[gr_ranges$distanceFromTSS <= distance]
     
     # Get the total number of GR-bound genes
     gr_genes = mcols(gr_promoters)[[id]]
@@ -98,7 +98,7 @@ get_gr_bound_genes_at_time_point <- function(gr_intersect, gr_time, id="geneId")
 
 # Returns a vector of ENTREZ gene ids of genes whose promoter is 
 # GR-bound at or before a given time point.
-get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time, id="geneId") {
+get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time, id="geneId", distance=1000) {
     # Find all applicable time points
     before_levels = 1:which(as.character(gr_time)==gr_intersect$Name)
     before_times = gr_intersect$Name[before_levels]
@@ -109,7 +109,7 @@ get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time, id
     }
     
     gr_ranges = gr_intersect$Regions[unique(before_regions)]
-    gr_promoters = gr_ranges[gr_ranges$annotation=="Promoter (<=1kb)"]
+    gr_promoters = gr_ranges[gr_ranges$distanceFromTSS <= distance]
     
     # Get the total number of GR-bound genes
     gr_genes = mcols(gr_promoters)[[id]]
@@ -119,8 +119,8 @@ get_gr_bound_genes_at_or_before_time_point <- function(gr_intersect, gr_time, id
 
 # Returns a vector of ENTREZ gene ids of genes whose promoter is 
 # GR-bound at any time point.
-get_gr_bound_genes_any_time_point <- function(gr_intersect, gr_time, id="geneId") {
-    gr_promoters = gr_intersect$Regions[gr_intersect$Regions$annotation=="Promoter (<=1kb)"]
+get_gr_bound_genes_any_time_point <- function(gr_intersect, gr_time, id="geneId", distance=1000) {
+    gr_promoters = gr_intersect$Regions[gr_intersect$Regions$distanceFromTSS <= distance]
     
     # Get the total number of GR-bound genes
     gr_genes = mcols(gr_promoters)[[id]]

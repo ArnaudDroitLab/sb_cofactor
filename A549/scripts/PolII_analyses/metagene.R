@@ -148,7 +148,7 @@ gr_regions = load_reddy_gr_binding_consensus()
 annotated_gr = ChIPseeker::annotatePeak(gr_regions[["30 minutes"]], TxDb=most_expressed_TxDb)
 annotated_gr_df = as.data.frame(annotated_gr)
 annotated_gr_df$ENTREZID = mapIds(org.Hs.eg.db, keys=as.character(annotated_gr_df$geneId), keytype="ENSEMBL", column="ENTREZID")
-bound_gene_ids = subset(annotated_gr_df, annotation=="Promoter (<=1kb)")$ENTREZID
+bound_gene_ids = subset(annotated_gr_df, distanceToTSS <= 3000)$ENTREZID
 unbound_gene_ids = setdiff(all_genes$entrezgene, bound_gene_ids)
 
 # Determine differentially expressed genes at 1 hour.
