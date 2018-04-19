@@ -31,6 +31,16 @@ subset_metagene_df <- function(region_name, antibody=NA) {
     return(sh_subset)
 }
 
+determine_bp_per_bin <- function(region_name, bin_number=100) {
+    region_widths = width(metagenes[[region_name]]$get_regions[[1]])
+    if(all(region_widths == mean(region_widths))) {
+        # All regions are the same length.
+        return(region_widths[1] / bin_number)
+    } else {
+        return(NA)
+    }
+}
+
 # Function for plotting the sh effect on a group of regions.
 plot_sh_effect <- function(region_name) {
     color_palette = c(shCTRL.1="#40C4FF", shCTRL.2="#00B0FF", shNIPBL.3="#FF8A80", shNIPBL.5="#FF5252")
@@ -44,7 +54,8 @@ plot_dex_effect <- function(region_name) {
 
 do_meta_ggplot_single <- function(region_name, group_var, facet_var, color_palette, file_label, antibody=NA) {
     sh_subset = subset_metagene_df(region_name, antibody)
-    do_meta_ggplot_generic(sh_subset, region_name, group_var, facet_var, color_palette, file_label, FacetVar~Antibody)
+    bp_per_bin = determine_bp_per_bin(region_name) 
+    do_meta_ggplot_generic(sh_subset, region_name, group_var, facet_var, color_palette, file_label, FacetVar~Antibody, bp_per_bin=bp_per_bin)
 }
 
 do_meta_ggplot_double <- function(region_name1, region_name2, label1, label2, facet_var, color_palette, file_label, facet_formula, group_label, antibody=NA) {
@@ -54,7 +65,8 @@ do_meta_ggplot_double <- function(region_name1, region_name2, label1, label2, fa
     subset_2$RegionName = label2
     
     sh_subset = rbind(subset_1, subset_2)
-    do_meta_ggplot_generic(sh_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula)
+    bp_per_bin = determine_bp_per_bin(region_name1)    
+    do_meta_ggplot_generic(sh_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula, bp_per_bin=bp_per_bin)
 }
 
 do_meta_ggplot_any <- function(name_list, facet_var, color_palette, file_label, facet_formula, group_label, antibody="both") {
@@ -65,16 +77,17 @@ do_meta_ggplot_any <- function(name_list, facet_var, color_palette, file_label, 
         all_subset = rbind(all_subset, this_subset)
     }
 
-    do_meta_ggplot_generic(all_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula)
+    bp_per_bin = determine_bp_per_bin(name_list[[1]])
+    do_meta_ggplot_generic(all_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula, bp_per_bin=bp_per_bin)
 }
 
 
-do_meta_ggplot_generic <- function(sh_subset, region_label, group_var, facet_var, color_palette, file_label, facet_formula) {
+do_meta_ggplot_generic <- function(sh_subset, region_label, group_var, facet_var, color_palette, file_label, facet_formula, bp_per_bin=4) {
     sh_subset$GroupVar = sh_subset[[group_var]]
     sh_subset$FacetVar = sh_subset[[facet_var]]
     
     if(grepl("TSS", region_label)) {
-        sh_subset$bin = (sh_subset$bin - 50) * 4
+        sh_subset$bin = (sh_subset$bin - 50) * bp_per_bin
         xlabel = "Distance from TSS (bp)"
     } else {
         xlabel = "Relative distance from TSS (0) to TES (100)"
