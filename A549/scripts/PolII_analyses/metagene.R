@@ -32,7 +32,7 @@ subset_metagene_df <- function(region_name, antibody=NA) {
 }
 
 determine_bp_per_bin <- function(region_name, bin_number=100) {
-    region_widths = width(metagenes[[region_name]]$get_regions[[1]])
+    region_widths = width(metagenes[[region_name]]$get_regions()[[1]])
     if(all(region_widths == mean(region_widths))) {
         # All regions are the same length.
         return(region_widths[1] / bin_number)
@@ -69,7 +69,7 @@ do_meta_ggplot_double <- function(region_name1, region_name2, label1, label2, fa
     do_meta_ggplot_generic(sh_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula, bp_per_bin=bp_per_bin)
 }
 
-do_meta_ggplot_any <- function(name_list, facet_var, color_palette, file_label, facet_formula, group_label, antibody="both") {
+do_meta_ggplot_any <- function(name_list, facet_var, color_palette, file_label, facet_formula, group_label, antibody="both", group_var="RegionName") {
     all_subset = data.frame()
     for(name_index in 1:length(name_list)) {
         this_subset = subset_metagene_df(name_list[[name_index]], antibody)
@@ -78,7 +78,7 @@ do_meta_ggplot_any <- function(name_list, facet_var, color_palette, file_label, 
     }
 
     bp_per_bin = determine_bp_per_bin(name_list[[1]])
-    do_meta_ggplot_generic(all_subset, group_label, "RegionName", facet_var, color_palette, file_label, facet_formula, bp_per_bin=bp_per_bin)
+    do_meta_ggplot_generic(all_subset, group_label, group_var, facet_var, color_palette, file_label, facet_formula, bp_per_bin=bp_per_bin)
 }
 
 
@@ -301,3 +301,16 @@ do_meta_ggplot_any(list("ACTB"="ACTBTSS"), facet_var="sh_name", color_palette=c(
                    file_label="ACTB", facet_formula=sh_name~Condition,
                    group_label="ACTB", antibody="PolII")        
                    
+
+for(antibody in c("PolII", "PolII-ser2")) {
+    for(region_type in c("TSS", "GeneBodies")) {
+        region_list = list("GR-Bound"   = paste0("UpRegulatedBound", region_type),
+                           "GR-Unbound" = paste0("UpRegulatedUnbound", region_type),
+                           "GR-Bound"   = paste0("DownRegulatedBound", region_type),
+                           "GR-Unbound" = paste0("DownRegulatedUnbound", region_type))                   
+        color_palette = c(shCTRL.1="#40C4FF", shCTRL.2="#00B0FF", shNIPBL.3="#FF8A80", shNIPBL.5="#FF5252")
+        do_meta_ggplot_any(region_list, facet_var="region", color_palette=color_palette,
+                           file_label=paste0("Steve Request ", antibody, " ", region_type), facet_formula=Condition~Bound*Direction,
+                           group_label="sh", antibody=antibody, group_var="sh_name")        
+    }
+}
