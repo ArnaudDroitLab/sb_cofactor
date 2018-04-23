@@ -39,7 +39,7 @@ up_gene_ids = subset(de_results, log2FoldChange <= -log2(1.5) & padj <= 0.05)$EN
 down_gene_ids = subset(de_results, log2FoldChange >= log2(1.5) & padj <= 0.05)$ENTREZID
 
 region_list = list(UpRegulatedTSS=get_tss(all_genes, up_gene_ids),
-				   DownRegulatedTSS=get_tss(all_genes, down_gene_ids)
+				   DownRegulatedTSS=get_tss(all_genes, down_gene_ids))
 
 ###############################################################################
 # Generate the metagene object.
