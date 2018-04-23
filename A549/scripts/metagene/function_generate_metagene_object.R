@@ -2,12 +2,6 @@ library(knitr)
 library(metagene)
 
 ########################################
-# Define directory
-########################################
-bam_dir <- "output/chip-pipeline-PolII-GRCh38/alignment"
-output_dir <- "output/chip-pipeline-PolII-GRCh38/metagene_polII"
-
-########################################
 # Define secondary functions
 ########################################
 
