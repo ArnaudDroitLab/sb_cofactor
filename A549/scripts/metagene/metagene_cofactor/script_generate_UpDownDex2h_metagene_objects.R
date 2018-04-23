@@ -3,7 +3,7 @@ library(dplyr)
 library(org.Hs.eg.db)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
-source("scripts/metagene/metagene_cofactor/function_generate_metagene_object.R")
+source("scripts/metagene/function_generate_metagene_object.R")
 source("scripts/load_reddy.R")
 
 ########################################
@@ -48,7 +48,7 @@ region_list = list(UpRegulatedTSS=get_tss(all_genes, up_gene_ids),
 cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
 for (cofactor in cofactor_list) {
-	generate_metagene_object(cofactor, region_list)
+	generate_metagene_object(cofactor, region_list, bin=200)
 }
 
 

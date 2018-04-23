@@ -52,14 +52,14 @@ generate_region_names <- function(region_list) {
 # Main function
 ########################################
 
-generate_metagene_object <- function(cofactor, region_list) {
+generate_metagene_object <- function(cofactor, region_list, bin) {
 	design <- generate_design(cofactor)
 	
 	mg <- metagene$new(regions = region_list, bam_files = design$Samples, assay="chipseq",
 					   force_seqlevels = TRUE, verbose = TRUE, cores = 4)
 	message("DONE\t", cofactor, " | metagene object")
 	
-	mg$produce_table(design = design, normalization="RPM", flip_regions=TRUE, bin_count=100)
+	mg$produce_table(design = design, normalization="RPM", flip_regions=TRUE, bin_count=bin)
 	message("DONE\t", cofactor, " | metagene table")
 	
 	mg$produce_data_frame()
