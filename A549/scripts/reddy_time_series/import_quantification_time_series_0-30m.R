@@ -2,7 +2,7 @@ library(tidyverse)
 library(stringr)
 library(tools)
 
-files <- dir("input", pattern = "ENCFF", full.names = TRUE)
+files <- dir("input/time_series_0-30m_tsv", pattern = "ENCFF", full.names = TRUE)
 
 import_counts <- function(filename) {
     n <- file_path_sans_ext(filename) %>% basename
@@ -13,6 +13,19 @@ import_counts <- function(filename) {
     colnames(x) <- c("gene_id", n)
     x
 }
-raw_counts <- Reduce("left_join", map(files, import_counts))
-dir_results <- "results/a549_dex_time_points_0-30m"
+raw_counts_II <- Reduce("left_join", map(files, import_counts))
+dir_results <- "results/a549_dex_time_points"
+
+#####
+# Import raw counts I
+
+rac_counts_1
+
+
+
+
+
+
+
+
 write_csv(raw_counts, paste0(dir_results, "/raw_counts_II.csv"))
