@@ -3,7 +3,13 @@ library(dplyr)
 library(org.Hs.eg.db)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
-source("scripts/metagene_polII/function_generate_metagene_object.R")
+source("metagene_cofactor/function_generate_metagene_object.R")
+
+########################################
+# Define directory
+########################################
+bam_dir <- "output/chip-pipeline-GRCh38/alignment"
+output_dir <- "output/chip-pipeline-GRCh38/metagene_cofactor"
 
 ###############################################################################
 # Define regions over which metagenes will be plotted.
@@ -25,13 +31,10 @@ region_list = list(AllTSS = all_TSS)
 # Generate the metagene object.
 ###############################################################################
 
-target_list <- c("POL2-ser2", "POL2", "WCE")
-sh_list <-  c("shCTRL-1", "shCTRL-2", "shNIPBL-3", "shNIPBL-5")
+cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
-for (target in target_list) {
-	for (sh in sh_list) {
-	generate_metagene_object(target, sh, region_list)
-	}
+for (cofactor in cofactor_list) {
+	generate_metagene_object(cofactor, region_list)
 }
 
 
