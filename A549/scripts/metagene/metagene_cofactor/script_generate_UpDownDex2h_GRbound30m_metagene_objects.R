@@ -69,6 +69,7 @@ region_list = list(UpRegulatedBoundTSS=get_tss(all_genes, up_gene_ids, bound_gen
 cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
 for (cofactor in cofactor_list) {
+  message("##########     ", cofactor, "     ##########")
 	generate_metagene_object(cofactor, region_list, bin=200)
 }
 
