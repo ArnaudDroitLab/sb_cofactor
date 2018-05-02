@@ -6,7 +6,7 @@ library(EnsDb.Hsapiens.v86)
 design <- read_csv("input/sample_sheet_time_series_0-30m.csv") %>%
     dplyr::select(file_accession, time_point)
 
-raw_counts <- read_csv("results/a549_dex_time_points_0-30m/raw_counts_II.csv")
+raw_counts <- read_csv("results/a549_dex_time_points/raw_counts_new.csv")
 m <- dplyr::select(raw_counts, -gene_id) %>% as.matrix
 rownames(m) <- raw_counts$gene_id
 
@@ -49,4 +49,4 @@ de_df <- map(de_res, get_df)
 map_int(de_res, ~ dplyr::filter(as.data.frame(.x), padj <= 0.05) %>% nrow)
 map_int(de_df, ~ dplyr::filter(.x, padj <= 0.05) %>% nrow)
 
-walk(names(de_df), ~ write_csv(de_df[[.x]], paste0("results/a549_dex_time_points_0-30m",.x)))
+walk(names(de_df), ~ write_csv(de_df[[.x]], paste0("results/a549_dex_time_points/",.x)))
