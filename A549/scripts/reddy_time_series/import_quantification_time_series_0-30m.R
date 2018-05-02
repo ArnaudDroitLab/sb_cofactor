@@ -14,18 +14,15 @@ import_counts <- function(filename) {
     x
 }
 raw_counts_II <- Reduce("left_join", map(files, import_counts))
-dir_results <- "results/a549_dex_time_points"
+
 
 #####
 # Import raw counts I
+raw_counts_I <- read_csv("results/a549_dex_time_points/raw_counts.csv")
 
-rac_counts_1
-
-
-
-
+# Merge raw counts I and II
+raw_counts <- left_join(raw_counts_I, raw_counts_II)
 
 
-
-
-write_csv(raw_counts, paste0(dir_results, "/raw_counts_II.csv"))
+dir_results <- "results/a549_dex_time_points"
+write_csv(raw_counts, paste0(dir_results, "/raw_counts_new.csv"))
