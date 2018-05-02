@@ -11,10 +11,10 @@ cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
 output_dir <- "output/chip-pipeline-GRCh38/metagene/metagene_cofactor"
 
-colorReplicate = wes_palette(n=2, name="Cavalcanti1")
+colorReplicate = wes_palette(n=3, name="Cavalcanti1")
 
 for (cofactor in cofactor_list) {
-	metagene_obj_name <- file.path(output_dir, paste0(cofactor, "_UpRegulatedBoundTSS_UpRegulatedUnboundTSS_DownRegulatedBoundTSS_DownRegulatedUnboundTSS", "_metagene_obj.RData"))
+	metagene_obj_name <- file.path(output_dir, paste0(cofactor, "_UpRegulatedBoundTSS_UpRegulatedUnboundTSS_DownRegulatedBoundTSS_DownRegulatedUnboundTSS_UpRegulatedAllGRTSS_DownRegulatedAllGRTSS", "_metagene_obj.RData"))
 	load(metagene_obj_name)
 	
 	mg_df <- mg$get_data_frame()
@@ -22,7 +22,8 @@ for (cofactor in cofactor_list) {
 	mg_df$Replicate <- as.factor(ifelse(grepl("rep1", mg_df$group), "Replicate 1", "Replicate 2"))
 	mg_df$Cofactor <- as.factor(cofactor)
 	mg_df$Direction <- as.factor(ifelse(grepl("UpRegulated", mg_df$group), "UpRegulatedTSS", "DownRegulatedTSS"))
-	mg_df$GR <- as.factor(ifelse(grepl("Bound", mg_df$group), "GR-Bound", "GR-Unbound"))
+	mg_df$GR <- as.factor(ifelse(grepl("Bound", mg_df$group), "GR-Bound",
+								 ifelse(grepl("Unbound", mg_df$group), "GR-UnBound", "GR-All")))
 	
 	title <- paste0(cofactor, "_DEX_2hours_GRBound_30min")
 	
@@ -46,7 +47,7 @@ for (cofactor in cofactor_list) {
 		ylab("Mean coverage (RPM)") +
 		facet_grid(Cofactor*Replicate ~ Direction*Condition)
 	
-	output_filename <- file.path(output_dir, paste0(cofactor, "_DEX_2hours_GRBound_30min_w1000_metagene.pdf"))
+	output_filename <- file.path(output_dir, paste0(cofactor, "_DEX_2hours_GRBound_30min_w1000_metagene_withAllGR.pdf"))
 	
 	ggsave(output_filename, width = 14, height = 9, units = "in")
 	message("Saved in ", output_filename)

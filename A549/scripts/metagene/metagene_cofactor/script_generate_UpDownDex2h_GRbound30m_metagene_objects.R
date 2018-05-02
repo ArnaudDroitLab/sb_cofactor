@@ -60,7 +60,9 @@ down_unbound_gene_ids = intersect(down_gene_ids, unbound_gene_ids)
 region_list = list(UpRegulatedBoundTSS=get_tss(all_genes, up_gene_ids, bound_gene_ids, flank_size=500),
                    UpRegulatedUnboundTSS=get_tss(all_genes, up_gene_ids, unbound_gene_ids, flank_size=500),
                    DownRegulatedBoundTSS=get_tss(all_genes, down_gene_ids, bound_gene_ids, flank_size=500),
-                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids, flank_size=500))
+                   DownRegulatedUnboundTSS=get_tss(all_genes, down_gene_ids, unbound_gene_ids, flank_size=500),
+				   UpRegulatedAllGRTSS=get_tss(all_genes, up_gene_ids, annotated_gr_df$ENTREZID, flank_size=500),
+				   DownRegulatedAllGRTSS=get_tss(all_genes, down_gene_ids, annotated_gr_df$ENTREZID, flank_size=500))
 
 ###############################################################################
 # Generate the metagene object.
