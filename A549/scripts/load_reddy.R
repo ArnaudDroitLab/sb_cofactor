@@ -201,10 +201,18 @@ load_most_expressed_TxDb <- function() {
 }
 
 get_gene_bodies <- function(all_genes, ..., gene_id="entrezgene") {
-    return(all_genes[mcols(all_genes)[[gene_id]] %in% Reduce(intersect, list(...))])
+    if(length(list(...)) == 0) {
+        return(all_genes)
+    } else {
+        return(all_genes[mcols(all_genes)[[gene_id]] %in% Reduce(intersect, list(...))])
+    }
 }
 
 get_tss <- function(all_genes, ..., flank_size=200) {
     return(GenomicRanges::promoters(get_gene_bodies(all_genes, ...), upstream=flank_size, downstream=flank_size))
 }
 
+# Get GR peaks close to gene list
+get_peak_near_gene <- function() {
+
+}
