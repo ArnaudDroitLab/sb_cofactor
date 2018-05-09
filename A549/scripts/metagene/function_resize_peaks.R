@@ -11,7 +11,7 @@ resize_broad_peaks <- function(granges.obj, window) {
 		w <- width(ranges(granges.obj[i]))
 		if (w > window) {
 			ranges(granges.obj[i]) <- resize(ranges(granges.obj[i]), width = window, fix="center")
-			message("Region number ", i, " / ", l, " : ", w, " nt", " --» resized to 500 nt")
+			message("Region number ", i, " / ", l, " : ", w, " nt", " --» resized to ", window, " nt")
 		}
 		else {
 			message("Region number ", i, " / ", l, " : ", w, " nt")
