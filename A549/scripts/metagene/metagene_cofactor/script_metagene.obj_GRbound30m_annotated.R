@@ -5,6 +5,7 @@ library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(plotly)
 
 source("scripts/metagene/function_generate_metagene_object.R")
+source("scripts/metagene/function_generate_WCE_metagene_object.R")
 source("scripts/metagene/function_resize_peaks.R")
 source("scripts/load_reddy.R")
 

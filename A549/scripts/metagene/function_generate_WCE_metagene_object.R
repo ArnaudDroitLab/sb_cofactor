@@ -12,7 +12,7 @@ generate_WCE_design <- function() {
 	CTRL_WCE_rep2 <- c(0, 0, 0, 1, 0)
 	CTRL_WCE_rep3 <- c(0, 0, 0, 0, 1)
 	
-	design <- cbind(Samples, DEX_WCE_rep1, DEX_WCE_rep2, CTRL_WCE_rep1, CTRL_WCE_rep2, CTRL_WCE_rep3)
+	design <- data.frame(Samples, DEX_WCE_rep1, DEX_WCE_rep2, CTRL_WCE_rep1, CTRL_WCE_rep2, CTRL_WCE_rep3)
 	
 	print(kable(design))
 	
