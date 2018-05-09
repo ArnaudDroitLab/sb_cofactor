@@ -7,9 +7,7 @@ library(wesanderson)
 # Generate metagene plots 
 ###############################################################################
 
-# cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
-
-cofactor_list <- c("MED1")
+cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
 output_dir <- "output/chip-pipeline-GRCh38/metagene/metagene_cofactor"
 
@@ -38,11 +36,11 @@ for (cofactor in cofactor_list) {
 		theme(legend.position = "bottom",
 			  legend.direction = "vertical") +
 		scale_x_continuous(breaks = seq(0, 200, 50),
-						   labels = c(c(-0.5, -0.25), "TSS", c(0.25, 0.5))) +
+						   labels = c(-300, -150, 0, 150, 300)) +
 		theme(axis.text.x = element_text(size=10),
 			  axis.text.y = element_text(size=10)) +
 		ggtitle(title) +
-		xlab("Position from TSS (kb)") +
+		xlab("Position (bp)") +
 		ylab("Mean coverage (RPM)") +
 		facet_grid(Cofactor ~ Condition)
 	
