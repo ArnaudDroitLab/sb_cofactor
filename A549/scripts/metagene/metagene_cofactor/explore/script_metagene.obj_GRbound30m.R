@@ -33,7 +33,7 @@ region_list = list(GR_Regions_30m = gr_regions_30)
 
 # cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
-cofactor_list <- c("BRD4", "CDK9")
+cofactor_list <- c("MED1")
 	
 for (cofactor in cofactor_list) {
 	message("##########     ", cofactor, "     ##########")

@@ -9,7 +9,7 @@ library(wesanderson)
 
 # cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
-cofactor_list <- c("BRD4", "CDK9")
+cofactor_list <- c("MED1")
 
 output_dir <- "output/chip-pipeline-GRCh38/metagene/metagene_cofactor"
 
