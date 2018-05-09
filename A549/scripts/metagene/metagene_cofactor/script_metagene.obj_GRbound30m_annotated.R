@@ -77,9 +77,9 @@ generate_WCE_metagene_object(region_list, bin=200)
 
 # cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
-# cofactor_list <- c("BRD4")
-# 	
-# for (cofactor in cofactor_list) {
-# 	message("##########     ", cofactor, "     ##########")
-# 	generate_metagene_object(cofactor, region_list, bin=200)
-# }
+cofactor_list <- c("CDK9", "NIPBL", "SMC1A", "MED1")
+
+for (cofactor in cofactor_list) {
+ 	message("##########     ", cofactor, "     ##########")
+ 	generate_metagene_object(cofactor, region_list, bin=200)
+}
