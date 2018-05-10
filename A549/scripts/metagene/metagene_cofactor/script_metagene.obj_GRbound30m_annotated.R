@@ -1,3 +1,5 @@
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+
 library(knitr)
 library(dplyr)
 library(org.Hs.eg.db)
@@ -73,11 +75,11 @@ region_list = list(GR30_3utr = gr_regions_30_annotated_df_3utr,
 # Generate the metagene object.
 ###############################################################################
 
-generate_WCE_metagene_object(region_list, bin=200)
+# generate_WCE_metagene_object(region_list, bin=200)
 
 # cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
-cofactor_list <- c("CDK9", "NIPBL", "SMC1A", "MED1")
+cofactor_list <- c("MED1")
 
 for (cofactor in cofactor_list) {
  	message("##########     ", cofactor, "     ##########")

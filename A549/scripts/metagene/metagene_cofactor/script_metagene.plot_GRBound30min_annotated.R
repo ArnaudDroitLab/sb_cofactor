@@ -18,7 +18,7 @@ wce_df <- mg$get_data_frame()
 
 #cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
 
-cofactor_list <- c("BRD4")
+cofactor_list <- c("MED1")
 
 for (cofactor in cofactor_list) {
 	metagene_obj_name <- file.path(output_dir, paste0(cofactor, "_GR30_3utr_GR30_5utr_GR30_distalintergenic_GR30_downstream_GR30_exon_GR30_intron_GR30_promoter", "_metagene_obj.RData"))
