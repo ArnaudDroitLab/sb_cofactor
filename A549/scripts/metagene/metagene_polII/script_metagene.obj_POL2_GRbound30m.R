@@ -3,7 +3,7 @@ library(dplyr)
 library(org.Hs.eg.db)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
-source("scripts/metagene_polII/function_generate_metagene_pol2_object.R")
+source("scripts/metagene/metagene_polII/function_generate_metagene_pol2_object.R")
 source("scripts/metagene/function_resize_peaks.R")
 source("scripts/load_reddy.R")
 
