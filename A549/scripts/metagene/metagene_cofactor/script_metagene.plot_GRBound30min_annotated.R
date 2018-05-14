@@ -1,7 +1,7 @@
-# setwd("/home/chris/Bureau/explore_metagene/")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 library(plotly)
-library(wesanderson)
+# library(wesanderson)
 
 ###############################################################################
 # Generate metagene plots 
@@ -11,14 +11,17 @@ output_dir <- "output/chip-pipeline-GRCh38/metagene/metagene_cofactor"
 customColors <- c("#D8B70A", "#02401B", "#94A187", "#C5AFA0", "#E9BCB7")
 #colorReplicate = wes_palette(n=5, name="Cavalcanti1")
 
-metagene_WCE_obj_name <- file.path(output_dir, "WCE_GR_Regions_30m_metagene_obj.RData")
+metagene_WCE_obj_name <- file.path(output_dir, "WCE_GR30_3utr_GR30_5utr_GR30_distalintergenic_GR30_downstream_GR30_exon_GR30_intron_GR30_promoter_metagene_obj.RData")
 load(metagene_WCE_obj_name)
 
 wce_df <- mg$get_data_frame()
 
-cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
+#cofactor_list <- c("BRD4", "CDK9", "NIPBL", "SMC1A", "MED1")
+
+cofactor_list <- c("MED1")
+
 for (cofactor in cofactor_list) {
-	metagene_obj_name <- file.path(output_dir, paste0(cofactor, "_GR_Regions_30m", "_metagene_obj.RData"))
+	metagene_obj_name <- file.path(output_dir, paste0(cofactor, "_GR30_3utr_GR30_5utr_GR30_distalintergenic_GR30_downstream_GR30_exon_GR30_intron_GR30_promoter", "_metagene_obj.RData"))
 	load(metagene_obj_name)
 	
 	mg_df <- mg$get_data_frame()
@@ -34,7 +37,16 @@ for (cofactor in cofactor_list) {
 	bigdf$Replicate[grepl("WCE_rep3", bigdf$group)] <- "WCE Replicate 3"
 	bigdf$Replicate <- as.factor(bigdf$Replicate)
 
-	title <- paste0(cofactor, "_GRBound_30min")
+	bigdf$Annot[grepl("3utr", bigdf$group)] <- "3' UTR"
+	bigdf$Annot[grepl("5utr", bigdf$group)] <- "5' UTR"
+	bigdf$Annot[grepl("distalintergenic", bigdf$group)] <- "Distal Intergenic"
+	bigdf$Annot[grepl("downstream", bigdf$group)] <- "Downstream"
+	bigdf$Annot[grepl("exon", bigdf$group)] <- "Exon"
+	bigdf$Annot[grepl("intron", bigdf$group)] <- "Intron"
+	bigdf$Annot[grepl("promoter", bigdf$group)] <- "Promoter"
+	bigdf$Annot <- as.factor(bigdf$Annot)
+		
+	title <- paste0(cofactor, "_GRBound_30min_annotated")
 	
 	ggplot(bigdf, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group = Replicate)) +
 		geom_ribbon(aes(fill = Replicate), alpha = 0.3) +
@@ -54,10 +66,10 @@ for (cofactor in cofactor_list) {
 		ggtitle(title) +
 		xlab("Position (bp)") +
 		ylab("Mean coverage (RPM)") +
-		facet_grid(Cofactor ~ Condition)
+		facet_grid(Cofactor*Annot ~ Condition)
 	
-	output_filename <- file.path(output_dir, paste0(cofactor, "_GRBound_30min_w600_metagene.pdf"))
+	output_filename <- file.path(output_dir, paste0(cofactor, "_GRBound_30min_w600_annotated_metagene.pdf"))
 	
-	ggsave(output_filename, width = 14, height = 9, units = "in")
+	ggsave(output_filename, width = 10, height = 24, units = "in")
 	message("Saved in ", output_filename)
 }

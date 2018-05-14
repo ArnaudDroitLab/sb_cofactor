@@ -36,7 +36,7 @@ sh_list <-  c("shCTRL-1", "shCTRL-2", "shNIPBL-3", "shNIPBL-5")
 
 for (target in target_list) {
 	for (sh in sh_list) {
-	generate_metagene_object(target, sh, region_list)
+	generate_metagene_object(target, sh, region_list, bin)
 	}
 }
 
