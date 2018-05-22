@@ -1,31 +1,39 @@
 source("scripts/load_reddy.R")
 
-summarize_GGR_chip <- function(target, diagnostic_dir=NULL) {
-    peak_files = ENCODExplorer::queryEncodeGeneric(biosample_name="A549", treatment="dexamethasone", 
-                                                   file_format="bed", lab="Tim Reddy, Duke",
-                                                   treatment_amount=100, treatment_amount_unit="nM",
-                                                   target=target)
+# Loads all peaks calls for a given target and build consensus regions
+# for each time point.
+summarize_GGR_chip <- function(encode_results, diagnostic_dir=NULL) {
+    # Make sure the passed in ENCODE subset ahs only one target.
+    target = unique(encode_results$target)
+    stopifnot(length(target)==1)
     
-    if(all(unique(peak_files$file_type)=="bed narrowPeak")) {
+    # Determine if the target has broad or narrow peaks so we can
+    # load the peaks in an appropriate manner.
+    if(all(unique(encode_results$file_type)=="bed narrowPeak")) {
         bed_type="narrow"
-    } else if(all(unique(peak_files$file_type)=="bed broadPeak")) {
+    } else if(all(unique(encode_results$file_type)=="bed broadPeak")) {
         bed_type="broad"
     } else {
         stop("Not all downloaded files are of teh same type!")
     }
     
+    # Download the peak files.
     download_dir = file.path("input/ENCODE/A549/GRCh38/chip-seq", bed_type)
     dir.create(download_dir, recursive=TRUE, showWarnings=FALSE)
-    downloaded_files = ENCODExplorer::downloadEncode(peak_files, dir=download_dir, force=FALSE)
+    downloaded_files = ENCODExplorer::downloadEncode(encode_results, dir=download_dir, force=FALSE)
     
+    # Import the peak files into a GRangesList object.
     names(downloaded_files) <- gsub(".bed.gz", "", basename(downloaded_files))
     all_regions = ef.utils::import_files_into_grl(downloaded_files, file.format=bed_type, 
                                                   file.ext=".bed.gz", discard.metadata=TRUE)
     
-    # Group files by time point, then intersect them.
-    time_points = paste(peak_files$treatment_duration, peak_files$treatment_duration_unit)
-    names(time_points) = peak_files$file_accession
+    # Determine the time_point for all downloaded files.
+    time_points = paste(encode_results$treatment_duration, encode_results$treatment_duration_unit)
+    # Files without a treatment (NA) are controls, which we label "0 minute"
+    time_points = gsub("NA NA", "0 minute", time_points)
+    names(time_points) = encode_results$file_accession
     
+    # Group files by time point, then intersect them.
     results = list()
     for(time_point in unique(time_points)) {
         intersect_object = ef.utils::build_intersect(all_regions[names(time_points[time_points==time_point])])
@@ -45,16 +53,31 @@ summarize_GGR_chip <- function(target, diagnostic_dir=NULL) {
 }
 
 # Load all ENCODE chips.
-all_chip = queryEncodeGeneric(biosample_name="A549", treatment="dexamethasone", file_format="bed", treatment_amount=100, treatment_amount_unit="nM", lab="Tim Reddy, Duke", assay="ChIP-seq")
+all_chip = queryEncodeGeneric(biosample_name="A549", file_format="bed", lab="Tim Reddy, Duke", assay="ChIP-seq")
+
+# Keeping the number of replicates at three makes ChIPs more compaable. The latest Reddy
+# batch all coems in triplicates. So we'll remove older batches when there are more
+# than 3 replicates.
+# Remove a couple of extraneous JUN replicates
+all_chip = all_chip %>% dplyr::filter(!(target=="JUN" & date_released=="2016-12-20" &is.na(treatment)))
+
+# Do the same thing for some H3K27ac replicates.
+all_chip = all_chip %>% dplyr::filter(!(target=="H3K27ac" & date_released=="2016-07-21" &is.na(treatment)))
 all_targets = unique(all_chip$target)
 
 all_chip_regions = list()
-for(target in all_targets) {
-    all_chip_regions[[target]] = summarize_GGR_chip(target, diagnostic_dir="output/analyses/cofactors")
+for(target_name in all_targets) {
+    all_chip_regions[[target_name]] = summarize_GGR_chip(all_chip %>% dplyr::filter(target==target_name),
+                                                         diagnostic_dir="output/analyses/cofactors")
 }
 
 # Load our own ChIP.
 lab_chip = load_cofactor_binding()
+for(target in names(lab_chip[["DEX"]])) {
+    all_chip_regions[[target]] = GRangesList("1 hour"   = lab_chip[["DEX"]][[target]],
+                                             "0 minute" = lab_chip[["CTRL"]][[target]])
+}
+
 
 all_time_points = unique(unlist(lapply(all_chip_regions, names)))
 for(time_point in all_time_points) {
