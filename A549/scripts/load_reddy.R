@@ -216,3 +216,51 @@ get_tss <- function(all_genes, ..., flank_size=200) {
 get_peak_near_gene <- function() {
 
 }
+
+load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL) {
+    # Import all peaks
+    all_peaks = import_into_grl(input.dir="output/chip-pipeline-GRCh38/", file.format="narrow", dir.type="mugqic")
+
+    results = list()
+    for(condition in c("DEX", "CTRL")) {
+        condition_prefix = paste0("A549_", condition, "_")
+        if(consensus_method=="pool") {
+            # Remove single replicates
+            results[[condition]] = all_peaks[!grepl("rep", names(all_peaks)) & grepl(condition, names(all_peaks))]
+            names(results[[condition]]) = gsub(condition_prefix, "", names(results[[condition]]))
+        } else {
+            # Remove pooled peak calls
+            relevant_peaks = all_peaks[grepl("rep", names(all_peaks)) & grepl(condition, names(all_peaks))]
+            cofactors = gsub("_rep.*", "", gsub(condition_prefix, "", names(relevant_peaks)))
+            results[[condition]] = GRangesList()
+
+            # Loop over cofactors, and either intersect/union both replicates.
+            for(cofactor in unique(cofactors)) {
+                if(consensus_method=="intersect") {
+                    # Remove the prefix within the name so that the venn diagrams
+                    # will be nicer.
+                    cofactor_peaks = relevant_peaks[cofactors==cofactor]
+                    names(cofactor_peaks) = gsub(".*_(rep.)", "\\1", names(cofactor_peaks))
+
+                    # Build an intersect object out of both replicates, and plot a venn
+                    # diagram if requested.
+                    intersect_obj = build_intersect(cofactor_peaks)
+                    if(!is.null(diagnostic_dir)) {
+                       venn_label = paste(cofactor, condition)
+                       intersect_venn_plot(intersect_obj,
+                                            file=file.path(diagnostic_dir, paste0(venn_label, ".tiff")),
+                                            title=venn_label)
+                    }
+
+                    # Return the overlap between replicates.
+                    results[[condition]][[cofactor]] = intersect_overlap(intersect_obj)
+                } else {    # Mode is presumed to be "union".
+                    results[[condition]][[cofactor]] = reduce(unlist(relevant_peaks[cofactors==cofactor]))
+                }
+            }
+        }
+    }
+    
+    return(results)
+}
+
