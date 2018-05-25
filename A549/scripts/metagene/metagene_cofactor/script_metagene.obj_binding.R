@@ -36,11 +36,11 @@ for (cofactor in cofactor_list) {
 	
 	CstRegions <- rtracklayer::import(CstRegions_path)
 	BindUpRegions <- rtracklayer::import(BindUpRegions_path)
-	BindDownregions <- rtracklayer::import(BindDownRegions_path)
+	BindDownRegions <- rtracklayer::import(BindDownRegions_path)
 	
 	region_list = list(CstRegions = CstRegions,
 					   BindUpRegions = BindUpRegions,
-					   BindDownregions = BindDownregions)
+					   BindDownRegions = BindDownRegions)
 	
 	###############################################################################
 	# Generate the metagene object.
