@@ -45,6 +45,6 @@ for (cofactor in cofactor_list) {
 	###############################################################################
 	# Generate the metagene object.
 	###############################################################################
-	generate_WCE_metagene_object(cofactor, region_list, bin=200)
+	# generate_WCE_metagene_object(cofactor, region_list, bin=200)
 	generate_metagene_object(cofactor, region_list, bin=200)
 }
