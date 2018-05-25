@@ -34,7 +34,7 @@ generate_region_names <- function(region_list) {
 # Main function
 ########################################
 
-generate_WCE_metagene_object <- function(region_list, bin) {
+generate_WCE_metagene_object <- function(region_list, cofactor, bin) {
 	design <- generate_WCE_design()
 	
 	mg <- metagene$new(regions = region_list, bam_files = design$Samples, assay="chipseq",
@@ -49,7 +49,7 @@ generate_WCE_metagene_object <- function(region_list, bin) {
 
 	regions_names <- generate_region_names(region_list)
 	
-	output_filepath <- file.path(output_dir, paste0("WCE", regions_names, "_metagene_obj.RData"))
+	output_filepath <- file.path(output_dir, paste0("WCE_", cofactor, "_", regions_names, "_metagene_obj.RData"))
 	
 	save(mg, file = output_filepath)
 	message("Saved in ", output_filepath)
