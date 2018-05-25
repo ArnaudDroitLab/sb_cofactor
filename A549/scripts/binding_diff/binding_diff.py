@@ -2,7 +2,8 @@ import subprocess
 import os
 import time
 
-cofactors = ["BRD4", "CDK9", "MED1", "NIPBL", "SMC1A"]
+# cofactors = ["BRD4", "CDK9", "MED1", "NIPBL", "SMC1A"]
+cofactors = ["SMC1A"]
 
 manorm = "/usr/local/bin/manorm"
 read_path = "/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-pipeline-GRCh38/alignment"
