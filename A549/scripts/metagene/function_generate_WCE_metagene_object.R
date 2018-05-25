@@ -34,7 +34,7 @@ generate_region_names <- function(region_list) {
 # Main function
 ########################################
 
-generate_WCE_metagene_object <- function(region_list, cofactor, bin) {
+generate_WCE_metagene_object <- function(cofactor, region_list, bin) {
 	design <- generate_WCE_design()
 	
 	mg <- metagene$new(regions = region_list, bam_files = design$Samples, assay="chipseq",
