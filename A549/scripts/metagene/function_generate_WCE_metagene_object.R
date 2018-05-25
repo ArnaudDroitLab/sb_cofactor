@@ -52,6 +52,7 @@ generate_WCE_metagene_object <- function(cofactor, region_list, bin) {
 	regions_names <- generate_region_names(region_list)
 	
 	output_filepath <- file.path(output_dir, paste0("WCE_", cofactor, regions_names, "_metagene_obj.RData"))
+	message(output_filepath)
 	
 	save(mg, file = output_filepath)
 	message("Saved in ", output_filepath)

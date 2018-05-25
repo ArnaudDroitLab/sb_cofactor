@@ -25,6 +25,7 @@ cofactor_list <- c("BRD4", "CDK9")
 for (cofactor in cofactor_list) {
 	message("##########     ", cofactor, "     ##########")
 	output_dir <- file.path(binding_diff_dir, paste0("A549_", cofactor), "output_filters")
+	message(output_dir)
 	
 	###############################################################################
 	# Define regions over which metagenes will be plotted.
