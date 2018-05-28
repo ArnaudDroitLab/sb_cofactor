@@ -5,32 +5,28 @@ library(metagene)
 # Define secondary functions
 ########################################
 
-generate_samples <- function(cofactor) {
+generate_samples <- function(target, sh) {
 	Samples <- vector("character")
-	for (condition in c("DEX", "CTRL")) {
-		for (rep in c("rep1","rep2")) {
-			OneSample <- paste0("A549", "_", condition, "_", cofactor, "_", rep)
+	for (condition in c("Dex", "EtOH")) {
+			OneSample <- paste0(target, "_", sh, "_", condition, "_Rep1")
 			Samples <- c(Samples, OneSample)
-		}
 	}
 	return (Samples)
 }
 
-generate_colnames_design <- function(cofactor) {
+generate_colnames_design <- function(target, sh) {
 	colnames_design <- c("Samples")
-	for (condition in c("DEX", "CTRL")) {
-		for (rep in c("rep1","rep2")) {
-			OneColname <- paste0(condition, "_", cofactor, "_", rep)
+	for (condition in c("Dex", "EtOh")) {
+			OneColname <- paste0(target, "_", sh, "_", condition, "_Rep1")
 			colnames_design <- c(colnames_design, OneColname)
-		}
 	}
 	return (colnames_design)
 }
 
-generate_design <- function(cofactor) {
-	Samples <- generate_samples(cofactor)
-	design <- data.frame(Samples, diag(4))
-	colnames(design) <- generate_colnames_design(cofactor)
+generate_design <- function(target, sh) {
+	Samples <- generate_samples(target, sh)
+	design <- data.frame(Samples, diag(2))
+	colnames(design) <- generate_colnames_design(target, sh)
 	
 	print(kable(design))
 	
@@ -52,25 +48,22 @@ generate_region_names <- function(region_list) {
 # Main function
 ########################################
 
-generate_metagene_object <- function(cofactor, region_list, bin) {
-	mg <- ""
-	
-	design <- generate_design(cofactor)
+generate_metagene_object <- function(target, sh, region_list, bin) {
+	design <- generate_design(target, sh)
 	
 	mg <- metagene$new(regions = region_list, bam_files = design$Samples, assay="chipseq",
 					   force_seqlevels = TRUE, verbose = TRUE, cores = 4)
-	message("DONE\t", cofactor, " | metagene object")
+	message("DONE\t", target, "_", sh , " | metagene object")
 	
 	mg$produce_table(design = design, normalization="RPM", flip_regions=TRUE, bin_count=bin)
-	message("DONE\t", cofactor, " | metagene table")
+	message("DONE\t", target, "_", sh , " | metagene table")
 	
 	mg$produce_data_frame()
-	message("DONE\t", cofactor, " | metagene data fame")
+	message("DONE\t", target, "_", sh , " | metagene data fame")
 
 	regions_names <- generate_region_names(region_list)
 	
-	output_filepath <- file.path(output_dir, paste0(cofactor, regions_names, "_metagene_obj.RData"))
-	message(output_filepath)
+	output_filepath <- file.path(output_dir, paste0(target, "_", sh, regions_names, "_metagene_obj.RData"))
 	
 	save(mg, file = output_filepath)
 	message("Saved in ", output_filepath)
