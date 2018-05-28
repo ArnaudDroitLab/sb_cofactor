@@ -53,6 +53,8 @@ generate_region_names <- function(region_list) {
 ########################################
 
 generate_metagene_object <- function(cofactor, region_list, bin) {
+	mg <- ""
+	
 	design <- generate_design(cofactor)
 	
 	mg <- metagene$new(regions = region_list, bam_files = design$Samples, assay="chipseq",
@@ -68,6 +70,7 @@ generate_metagene_object <- function(cofactor, region_list, bin) {
 	regions_names <- generate_region_names(region_list)
 	
 	output_filepath <- file.path(output_dir, paste0(cofactor, regions_names, "_metagene_obj.RData"))
+	message(output_filepath)
 	
 	save(mg, file = output_filepath)
 	message("Saved in ", output_filepath)
