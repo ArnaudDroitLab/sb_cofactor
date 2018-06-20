@@ -154,4 +154,33 @@ for(region_list in names(cofactor_lists)) {
 
      
 # Overlap with H3K27ac regions.                  
-                  
+# Compare H3K27ac overlap
+empty_matrix = matrix(0, nrow=length(cofactor_names), ncol=length(cofactor_lists),
+                      dimnames=list(cofactor_names, names(cofactor_lists)))
+results = list(CTRL=empty_matrix, DEX=empty_matrix)
+
+conditions = c(CTRL="0 minute", DEX="1 hour")
+for(condition_name in names(conditions)) {
+    condition = conditions[condition_name]
+    for(region_type in names(cofactor_lists)) {
+        region_list = cofactor_lists[[region_type]]
+        for(cofactor in names(region_list)) {
+            cofactor_ranges = region_list[[cofactor]]
+            mcols(cofactor_ranges) = NULL
+            grl_h3k27ac = GRangesList(h3k27ac_regions[[condition]], cofactor_ranges)
+            names(grl_h3k27ac) = c("H3K27ac", cofactor)
+            intersect_obj = build_intersect(grl_h3k27ac)
+            
+            overlap_obj = pairwise_overlap(intersect_obj)
+            results[[condition_name]][cofactor, region_type] = overlap_obj[cofactor, "H3K27ac"]
+        }
+    }
+}
+
+
+ctrl_filename = file.path(output_dir, "Overlap of cofactors (in various conditions) with H3K27ac in EtOH condition.txt")
+write.table(results$CTRL, file=ctrl_filename, row.names=TRUE, col.names=TRUE, sep="\t")
+dex_filename = file.path(output_dir, "Overlap of cofactors (in various conditions) with H3K27ac in Dex(1h) condition.txt")
+write.table(results$DEX, file=dex_filename, row.names=TRUE, col.names=TRUE, sep="\t")
+diff_filename = file.path(output_dir, "Difference of H3K27ac overlap in Dex and EtOH conditions for cofactors in various conditions.txt")
+write.table(results$DEX - results$CTRL, file=diff_filename, row.names=TRUE, col.names=TRUE, sep="\t")
