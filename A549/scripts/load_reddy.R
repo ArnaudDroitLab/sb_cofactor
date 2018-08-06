@@ -232,7 +232,12 @@ load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL)
             # Remove pooled peak calls
             relevant_peaks = all_peaks[grepl("rep", names(all_peaks)) & grepl(condition, names(all_peaks))]
             cofactors = gsub("_rep.*", "", gsub(condition_prefix, "", names(relevant_peaks)))
-            results[[condition]] = GRangesList()
+            
+            if(consensus_method != "separate") {
+                results[[condition]] = GRangesList()
+            } else {
+                results[[condition]] = list()
+            }
 
             # Loop over cofactors, and either intersect/union both replicates.
             for(cofactor in unique(cofactors)) {
@@ -254,8 +259,13 @@ load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL)
 
                     # Return the overlap between replicates.
                     results[[condition]][[cofactor]] = intersect_overlap(intersect_obj)
-                } else {    # Mode is presumed to be "union".
+                } else if(consensus_method=="union") {    # Mode is presumed to be "union".
                     results[[condition]][[cofactor]] = reduce(unlist(relevant_peaks[cofactors==cofactor]))
+                } else if(consensus_method=="separate") {
+                    results[[condition]][[cofactor]] = relevant_peaks[cofactors==cofactor]
+                    names(results[[condition]][[cofactor]]) = gsub(".*(rep.)", "\\1", names(results[[condition]][[cofactor]]))
+                } else {
+                    stop("Invalid consensus_method")
                 }
             }
         }
