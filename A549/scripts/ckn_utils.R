@@ -1,4 +1,4 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 library(GenomicRanges)
 
@@ -23,6 +23,6 @@ load_cofactor_peaks <- function(cofactors) {
   return(cofactors_peaks)
 }
 
-## test
-cofactors <- c("NIPBL", "BRD4", "CDK9", "SMC1A", "MED1")
-p <- load_cofactor_peaks(cofactors)
+# ## test
+# cofactors <- c("NIPBL", "BRD4", "CDK9", "SMC1A", "MED1")
+# p <- load_cofactor_peaks(cofactors)
