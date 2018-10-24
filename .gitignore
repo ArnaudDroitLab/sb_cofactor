@@ -1,2 +1,4 @@
 A549/raw/rna-seq/*tsv
 .*swp
+A549/output
+input/ENCODE

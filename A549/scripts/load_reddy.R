@@ -216,3 +216,120 @@ get_tss <- function(all_genes, ..., flank_size=200) {
 get_peak_near_gene <- function() {
 
 }
+
+load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL) {
+    # Import all peaks
+    all_peaks = import_into_grl(input.dir="output/chip-pipeline-GRCh38/", file.format="narrow", dir.type="mugqic")
+
+    results = list()
+    for(condition in c("DEX", "CTRL")) {
+        condition_prefix = paste0("A549_", condition, "_")
+        if(consensus_method=="pool") {
+            # Remove single replicates
+            results[[condition]] = all_peaks[!grepl("rep", names(all_peaks)) & grepl(condition, names(all_peaks))]
+            names(results[[condition]]) = gsub(condition_prefix, "", names(results[[condition]]))
+        } else {
+            # Remove pooled peak calls
+            relevant_peaks = all_peaks[grepl("rep", names(all_peaks)) & grepl(condition, names(all_peaks))]
+            cofactors = gsub("_rep.*", "", gsub(condition_prefix, "", names(relevant_peaks)))
+            results[[condition]] = GRangesList()
+
+            # Loop over cofactors, and either intersect/union both replicates.
+            for(cofactor in unique(cofactors)) {
+                if(consensus_method=="intersect") {
+                    # Remove the prefix within the name so that the venn diagrams
+                    # will be nicer.
+                    cofactor_peaks = relevant_peaks[cofactors==cofactor]
+                    names(cofactor_peaks) = gsub(".*_(rep.)", "\\1", names(cofactor_peaks))
+
+                    # Build an intersect object out of both replicates, and plot a venn
+                    # diagram if requested.
+                    intersect_obj = build_intersect(cofactor_peaks)
+                    if(!is.null(diagnostic_dir)) {
+                       venn_label = paste(cofactor, condition)
+                       intersect_venn_plot(intersect_obj,
+                                            file=file.path(diagnostic_dir, paste0(venn_label, ".tiff")),
+                                            title=venn_label)
+                    }
+
+                    # Return the overlap between replicates.
+                    results[[condition]][[cofactor]] = intersect_overlap(intersect_obj)
+                } else {    # Mode is presumed to be "union".
+                    results[[condition]][[cofactor]] = reduce(unlist(relevant_peaks[cofactors==cofactor]))
+                }
+            }
+        }
+    }
+    
+    return(results)
+}
+
+intersect_ranges <- function(range_list, min_replicate=2, diagnostic_dir=NULL, label=NULL) {
+    intersect_object = ef.utils::build_intersect(range_list)
+    enough_replicates = rowSums(intersect_object$Matrix) >= min_replicate
+    
+    if(!is.null(diagnostic_dir)) {
+        # Turn off VennDiagram logging.
+        futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
+    
+        dir.create(file.path(diagnostic_dir, "Venn diagrams of peak calls"), recursive=TRUE, showWarnings=FALSE)
+        ef.utils::intersect_venn_plot(intersect_object, file.path(diagnostic_dir, "Venn diagrams of peak calls", paste0(label, ".tiff")))
+    }
+
+    return(intersect_object$Regions[enough_replicates])
+}
+
+# Loads all peaks calls for a given target and build consensus regions
+# for each time point.
+summarize_GGR_chip <- function(encode_results, diagnostic_dir=NULL) {
+    # Make sure the passed in ENCODE subset ahs only one target.
+    target = unique(encode_results$target)
+    stopifnot(length(target)==1)
+    
+    # Determine if the target has broad or narrow peaks so we can
+    # load the peaks in an appropriate manner.
+    if(all(unique(encode_results$file_type)=="bed narrowPeak")) {
+        bed_type="narrow"
+    } else if(all(unique(encode_results$file_type)=="bed broadPeak")) {
+        bed_type="broad"
+    } else {
+        stop("Not all downloaded files are of teh same type!")
+    }
+    
+    # Download the peak files.
+    download_dir = file.path("input/ENCODE/A549/GRCh38/chip-seq", bed_type)
+    dir.create(download_dir, recursive=TRUE, showWarnings=FALSE)
+    downloaded_files = ENCODExplorer::downloadEncode(encode_results, dir=download_dir, force=FALSE)
+    
+    # Import the peak files into a GRangesList object.
+    names(downloaded_files) <- gsub(".bed.gz", "", basename(downloaded_files))
+    all_regions = ef.utils::import_files_into_grl(downloaded_files, file.format=bed_type, 
+                                                  file.ext=".bed.gz", discard.metadata=TRUE)
+    
+    # Convert to GRCh38 if necessary
+    for(i in which(encode_results$assembly=="hg19")) {
+        hg19_to_hg38_chain = rtracklayer::import.chain("input/hg19ToHg38.over.chain")
+        all_regions[[i]] = reduce(unlist(rtracklayer::liftOver(all_regions[[i]], hg19_to_hg38_chain)))
+    }
+    
+    # # Determine the time_point for all downloaded files.
+    is_ctrl = is.na(encode_results$treatment) | (encode_results$treatment=="ethanol")
+    time_label = paste(encode_results$treatment_duration, encode_results$treatment_duration_unit)
+    time_points = ifelse(is_ctrl, "0 minute", time_label)
+    names(time_points) = encode_results$file_accession
+    
+    # Group files by time point, then intersect them.
+    results = list()
+    for(time_point in unique(time_points)) {
+        time_point_regions = all_regions[names(time_points[time_points==time_point])]
+        if(length(time_point_regions) > 1) {
+            results[[time_point]] = intersect_ranges(time_point_regions, min_replicate=2,
+                                                     diagnostic_dir=diagnostic_dir, label=paste0(target, "-", time_point))
+        } else {
+            warning("Not enough replicate for ", target, "-", time_point, ". Using all regions.")
+            results[[time_point]] = time_point_regions[[1]]
+        }
+    }
+    
+    return(GenomicRanges::GRangesList(results))
+}

@@ -3,7 +3,9 @@ library(dplyr)
 library(org.Hs.eg.db)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
-source("scripts/metagene_polII/function_generate_metagene_object.R")
+source("scripts/metagene/metagene_polII/function_generate_metagene_pol2_object.R")
+source("scripts/metagene/function_resize_peaks.R")
+source("scripts/load_reddy.R")
 
 ########################################
 # Define directory
@@ -14,18 +16,15 @@ output_dir <- "output/chip-pipeline-PolII-GRCh38/metagene_polII"
 ###############################################################################
 # Define regions over which metagenes will be plotted.
 ###############################################################################
-all_genes = genes(TxDb.Hsapiens.UCSC.hg38.knownGene)
+# Import GR binding regions.
+gr_regions = load_reddy_gr_binding_consensus()
 
-# Remove all regions not on the main chromosomes.
-all_genes = all_genes[!grepl("_", seqnames(all_genes))]
+#
+gr_regions_30 <- gr_regions[["30 minutes"]]
+gr_regions_30 <- resize_all_peaks(gr_regions_30, window = 600)
 
-# Remove all genes that are smaller than our defined TSS regions.
-all_genes = all_genes[width(all_genes) >= 1500]
-
-# Define TSS regions based on all kept gene locations.
-all_TSS = GenomicRanges::promoters(all_genes, upstream=1500, downstream=1500)
-
-region_list = list(AllTSS = all_TSS)
+#
+region_list = list(GR_Regions_30m = gr_regions_30)
 
 ###############################################################################
 # Generate the metagene object.
@@ -36,7 +35,7 @@ sh_list <-  c("shCTRL-1", "shCTRL-2", "shNIPBL-3", "shNIPBL-5")
 
 for (target in target_list) {
 	for (sh in sh_list) {
-	generate_metagene_object(target, sh, region_list, bin)
+	generate_metagene_object(target, sh, region_list, bin=200)
 	}
 }
 
