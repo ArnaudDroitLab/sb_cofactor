@@ -10,9 +10,9 @@ regions <- paste(nipbl_regions, collapse = " ")
 region_labels <- "NIPBL_CTRL NIPBL_common NIPBL_DEX"
 
 ###### Samples etoh/dex
-targets <- c("BCL3", "CEBPB")
-etoh_rep <- c(3, 2)
-dex_rep <- c(3, 3)
+targets <- c("BCL3", "CEBPB", "CTCF")
+etoh_rep <- c(3, 2, 3)
+dex_rep <- c(3, 3, 3)
 replicate_nb <- data.frame(targets, etoh_rep, dex_rep)
 
 ###### Command line
