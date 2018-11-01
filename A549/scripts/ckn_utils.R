@@ -2,9 +2,8 @@
 
 library(GenomicRanges)
 
-peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
-
-load_cofactor_peaks <- function(cofactors) {
+load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1","SMC1A")) {
+  peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
   cofactors_peaks <- GRangesList()
   name_cofactors_peaks <- c()
   for (cofactor in cofactors) {
@@ -20,9 +19,17 @@ load_cofactor_peaks <- function(cofactors) {
     }
   }
   names(cofactors_peaks) <- name_cofactors_peaks
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(cofactors_peaks))
   return(cofactors_peaks)
 }
 
-# ## test
-# cofactors <- c("NIPBL", "BRD4", "CDK9", "SMC1A", "MED1")
-# p <- load_cofactor_peaks(cofactors)
+keepStdChr <- function(gr) {
+  message("With all chromosomes, including contigs : ", length(gr), " regions")
+  stdChr <- paste0("chr", c(seq(1:22), "X", "Y"))
+  gr_StdChr <- keepSeqlevels(gr, stdChr[stdChr %in% seqlevels(gr)], pruning.mode = "coarse")
+  message("Keeping standard chromosomes : ", length(gr_StdChr), " regions")
+  message("\t--> ", length(gr) - length(gr_StdChr), " regions removed")
+  return(gr_StdChr)
+}
