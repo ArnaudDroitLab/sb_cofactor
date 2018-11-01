@@ -13,7 +13,9 @@ download_bigwig_from_ENCODE <- function(encode_accession) {
 
 #####
 all_chip_bw <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bigWig", assay="ChIP-seq")
+chip_bw_dir = "input/ENCODE/A549/GRCh38/chip-seq/bigWig"
 
+##### DEX Condition (1 hour)
 df_bw <- all_chip_bw %>% filter(assembly == "GRCh38", lab == "Tim Reddy, Duke",
                                 treatment == "dexamethasone", treatment_duration == "1")
 
@@ -23,7 +25,6 @@ kable(report_bw)
 accession_list <- unique(df_bw$file_accession)
 cptmax <- length(accession_list)
 
-chip_bw_dir = "input/ENCODE/A549/GRCh38/chip-seq/bigWig"
 cpt <- 0
 for (acc_dex in accession_list) {
   cpt <- cpt + 1
@@ -35,7 +36,37 @@ for (acc_dex in accession_list) {
   download_bigwig_from_ENCODE(acc_dex)
   
   oldfilename <- file.path(chip_bw_dir, paste0(acc_dex, ".bigWig"))
-  newfilename <- file.path(chip_bw_dir, paste0(acc_dex, "_", target, "_rep", rep, ".bigWig"))
+  newfilename <- file.path(chip_bw_dir, paste0(target, "_rep", rep, "_dex_1h_", acc_dex,".bigWig"))
+  
+  cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
+  message(cmd)
+  system(cmd)
+}
+
+##### EtOH condition
+df_bw_ctrl <- all_chip_bw %>% filter(assembly == "GRCh38", lab == "Tim Reddy, Duke")
+df_bw_ctrl <- df_bw_ctrl[is.na(df_bw_ctrl$treatment), ]
+
+report_bw_ctrl <- df_bw_ctrl %>% select(accession, file_accession, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
+kable(report_bw_ctrl)
+
+accession_list_ctrl <- unique(report_bw_ctrl$file_accession)
+cptmax <- length(accession_list_ctrl)
+
+chip_bw_dir = "input/ENCODE/A549/GRCh38/chip-seq/bigWig"
+
+cpt <- 0
+for (acc_ctrl in accession_list_ctrl) {
+  cpt <- cpt + 1
+  message("#########################################################################")
+  target <- report_bw_ctrl %>% filter(file_accession == acc_ctrl) %>% select(target)
+  rep <- report_bw_ctrl %>% filter(file_accession == acc_ctrl) %>% select(biological_replicates)
+  
+  message("####### ", acc_ctrl, "\t", target, "\trep", rep, "\t", cpt, "\\", cptmax)
+  download_bigwig_from_ENCODE(acc_ctrl)
+  
+  oldfilename <- file.path(chip_bw_dir, paste0(acc_ctrl, ".bigWig"))
+  newfilename <- file.path(chip_bw_dir, paste0(target, "_rep", rep, "_etoh_", acc_ctrl,".bigWig"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
