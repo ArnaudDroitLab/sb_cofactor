@@ -36,7 +36,7 @@ for (acc_dex in accession_list) {
   download_bigwig_from_ENCODE(acc_dex)
   
   oldfilename <- file.path(chip_bw_dir, paste0(acc_dex, ".bigWig"))
-  newfilename <- file.path(chip_bw_dir, paste0(target, "_rep", rep, "_dex_1h", ".bigWig"))
+  newfilename <- file.path(chip_bw_dir, paste0(target, "_dex1h", "_rep", rep, ".bigWig"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
@@ -66,7 +66,7 @@ for (acc_ctrl in accession_list_ctrl) {
   download_bigwig_from_ENCODE(acc_ctrl)
   
   oldfilename <- file.path(chip_bw_dir, paste0(acc_ctrl, ".bigWig"))
-  newfilename <- file.path(chip_bw_dir, paste0(target, "_rep", rep, "_etoh",".bigWig"))
+  newfilename <- file.path(chip_bw_dir, paste0(target, "_etoh", "_rep", rep, ".bigWig"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
