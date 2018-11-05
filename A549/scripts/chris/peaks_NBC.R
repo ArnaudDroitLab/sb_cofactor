@@ -2,8 +2,7 @@ setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 source("scripts/ckn_utils.R")
 
-cofactors_peaks <- load_cofactor_peaks()
-cofactors_StdChr <- lapply(cofactors_peaks, keepStdChr)
+cofactors_peaks <- load_cofactor_stdchr_peaks()
 
 NIPBL_CTRL <- cofactors_StdChr[["NIPBL_CTRL"]] # 9470
 summary(width(NIPBL_CTRL))
