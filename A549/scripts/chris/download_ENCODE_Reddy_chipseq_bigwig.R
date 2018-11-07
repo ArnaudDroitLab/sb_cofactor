@@ -33,7 +33,7 @@ for (acc_dex in accession_list) {
   rep <- report_bw %>% filter(file_accession == acc_dex) %>% select(biological_replicates)
   
   message("####### ", acc_dex, "\t", target, "\trep", rep, "\t", cpt, "\\", cptmax)
-  download_bigwig_from_ENCODE(acc_dex)
+  # download_bigwig_from_ENCODE(acc_dex)
   
   oldfilename <- file.path(chip_bw_dir, paste0(acc_dex, ".bigWig"))
   newfilename <- file.path(chip_bw_dir, paste0(target, "_dex1h", "_rep", rep, ".bigWig"))
