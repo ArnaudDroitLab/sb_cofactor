@@ -40,7 +40,7 @@ for (acc_dex in accession_list) {
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
-  system(cmd)
+  # system(cmd)
 }
 
 ##### EtOH condition
@@ -63,12 +63,12 @@ for (acc_ctrl in accession_list_ctrl) {
   rep <- report_bw_ctrl %>% filter(file_accession == acc_ctrl) %>% select(biological_replicates)
   
   message("####### ", acc_ctrl, "\t", target, "\trep", rep, "\t", cpt, "\\", cptmax)
-  download_bigwig_from_ENCODE(acc_ctrl)
+  #download_bigwig_from_ENCODE(acc_ctrl)
   
   oldfilename <- file.path(chip_bw_dir, paste0(acc_ctrl, ".bigWig"))
   newfilename <- file.path(chip_bw_dir, paste0(target, "_etoh", "_rep", rep, ".bigWig"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
-  system(cmd)
+  # system(cmd)
 }

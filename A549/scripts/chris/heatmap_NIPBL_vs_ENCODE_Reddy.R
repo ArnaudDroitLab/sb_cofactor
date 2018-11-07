@@ -10,10 +10,16 @@ regions <- paste(nipbl_regions, collapse = " ")
 region_labels <- "NIPBL_CTRL NIPBL_common NIPBL_DEX"
 
 ###### Samples etoh/dex
-targets <- c("BCL3", "CEBPB", "CTCF", "EP300", "FOSL2",
-             "H3K4me1", "H3K4me2", "H3K27ac", "JUNB", "SMC3")
-etoh_rep <- c(3, 2, 3)
-dex_rep <- c(3, 3, 3)
+# EP300, JUNB to do
+targets <- c("BCL3", "CEBPB", "CTCF", "FOSL2",
+             "H3K4me1", "H3K4me2", "H3K4me3", "H3K9me3", "H3K27ac",
+             "HES2", "JUN", "NR3C1",  "RAD21", "SMC3")
+etoh_rep <- c(3, 2, 3, 2,
+              3, 3, 3, 3, 3,
+              2, 3, 3, 3, 3)
+dex_rep <- c(3, 3, 3, 3,
+             3, 3, 3, 3, 3,
+             3, 2, 3, 3, 3)
 replicate_nb <- data.frame(targets, etoh_rep, dex_rep)
 
 ###### Command line
@@ -27,7 +33,7 @@ bigwig_dir <- "input/ENCODE/A549/GRCh38/chip-seq/bigWig"
 generate_sample_path <- function(target, condition, nb_dex) {
   res <- c()
   for (i in 1:nb_dex) {
-    filename <- paste0(target, "_", "rep", i, "_", condition, ".bigWig")
+    filename <- paste0(target, "_", condition, "_", "rep", i, ".bigWig")
     sample_name <- file.path(bigwig_dir, filename)
     res <- c(res, sample_name)
   }
@@ -40,7 +46,7 @@ compute_matrix <- function(target, replicate_nb) {
   nb_dex <- nb$dex_rep
   
   samples_etoh <- generate_sample_path(target, condition = "etoh", nb_etoh)
-  samples_dex <- generate_sample_path(target, condition = "dex_1h", nb_dex)
+  samples_dex <- generate_sample_path(target, condition = "dex1h", nb_dex)
   sample_scaffold <- c(samples_etoh, samples_dex)
   samples <- paste(sample_scaffold, collapse = " ")
   
@@ -60,7 +66,7 @@ compute_matrix <- function(target, replicate_nb) {
 generate_sample_labels <- function(target, condition, nb_dex) {
   res <- c()
   for (i in 1:nb_dex) {
-    label <- paste0(target, "_", "rep", i, "_", condition)
+    label <- paste0(target, "_", condition, "_", "rep", i)
     res <- c(res, label)
   }
   return(res)
@@ -72,7 +78,7 @@ plot_heatmap <- function(target, replicate_nb) {
   nb_dex <- nb$dex_rep
   
   sample_labels_etoh <- generate_sample_labels(target, condition = "etoh", nb_etoh)
-  sample_labels_dex <- generate_sample_labels(target, condition = "dex_1h", nb_dex)
+  sample_labels_dex <- generate_sample_labels(target, condition = "dex1h", nb_dex)
   sample_labels_scaffold <- c(sample_labels_etoh, sample_labels_dex)
   sample_labels <- paste(sample_labels_scaffold, collapse = " ")
   
