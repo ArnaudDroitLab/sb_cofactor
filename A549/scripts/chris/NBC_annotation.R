@@ -12,9 +12,9 @@ nbc_spectrl_path <- file.path(nbc_peaks_dir, "A549_NBC_CTRL_specific.bed")
 nbc_common_path <- file.path(nbc_peaks_dir, "A549_NBC_common.bed")
 nbc_spedex_path <- file.path(nbc_peaks_dir, "A549_NBC_DEX_specific.bed")
 
-nbc_spectrl <- rtracklayer::import(nbc_spectrl_path) #
-nbc_common <- rtracklayer::import(nbc_common_path) #
-nbc_spedex <- rtracklayer::import(nbc_spedex_path) # 
+nbc_spectrl <- rtracklayer::import(nbc_spectrl_path) # 4176
+nbc_common <- rtracklayer::import(nbc_common_path) # 1376
+nbc_spedex <- rtracklayer::import(nbc_spedex_path) # 808
 
 ###
 nbc_spectrl_anno <- annotatePeaks(nbc_spectrl, output = "anno")
@@ -34,3 +34,15 @@ nbc_spedex_df <- annotatePeaks(nbc_spedex, output = "df")
 plotAnnotation(nbc_spectrl_df)
 plotAnnotation(nbc_common_df)
 plotAnnotation(nbc_spedex_df)
+
+###
+get_unique_genes <- function(anno_df) {
+  cat("Number of regions : ", nrow(anno_df), "\n")
+  ugenes <- unique(anno_df$SYMBOL)
+  cat("Number of unique genes : ", length(ugenes), "\n")
+  return(ugenes)
+}
+
+ugenes_spectrl <- get_unique_genes(nbc_spectrl_df)
+ugenes_common <- get_unique_genes(nbc_common_df)
+ugenes_spedex <- get_unique_genes(nbc_spedex_df)
