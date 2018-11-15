@@ -19,3 +19,4 @@ for (name in names(cofactors_stdchr_peaks)) {
   
   rtracklayer::export.bed(regions, con = output_path, format = "bed")
 }
+
