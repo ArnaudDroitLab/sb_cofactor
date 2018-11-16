@@ -49,7 +49,7 @@ countReads_perRegion <- function(peaks_set) {
       cmd_line <- paste("samtools view -c", bam, region, sep = " ")
       count <- as.integer(system(cmd_line, intern = TRUE))
       count_bySample <- c(count_bySample, count)
-      cat(region, count)
+      cat(region, count, "| ")
     }
     count_total <- data.frame(count_total, count_bySample)
   }
