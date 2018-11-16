@@ -15,7 +15,7 @@ for (cofactor in cofactors) {
     bai_path <- file.path(bam_dir, basename, bai_file)
     
     cmd_line <- paste("samtools index", bam_path, bai_path)
-    cat(cmd_line, "\t")
+    cat(cmd_line, "\n")
     system(cmd_line)
   }
 }
