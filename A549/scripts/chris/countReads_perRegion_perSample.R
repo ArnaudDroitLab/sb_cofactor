@@ -63,7 +63,7 @@ countReads_perRegion <- function(peaks_set) {
   
   peaks_coordVector <- generate_coordVector(peaks_set)
   
-  count_total <- data.frame(peaks_set)
+  count_total <- data.frame(peaks_coordVector)
   for (bam in bam_path) {
     count_bySample <- c()
     for (region in peaks_coordVector) {
