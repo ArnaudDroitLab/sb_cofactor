@@ -58,20 +58,23 @@ countReads_perRegion <- function(peaks_set) {
   return(count_total)
 }
 
-### 
+###
+output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/countTable_perRegion_perSamples"
+
 speNBC_CTRL <- load_NBC_peaks("ctrl")
 counts_speNBC_CTRL <- countReads_perRegion(speNBC_CTRL)
+save(counts_speNBC_CTRL, file = file.path(output_path, "counts_speNBC_CTRL.RData"))
+rm(counts_speNBC_CTRL)
 
 NBC_common <- load_NBC_peaks("common")
 counts_NBC_common <- countReads_perRegion(common)
+save(counts_NBC_common, file = file.path(output_path, "counts_NBC_common.RData"))
+rm(counts_NBC_common)
 
 speNBC_DEX <- load_NBC_peaks("dex")
 counts_speNBC_DEX <- countReads_perRegion(speNBC_DEX)
+save(counts_speNBC_DEX, file = file.path(output_path, "counts_speNBC_DEX.RData"))
+rm(counts_speNBC_DEX)
 
 ###
-output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/countTable_perRegion_perSamples"
 write.table(counts_speNBC_CTRL, file = file.path(output_path, "countTable_speNBC_CTRL.txt"), sep = "\t")
-
-
-
-
