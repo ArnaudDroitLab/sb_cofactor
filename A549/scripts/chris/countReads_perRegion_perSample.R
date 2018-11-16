@@ -3,7 +3,7 @@ source("scripts/ckn_utils.R")
 
 ####
 oldpath <- Sys.getenv("PATH")
-newpath <- paste(oldpath, ":/usr/bin/samtools-1.9/bin", sep='')
+newpath <- paste(oldpath, ":/usr/bin/bin", sep='')
 Sys.setenv(PATH = newpath)
 
 #####
@@ -29,7 +29,7 @@ generate_bampathVector <- function(cofactors, conditions) {
 load_NBC_peaks <- function(regions_set) {
   peaks_NBC_dir <- "output/chip-pipeline-GRCh38/peak_call/A549_NBC"
   filename <- list(ctrl = "A549_NBC_CTRL_specific.bed",
-                common = "A549_common.bed",
+                common = "A549_NBC_common.bed",
                 dex = "A549_NBC_DEX_specific.bed")
   NBC_peaks_path <- file.path(peaks_NBC_dir, filename[[regions_set]])
   peaks <- rtracklayer::import(NBC_peaks_path)
@@ -59,22 +59,25 @@ countReads_perRegion <- function(peaks_set) {
 }
 
 ###
-output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/countTable_perRegion_perSamples"
+output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_perRegion_perSamples"
 
 speNBC_CTRL <- load_NBC_peaks("ctrl")
 counts_speNBC_CTRL <- countReads_perRegion(speNBC_CTRL)
 save(counts_speNBC_CTRL, file = file.path(output_path, "counts_speNBC_CTRL.RData"))
+write.table(counts_speNBC_CTRL, file = file.path(output_path, "countTable_speNBC_CTRL.txt"),
+            sep = "\t", quote = FALSE, row.names = FALSE)
 rm(counts_speNBC_CTRL)
 
 NBC_common <- load_NBC_peaks("common")
-counts_NBC_common <- countReads_perRegion(common)
+counts_NBC_common <- countReads_perRegion(NBC_common)
 save(counts_NBC_common, file = file.path(output_path, "counts_NBC_common.RData"))
+write.table(counts_NBC_common, file = file.path(output_path, "countTable_NBC_common.txt"),
+            sep = "\t", quote = FALSE, row.names = FALSE)
 rm(counts_NBC_common)
 
 speNBC_DEX <- load_NBC_peaks("dex")
 counts_speNBC_DEX <- countReads_perRegion(speNBC_DEX)
 save(counts_speNBC_DEX, file = file.path(output_path, "counts_speNBC_DEX.RData"))
+write.table(counts_speNBC_DEX, file = file.path(output_path, "countTable_speNBC_DEX.txt"),
+            sep = "\t", quote = FALSE, row.names = FALSE)
 rm(counts_speNBC_DEX)
-
-###
-write.table(counts_speNBC_CTRL, file = file.path(output_path, "countTable_speNBC_CTRL.txt"), sep = "\t")
