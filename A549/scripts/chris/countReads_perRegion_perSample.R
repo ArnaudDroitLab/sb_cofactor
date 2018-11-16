@@ -36,25 +36,25 @@ load_NBC_peaks <- function(regions_set) {
   return(peaks)
 }
 #####
-speNBC_DEX <- load_NBC_peaks("dex")
-speNBC_DEX_coordVector <- generate_coordVector(speNBC_DEX)
-
-bam_path <- generate_bampathVector(cofactors = c("NIPBL", "BRD4", "CDK9"),
-                                   conditions = c("DEX"))
-
-count_total <- data.frame(speNBC_DEX_coordVector)
-for (bam in bam_path) {
-  count_bySample <- c()
-  for (region in speNBC_DEX_coordVector) {
-    cmd_line <- paste("samtools view -c", bam, region, sep = " ")
-    count <- as.integer(system(cmd_line, intern = TRUE))
-    count_bySample <- c(count_bySample, count)
-    cat(region, count)
-  }
-  count_total <- data.frame(count_total, count_bySample)
-}
-
-names(count_total) <- c("Coordinates", "NIPBL_DEX", "BRD4_DEX", "CDK9_DEX")
+# speNBC_DEX <- load_NBC_peaks("dex")
+# speNBC_DEX_coordVector <- generate_coordVector(speNBC_DEX)
+# 
+# bam_path <- generate_bampathVector(cofactors = c("NIPBL", "BRD4", "CDK9"),
+#                                    conditions = c("DEX"))
+# 
+# count_total <- data.frame(speNBC_DEX_coordVector)
+# for (bam in bam_path) {
+#   count_bySample <- c()
+#   for (region in speNBC_DEX_coordVector) {
+#     cmd_line <- paste("samtools view -c", bam, region, sep = " ")
+#     count <- as.integer(system(cmd_line, intern = TRUE))
+#     count_bySample <- c(count_bySample, count)
+#     cat(region, count)
+#   }
+#   count_total <- data.frame(count_total, count_bySample)
+# }
+# 
+# names(count_total) <- c("Coordinates", "NIPBL_DEX", "BRD4_DEX", "CDK9_DEX")
 
 
 countReads_perRegion <- function(peaks_set) {
@@ -66,7 +66,7 @@ countReads_perRegion <- function(peaks_set) {
   count_total <- data.frame(peaks_set)
   for (bam in bam_path) {
     count_bySample <- c()
-    for (region in speNBC_DEX_coordVector) {
+    for (region in peaks_coordVector) {
       cmd_line <- paste("samtools view -c", bam, region, sep = " ")
       count <- as.integer(system(cmd_line, intern = TRUE))
       count_bySample <- c(count_bySample, count)
@@ -83,7 +83,7 @@ countReads_perRegion <- function(peaks_set) {
 speNBC_CTRL <- load_NBC_peaks("ctrl")
 counts_speNBC_CTRL <- countReads_perRegion(speNBC_CTRL)
 
-counts_NBC_common <- load_NBC_peaks("common")
+NBC_common <- load_NBC_peaks("common")
 counts_NBC_common <- countReads_perRegion(common)
 
 speNBC_DEX <- load_NBC_peaks("dex")
