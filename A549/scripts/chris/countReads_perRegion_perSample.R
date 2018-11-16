@@ -36,27 +36,6 @@ load_NBC_peaks <- function(regions_set) {
   return(peaks)
 }
 #####
-# speNBC_DEX <- load_NBC_peaks("dex")
-# speNBC_DEX_coordVector <- generate_coordVector(speNBC_DEX)
-# 
-# bam_path <- generate_bampathVector(cofactors = c("NIPBL", "BRD4", "CDK9"),
-#                                    conditions = c("DEX"))
-# 
-# count_total <- data.frame(speNBC_DEX_coordVector)
-# for (bam in bam_path) {
-#   count_bySample <- c()
-#   for (region in speNBC_DEX_coordVector) {
-#     cmd_line <- paste("samtools view -c", bam, region, sep = " ")
-#     count <- as.integer(system(cmd_line, intern = TRUE))
-#     count_bySample <- c(count_bySample, count)
-#     cat(region, count)
-#   }
-#   count_total <- data.frame(count_total, count_bySample)
-# }
-# 
-# names(count_total) <- c("Coordinates", "NIPBL_DEX", "BRD4_DEX", "CDK9_DEX")
-
-
 countReads_perRegion <- function(peaks_set) {
   bam_path <- generate_bampathVector(cofactors = c("NIPBL", "BRD4", "CDK9"),
                                      conditions = c("CTRL", "DEX"))
