@@ -1,3 +1,4 @@
+setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 source("scripts/load_reddy.R")
 
 # Load all ENCODE chips.
