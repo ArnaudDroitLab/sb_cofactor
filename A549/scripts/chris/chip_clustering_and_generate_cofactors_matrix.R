@@ -127,7 +127,7 @@ for(time_point in c("0 minute")) {
   # pdf_width = ifelse(time_point=="0 minute", 14, 7)
   # pdf(paste0("output/analyses/cofactors/Clustering of cofactors at time ", time_point, ".pdf"), width=pdf_width)
   # plot(hclust(dist(t(time_intersect$Matrix))))
-  mat_cofactors_ctrl <- time_intersect$Matrix
+  mat_cofactors_ctrl <- time_intersect
 }
 
 # Retrieve matrix at time: 1 hour
@@ -144,7 +144,7 @@ for(time_point in c("1 hour")) {
   # pdf_width = ifelse(time_point=="0 minute", 14, 7)
   # pdf(paste0("output/analyses/cofactors/Clustering of cofactors at time ", time_point, ".pdf"), width=pdf_width)
   # plot(hclust(dist(t(time_intersect$Matrix))))
-  mat_cofactors_dex <- time_intersect$Matrix
+  mat_cofactors_dex <- time_intersect
 }
 
 output_path <- "output/analyses/cofactors"
