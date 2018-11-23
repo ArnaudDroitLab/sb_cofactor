@@ -76,8 +76,13 @@ for(target_name in not_reddy_targets) {
     all_chip_regions[[target_name]] = summarize_GGR_chip(not_reddy_hg19 %>% dplyr::filter(target==target_name),
                                                          diagnostic_dir="output/analyses/cofactors")
 }
-                      
-                      
+
+# Add NBC regions to all_chip_regions                      
+
+
+
+
+# Clustering         
 all_time_points = unique(unlist(lapply(all_chip_regions, names)))
 for(time_point in all_time_points) {
     target_at_time = list()
