@@ -81,8 +81,19 @@ for(target_name in not_reddy_targets) {
 NBC_peaks_dir <- "output/chip-pipeline-GRCh38/peak_call/A549_NBC"
 NBC_CTRL <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_CTRL.bed"))
 NBC_DEX <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_DEX.bed"))
+NBC_speCTRL <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_CTRL_specific.bed"))
+NBC_common <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_common.bed"))
+NBC_speDEX <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_DEX_specific.bed"))
+
 NBC_list <- list("0 minute" = NBC_CTRL, "1 hour" = NBC_DEX)
+NBC_speCTRL_list <- list("0 minute" = NBC_speCTRL, "1 hour" = NBC_speCTRL)
+NBC_common_list <- list("0 minute" = NBC_common, "1 hour" = NBC_common)
+NBC_speDEX_list <- list("0 minute" = NBC_speDEX, "1 hour" = NBC_speDEX)
+
 all_chip_regions[["NBC"]] <- NBC_list
+all_chip_regions[["NBC_speCTRL"]] <- NBC_speCTRL_list
+all_chip_regions[["NBC_common"]] <- NBC_common_list
+all_chip_regions[["NBC_speDEX"]] <- NBC_speDEX_list
 
 # Clustering         
 all_time_points = unique(unlist(lapply(all_chip_regions, names)))
