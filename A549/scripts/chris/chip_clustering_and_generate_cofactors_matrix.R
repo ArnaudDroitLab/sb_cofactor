@@ -1,3 +1,4 @@
+setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 source("scripts/load_reddy.R")
 
 # Load all ENCODE chips.
@@ -75,8 +76,26 @@ for(target_name in not_reddy_targets) {
     all_chip_regions[[target_name]] = summarize_GGR_chip(not_reddy_hg19 %>% dplyr::filter(target==target_name),
                                                          diagnostic_dir="output/analyses/cofactors")
 }
-                      
-                      
+
+# Add NBC regions to all_chip_regions
+NBC_peaks_dir <- "output/chip-pipeline-GRCh38/peak_call/A549_NBC"
+NBC_CTRL <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_CTRL.bed"))
+NBC_DEX <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_DEX.bed"))
+NBC_speCTRL <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_CTRL_specific.bed"))
+NBC_common <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_common.bed"))
+NBC_speDEX <- rtracklayer::import(file.path(NBC_peaks_dir, "A549_NBC_DEX_specific.bed"))
+
+NBC_list <- list("0 minute" = NBC_CTRL, "1 hour" = NBC_DEX)
+NBC_speCTRL_list <- list("0 minute" = NBC_speCTRL, "1 hour" = NBC_speCTRL)
+NBC_common_list <- list("0 minute" = NBC_common, "1 hour" = NBC_common)
+NBC_speDEX_list <- list("0 minute" = NBC_speDEX, "1 hour" = NBC_speDEX)
+
+all_chip_regions[["NBC"]] <- NBC_list
+all_chip_regions[["NBC_speCTRL"]] <- NBC_speCTRL_list
+all_chip_regions[["NBC_common"]] <- NBC_common_list
+all_chip_regions[["NBC_speDEX"]] <- NBC_speDEX_list
+
+# Clustering         
 all_time_points = unique(unlist(lapply(all_chip_regions, names)))
 for(time_point in all_time_points) {
     target_at_time = list()
@@ -93,3 +112,40 @@ for(time_point in all_time_points) {
     plot(hclust(dist(t(time_intersect$Matrix))))
     dev.off()
 }
+
+# Retrieve matrix at time: 0 minute
+for(time_point in c("0 minute")) {
+  target_at_time = list()
+  for(target in names(all_chip_regions)) {
+    if(time_point %in% names(all_chip_regions[[target]])) {
+      target_at_time[[target]] = all_chip_regions[[target]][[time_point]]
+    }
+  }
+  target_at_time = GenomicRanges::GRangesList(target_at_time)
+  
+  time_intersect = ef.utils::build_intersect(target_at_time)
+  # pdf_width = ifelse(time_point=="0 minute", 14, 7)
+  # pdf(paste0("output/analyses/cofactors/Clustering of cofactors at time ", time_point, ".pdf"), width=pdf_width)
+  # plot(hclust(dist(t(time_intersect$Matrix))))
+  mat_cofactors_ctrl <- time_intersect
+}
+
+# Retrieve matrix at time: 1 hour
+for(time_point in c("1 hour")) {
+  target_at_time = list()
+  for(target in names(all_chip_regions)) {
+    if(time_point %in% names(all_chip_regions[[target]])) {
+      target_at_time[[target]] = all_chip_regions[[target]][[time_point]]
+    }
+  }
+  target_at_time = GenomicRanges::GRangesList(target_at_time)
+  
+  time_intersect = ef.utils::build_intersect(target_at_time)
+  # pdf_width = ifelse(time_point=="0 minute", 14, 7)
+  # pdf(paste0("output/analyses/cofactors/Clustering of cofactors at time ", time_point, ".pdf"), width=pdf_width)
+  # plot(hclust(dist(t(time_intersect$Matrix))))
+  mat_cofactors_dex <- time_intersect
+}
+
+output_path <- "output/analyses/cofactors"
+save(mat_cofactors_ctrl, mat_cofactors_dex, file = file.path(output_path, "mat_cofactors.Rdata"))

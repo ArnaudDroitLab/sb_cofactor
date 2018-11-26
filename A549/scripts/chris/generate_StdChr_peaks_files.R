@@ -17,6 +17,6 @@ for (name in names(cofactors_stdchr_peaks)) {
   output_path <- file.path(peaks_dir, basename, output_filename)
   message(output_path)
   
-  rtracklayer::export.bed(regions, con = output_path, format = "bed")
+  # rtracklayer::export.bed(regions, con = output_path, format = "bed")
 }
 
