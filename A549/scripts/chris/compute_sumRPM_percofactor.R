@@ -82,7 +82,7 @@ cofactors <- c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")
 sumRPM_values <- c()
 for (cofactor in cofactors) {
   peaks_reduced <- load_reduced_cofactor_peaks(cofactor)
-  counts_reduced <- countReads(peaks_reduced[1:5], cofactor)
+  counts_reduced <- countReads(peaks_reduced, cofactor)
   write.table(counts_reduced, file.path(output_path, paste0("countTable_", cofactor, "_reduced.txt")),
               sep = "\t", quote = FALSE, row.names = FALSE)  
   sumRPM_reduced <- sumRPM(counts_reduced, cofactor)
