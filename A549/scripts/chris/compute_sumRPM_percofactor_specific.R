@@ -97,7 +97,7 @@ for (cofactor in cofactors) {
     peaks_common <- load_specific_cofactor_peaks(cofactor, "common")
     peaks <- GenomicRanges::reduce(c(peaks_cond_specific, peaks_common))
   
-    counts <- countReads(peaks[1:10], cofactor)
+    counts <- countReads(peaks, cofactor)
     write.table(counts, file.path(output_path, paste0("countTable_", cofactor, "_", region_set, "_specific.txt")),
                 sep = "\t", quote = FALSE, row.names = FALSE)
   
