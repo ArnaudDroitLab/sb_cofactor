@@ -82,7 +82,7 @@ sumRPM <- function(RPM_table, cofactor) {
 }
 
 ###
-output_path <- "output/analyses/sumRPM_specific"
+output_path <- "output/analyses/sumRPM_specific_without_common"
 mkdir_cmd_line <- paste("mkdir", output_path, sep = " ")
 system(mkdir_cmd_line)
 
@@ -94,31 +94,34 @@ for (cofactor in cofactors) {
   for (region_set in c("CTRL", "DEX")) {
     message("##########\t", cofactor, " | ", region_set)
     peaks_cond_specific <- load_specific_cofactor_peaks(cofactor, region_set)
-    peaks_common <- load_specific_cofactor_peaks(cofactor, "common")
-    peaks <- GenomicRanges::reduce(c(peaks_cond_specific, peaks_common))
-  
-    counts <- countReads(peaks, cofactor)
+    message(length(peaks_cond_specific))
+    # peaks_common <- load_specific_cofactor_peaks(cofactor, "common")
+    # message(length(peaks_common))
+    # peaks <- GenomicRanges::reduce(c(peaks_cond_specific, peaks_common))
+    # message(length(peaks))
+    
+    counts <- countReads(peaks_cond_specific, cofactor)
     write.table(counts, file.path(output_path, paste0("countTable_", cofactor, "_", region_set, "_specific.txt")),
-                sep = "\t", quote = FALSE, row.names = FALSE)
+                 sep = "\t", quote = FALSE, row.names = FALSE)
+
+    # counts_reduced <- read.table(file = file.path(output_path, paste0("countTable_", cofactor, "_specific.txt")),
+    #                            header = TRUE)
+
+     RPM_table <- getRPM_table(counts, cofactor)
   
-  #  counts_reduced <- read.table(file = file.path(output_path, paste0("countTable_", cofactor, "_specific.txt")),
-  #                              header = TRUE)
+   ### boxplot
+     boxplot_filename <- file.path(output_path, paste0("RPM_boxplot_", cofactor, "_", region_set, "_specific.png"))
+     png(boxplot_filename)
+     boxplot(RPM_table, outline = FALSE)
+     dev.off()
   
-    RPM_table <- getRPM_table(counts, cofactor)
+     sumRPM_specific <- sumRPM(RPM_table, cofactor)
   
-  ### boxplot
-    boxplot_filename <- file.path(output_path, paste0("RPM_boxplot_", cofactor, "_", region_set, "_specific.png"))
-    png(boxplot_filename)
-    boxplot(RPM_table, outline = FALSE)
-    dev.off()
-  
-    sumRPM_specific <- sumRPM(RPM_table, cofactor)
-  
-    sumRPM_values <- c(sumRPM_values, sumRPM_specific)
-    message("##################")
-    print(sumRPM_values)
-    message("##################")
+     sumRPM_values <- c(sumRPM_values, sumRPM_specific)
+     message("##################")
+     print(sumRPM_values)
+     message("##################")
   }
 }
 
-save(sumRPM_values, file = file.path(output_path, "sumRPM_specific_values.RData"))
+save(sumRPM_values, file = file.path(output_path, "sumRPM_specific_values_without_common.RData"))
