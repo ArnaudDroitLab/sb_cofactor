@@ -9,7 +9,7 @@ BW_DIR_A549=/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-pipeline-GRCh38/t
 BW_DIR_GM12878=output/chip-pipeline-GRCh38/tracks
 
 MATRIX_NAME=20181121_A549vsGM12878_NIPBL_matrix.gzip
-HEATMAP_NAME=20181121_A549vsGM12878_NIPBL_heatmap.png
+HEATMAP_NAME=20181121_A549vsGM12878_NIPBL_heatmap_greens.png
 
 ### computeMatrix
 computeMatrix reference-point --referencePoint center \
@@ -34,7 +34,7 @@ computeMatrix reference-point --referencePoint center \
 ### plotHeatmap
 plotHeatmap \
 	--matrixFile $OUTPUT_DIR/$MATRIX_NAME \
-	--colorMap rainbow \
+	--colorMap Greens \
 	--regionsLabel A549_NIPBL COMMON_NIPBL GM12878_NIPBL \
 	--samplesLabel \
 		A549_NIPBL A549_BRD4 A549_CDK9 A549_MED1 A549_SMC1A \
