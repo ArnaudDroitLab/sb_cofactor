@@ -25,7 +25,11 @@ download_bam_from_ENCODE <- function(encode_accession) {
 
 ### explore bam to download
 all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bam", assay="ChIP-seq")
-gr_bam <- all_chip_bam %>% filter(target == "NR3C1", assembly == "GRCh38", lab == "Tim Reddy, Duke", submitted_by == "Ian McDowell")
-report_bam <- gr_bam %>% select(accession, file_accession, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
+gr_bam <- all_chip_bam %>% filter(target == "NR3C1", assembly == "GRCh38", lab == "Tim Reddy, Duke")
+report_bam <- gr_bam %>% select(accession, file_accession, submitted_by, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
 kable(report_bam)
+
+ep300_bam <- all_chip_bam %>% filter(target == "EP300", assembly == "GRCh38", lab == "Tim Reddy, Duke")
+report_ep300_bam <- ep300_bam %>% select(accession, file_accession, submitted_by, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
+kable(report_ep300_bam)
 
