@@ -39,7 +39,7 @@ for (acc in accession_list_gr) {
   download_bam_from_ENCODE(acc)
   
   oldfilename <- file.path(chip_bam_dir, paste0(acc, ".bam"))
-  newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_", acc, "_rep", rep, ".bam"))
+  newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_rep", rep, "_", acc, ".bam"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
@@ -70,7 +70,7 @@ for (acc in accession_list_ep300) {
   download_bam_from_ENCODE(acc)
   
   oldfilename <- file.path(chip_bam_dir, paste0(acc, ".bam"))
-  newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_", acc, "_rep", rep, ".bam"))
+  newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_rep", rep, "_", acc, ".bam"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
