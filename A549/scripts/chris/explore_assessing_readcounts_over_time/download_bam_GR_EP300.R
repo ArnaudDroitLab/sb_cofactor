@@ -36,14 +36,14 @@ for (acc in accession_list_gr) {
   
   message("####### ", acc, "\t", target, "\trep", rep, "\t", cpt, "\\", cptmax)
   message("####### ", td, " ", tdu)
-  download_bam_from_ENCODE(acc)
+  # download_bam_from_ENCODE(acc)
   
   oldfilename <- file.path(chip_bam_dir, paste0(acc, ".bam"))
   newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_rep", rep, "_", acc, ".bam"))
   
   cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
   message(cmd)
-  system(cmd)
+  # system(cmd)
 }
 
 ### Download bam EP300
