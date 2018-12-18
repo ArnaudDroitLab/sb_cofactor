@@ -12,7 +12,7 @@ generate_coordVector <- function(granges) {
   return (coord_Vector)
 }
 
-#### Gather all GR peaks all over the time frame
+#### Gather all EP300 peaks all over the time frame
 ep300_regions <- load_reddy_ep300_binding_consensus()
 
 all_ep300_regions <- GRanges()
@@ -24,7 +24,10 @@ for (name in names(ep300_regions)) {
 all_ep300_regions_reduced <- reduce(all_ep300_regions)
 summary(width(all_ep300_regions_reduced))
 
-peaks_EP300_coordVector <- generate_coordVector(all_ep300_regions_reduced)
+#### Shift 100000 to get the background
+background_ep300_regions_reduced <- shift(all_ep300_regions_reduced, 10000)
+
+peaks_EP300_coordVector <- generate_coordVector(background_ep300_regions_reduced)
 
 ##### List of bam EP300
 all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bam", assay="ChIP-seq")
@@ -50,28 +53,28 @@ index_bam <- function(bam_path) {
   }
 }
 
-index_bam(bam_path)
+# index_bam(bam_path)
 
 
 ##### Count reads
-which <- all_ep300_regions_reduced
+which <- background_ep300_regions_reduced
 what <- c("rname", "strand", "pos", "qwidth", "seq")
 param <- ScanBamParam(which=which, what=what)
 
-count_total_GR <- data.frame(peaks_EP300_coordVector)
+count_total_EP300 <- data.frame(peaks_EP300_coordVector)
 for (bam in bam_path) {
   message(bam)
   index_bam <- gsub("\\.bam", "", bam)
   count_bySample <- countBam(bam, index = index_bam, param = param)
   records <- count_bySample$records
-  count_total_GR <- data.frame(count_total_GR, records)
+  count_total_EP300 <- data.frame(count_total_EP300, records)
 }
 
-names(count_total_GR) <- c("Coordinates", paste0(report_ep300_bam$target, "_", report_ep300_bam$treatment_duration, report_ep300_bam$treatment_duration_unit,
+names(count_total_EP300) <- c("Coordinates", paste0(report_ep300_bam$target, "_", report_ep300_bam$treatment_duration, report_ep300_bam$treatment_duration_unit,
                                                  "_rep", report_ep300_bam$biological_replicates,
                                                  "_", report_ep300_bam$file_accession))
 
 output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
-save(count_total_GR, file = file.path(output_path, "count_total_EP300.RData"))
-write.table(count_total_GR, file = file.path(output_path, "count_total_EP300.txt"),
+save(count_total_EP300, file = file.path(output_path, "count_total_EP300_background.RData"))
+write.table(count_total_EP300, file = file.path(output_path, "count_total_EP300_background.txt"),
             sep = "\t", quote = FALSE, row.names = FALSE)

@@ -23,7 +23,10 @@ for (name in names(gr_regions)) {
 all_gr_regions_reduced <- reduce(all_gr_regions)
 summary(width(all_gr_regions_reduced))
 
-peaks_GR_coordVector <- generate_coordVector(all_gr_regions_reduced)
+#### Shift 100000 to get the background
+background_gr_regions_reduced <- shift(all_gr_regions_reduced, 10000)
+
+peaks_GR_coordVector <- generate_coordVector(background_gr_regions_reduced)
 
 ##### List of bam GR
 all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bam", assay="ChIP-seq")
@@ -40,7 +43,7 @@ bam_path <- paste0("/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRC
                           "_", report_gr_bam$file_accession, ".bam"))
 
 ##### Count reads
-which <- all_gr_regions_reduced
+which <- background_gr_regions_reduced
 what <- c("rname", "strand", "pos", "qwidth", "seq")
 param <- ScanBamParam(which=which, what=what)
 
@@ -58,6 +61,6 @@ names(count_total_GR) <- c("Coordinates", paste0(report_gr_bam$target, "_", repo
                                                  "_", report_gr_bam$file_accession))
 
 output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
-save(count_total_GR, file = file.path(output_path, "count_total_GR2.RData"))
-write.table(count_total_GR, file = file.path(output_path, "count_total_GR2.txt"),
+save(count_total_GR, file = file.path(output_path, "count_total_GR_background.RData"))
+write.table(count_total_GR, file = file.path(output_path, "count_total_GR_background.txt"),
             sep = "\t", quote = FALSE, row.names = FALSE)
