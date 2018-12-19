@@ -47,9 +47,14 @@ check_time_GR <- data.frame(names(GR_ratio), names(GR_ratio_scaled))
 EP300_ratio_scaled <- assignTime(EP300_ratio)
 check_time_EP300 <- data.frame(names(EP300_ratio), names(EP300_ratio_scaled))
 
+# | hours|genes   |     counts|
+# |-----:|:-------|----------:|
+# |   4.0|HEXIM1  |  79.258196|
+# |  12.0|HEXIM1  | 111.413858|
+
 dfForPlot <- function(scaledRatioTable, protein) {
   proteinVector <- rep(protein, length(scaledRatioTable))
-  df <- data.frame(Time = names(scaledRatioTable), Protein = proteinVector, Value = scaledRatioTable)
+  df <- data.frame(Time = names(scaledRatioTable), Protein = proteinVector, Ratio = scaledRatioTable)
   df$Time <- as.character(df$Time)
   df$Time <- as.numeric(df$Time)
   return(df)
@@ -62,15 +67,15 @@ kable(df_EP300_ratio_scaled)
 
 df_GR_EP300 <- rbind(df_GR_ratio_scaled, df_EP300_ratio_scaled)
 
-df_mean <- aggregate(df_GR_EP300$Value, by=list(df_GR_EP300$Time, df_GR_EP300$Protein), mean)
+df_mean <- aggregate(df_GR_EP300$Ratio, by=list(df_GR_EP300$Time, df_GR_EP300$Protein), mean)
 colnames(df_mean) <- c("time", "protein", "mean")
 
 # Make the plot
-ggplot(df_GR_EP300, aes(x = Time, y = Value)) +
+ggplot(df_GR_EP300, aes(x = Time, y = Ratio)) +
   geom_point(aes(color = Protein), size = 1) +
   geom_line(data=df_mean, aes(x=time, y=mean, group=protein, color=protein)) +
   scale_x_continuous(name="Time",
                      labels = c("0h", "", "", "", "", "", "", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "10h", "12h"),
                      breaks = c(0, 5, 10, 15, 20, 25, 30, 60, 120, 180, 240, 300, 360, 420, 480, 600, 720)) +
   # scale_x_continuous(name="Time", labels=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), breaks=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)) +
-  scale_y_continuous(name="Value", labels=comma)
+  scale_y_continuous(name="Ratio", labels=comma)
