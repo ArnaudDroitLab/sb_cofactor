@@ -46,3 +46,8 @@ get_unique_genes <- function(anno_df) {
 ugenes_spectrl <- get_unique_genes(nbc_spectrl_df)
 ugenes_common <- get_unique_genes(nbc_common_df)
 ugenes_spedex <- get_unique_genes(nbc_spedex_df)
+
+##### Identify NBC regions binding to promoter
+nbc_spedex <- tbl_df(nbc_spedex_df) %>% filter(Annot == "Promoter")
+nbc_spedex_prom <- nbc_spedex %>% select(annotation, distanceToTSS, geneId, ENTREZID, SYMBOL, GENENAME, Annot) %>% arrange(distanceToTSS)
+kable(nbc_spedex_prom)
