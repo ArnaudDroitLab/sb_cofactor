@@ -47,11 +47,6 @@ check_time_GR <- data.frame(names(GR_ratio), names(GR_ratio_scaled))
 EP300_ratio_scaled <- assignTime(EP300_ratio)
 check_time_EP300 <- data.frame(names(EP300_ratio), names(EP300_ratio_scaled))
 
-# | hours|genes   |     counts|
-# |-----:|:-------|----------:|
-# |   4.0|HEXIM1  |  79.258196|
-# |  12.0|HEXIM1  | 111.413858|
-
 dfForPlot <- function(scaledRatioTable, protein) {
   proteinVector <- rep(protein, length(scaledRatioTable))
   df <- data.frame(Time = names(scaledRatioTable), Protein = proteinVector, Ratio = scaledRatioTable)
