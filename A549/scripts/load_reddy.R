@@ -191,7 +191,10 @@ load_most_expressed_TxDb <- function() {
 
     cache_path = "output/analyses/most_expressed_TxDb.RData"
     if(!file.exists(cache_path)) {
-        most_expressed_TxDb = makeTxDbFromBiomart(transcript_ids=as.character(most_expressed$ensembl_transcript_id), host="useast.ensembl.org")
+        # Filter out deprecated transcript ids
+        all_ids = getBM(attributes="ensembl_transcript_id", mart=useMart("ensembl", dataset="hsapiens_gene_ensembl"))
+        existing_ids = intersect(most_expressed$ensembl_transcript_id, all_ids$ensembl_transcript_id)
+        most_expressed_TxDb = makeTxDbFromBiomart(transcript_ids=existing_ids, host="useast.ensembl.org")
         AnnotationDbi::saveDb(most_expressed_TxDb, file=cache_path)
     } else {
         most_expressed_TxDb = AnnotationDbi::loadDb(cache_path)
@@ -232,6 +235,7 @@ load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL)
             # Remove pooled peak calls
             relevant_peaks = all_peaks[grepl("rep", names(all_peaks)) & grepl(condition, names(all_peaks))]
             cofactors = gsub("_rep.*", "", gsub(condition_prefix, "", names(relevant_peaks)))
+            rep_number = gsub(".*_rep(.)", "\\1", names(relevant_peaks))
             results[[condition]] = GRangesList()
 
             # Loop over cofactors, and either intersect/union both replicates.
@@ -254,8 +258,10 @@ load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL)
 
                     # Return the overlap between replicates.
                     results[[condition]][[cofactor]] = intersect_overlap(intersect_obj)
-                } else {    # Mode is presumed to be "union".
+                } else if(consensus_method=="union") {    
                     results[[condition]][[cofactor]] = reduce(unlist(relevant_peaks[cofactors==cofactor]))
+                } else { # Mode is presumed to be "replicate_1".
+                    results[[condition]][[cofactor]] = relevant_peaks[cofactors==cofactor & rep_number=="1"]
                 }
             }
         }
