@@ -76,3 +76,12 @@ for (acc in accession_list_ep300) {
   message(cmd)
   # system(cmd)
 }
+
+### Download bam GR WCE
+kable(report_gr_bam)
+accession_GR_WCE_list <- unique(report_gr_bam$controls)
+gr_wce_bam <- all_chip_bam[all_chip_bam$accession %in% accession_GR_WCE_list, ]
+report_gr_wce_bam <- gr_wce_bam %>% select(controls = accession, file_accession, submitted_by, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates)
+kable(report_gr_wce_bam)
+
+left_join(report_gr_bam, report_gr_wce_bam)
