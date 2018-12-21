@@ -280,6 +280,20 @@ load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL)
     return(results)
 }
 
+load_macs2_diffpeaks <- function(threshold="1.0") {
+    output_bed = Sys.glob(paste0("output/chip-pipeline-GRCh38/binding_diff/*/output_filters/*", threshold,"*.bed"))
+    cofactor = gsub(".*filters/A549_(.*)_(.*)_rep1_.*Peak.?_M_(.*)_biased.*", "\\2", output_bed)
+    binding_status = gsub(".*filters/A549_(.*)_(.*)_rep1_.*Peak.?_M_(.*)_biased.*", "\\3", output_bed)
+    binding_status = ifelse(grepl("below", binding_status), "Loss", "Gain")
+    
+    imported_bed = lapply(output_bed, rtracklayer::import, format="bed")
+    names(imported_bed) <- cofactor
+    
+    list(Gain=GRangesList(imported_bed[binding_status=="Gain"]), 
+         Loss=GRangesList(imported_bed[binding_status=="Loss"]))
+}
+
+
 intersect_ranges <- function(range_list, min_replicate=2, diagnostic_dir=NULL, label=NULL) {
     intersect_object = ef.utils::build_intersect(range_list)
     enough_replicates = rowSums(intersect_object$Matrix) >= min_replicate

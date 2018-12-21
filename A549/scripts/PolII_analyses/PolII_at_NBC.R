@@ -1,29 +1,38 @@
 library(ef.utils)
 library(dplyr)
 
-# Load peaks.
 source("scripts/load_reddy.R")
-cofactor_peaks = load_cofactor_binding(consensus_method="replicate_1")
 
-# Determine losses/gains in individual cofactors.
-peak_diff = list(Gain=GRangesList(), Loss=GRangesList(), Common=GRangesList())
-for(cofactor in c("NIPBL", "BRD4", "CDK9")) {
-    intersect_obj = build_intersect(GRangesList(DEX=cofactor_peaks[["DEX"]][[cofactor]], 
-                                                CTRL=cofactor_peaks[["CTRL"]][[cofactor]]))
-    gains = intersect_obj$Matrix[,"DEX"] > 0 & intersect_obj$Matrix[,"CTRL"] == 0
-    losses = intersect_obj$Matrix[,"DEX"] == 0 & intersect_obj$Matrix[,"CTRL"] > 0
-    common = intersect_obj$Matrix[,"DEX"] > 0 & intersect_obj$Matrix[,"CTRL"] > 0
-    peak_diff[["Gain"]][[cofactor]] = intersect_obj$Regions[gains]
-    peak_diff[["Loss"]][[cofactor]] = intersect_obj$Regions[losses]
-    peak_diff[["Common"]][[cofactor]] = intersect_obj$Regions[common]
+USE_MACS2_BGDIFF=TRUE
+if(!USE_MACS2_BGDIFF) {
+    # Load peaks.
+    cofactor_peaks = load_cofactor_binding(consensus_method="replicate_1")
+
+    # Determine losses/gains in individual cofactors.
+    peak_diff = list(Gain=GRangesList(), Loss=GRangesList(), Common=GRangesList())
+    for(cofactor in c("NIPBL", "BRD4", "CDK9")) {
+        intersect_obj = build_intersect(GRangesList(DEX=cofactor_peaks[["DEX"]][[cofactor]], 
+                                                    CTRL=cofactor_peaks[["CTRL"]][[cofactor]]))
+        gains = intersect_obj$Matrix[,"DEX"] > 0 & intersect_obj$Matrix[,"CTRL"] == 0
+        losses = intersect_obj$Matrix[,"DEX"] == 0 & intersect_obj$Matrix[,"CTRL"] > 0
+        common = intersect_obj$Matrix[,"DEX"] > 0 & intersect_obj$Matrix[,"CTRL"] > 0
+        peak_diff[["Gain"]][[cofactor]] = intersect_obj$Regions[gains]
+        peak_diff[["Loss"]][[cofactor]] = intersect_obj$Regions[losses]
+        peak_diff[["Common"]][[cofactor]] = intersect_obj$Regions[common]
+    }
+} else {
+    peak_diff = load_macs2_diffpeaks(threshold="0.7")
 }
 
 # Identify losses/gains in all three cofactors.
 all_diff = GRangesList()
 for(type in c("Gain", "Loss")) {
-    intersect_obj = build_intersect(peak_diff[[type]])
+    intersect_obj = build_intersect(peak_diff[[type]][c("NIPBL", "BRD4", "CDK9")])
     all_diff[[type]] = intersect_overlap(intersect_obj)
 }
+
+
+
 
 # Annotate peaks.
 annotation_set = select_annotations("hg38")
