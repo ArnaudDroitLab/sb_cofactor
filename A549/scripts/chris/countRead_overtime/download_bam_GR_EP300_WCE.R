@@ -1,4 +1,5 @@
 setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+source("scripts/chris/countRead_overtime/countReads.utils.R")
 library(ENCODExplorer)
 library(dplyr)
 library(knitr)
@@ -35,16 +36,6 @@ download_bam_in_AccessionList <- function(accession_list, report_bam) {
         message(cmd)
         # system(cmd)
   }
-}
-
-make_report_bam <- function(target_name, all_chip_bam) {
-  bam <- all_chip_bam %>% filter(target == target_name, assembly == "GRCh38", lab == "Tim Reddy, Duke")
-  report_bam <- bam %>% select(accession, file_accession, file_size, submitted_by, target, treatment_duration, treatment_duration_unit, biological_replicates, controls)
-  report_bam$treatment_duration[is.na(report_bam$treatment_duration)] <- 0
-  report_bam$treatment_duration_unit[is.na(report_bam$treatment_duration_unit)] <- "minute"
-  report_bam <- report_bam %>% arrange(desc(treatment_duration_unit), treatment_duration, submitted_by, biological_replicates)
-  print(kable(report_bam))
-  return(report_bam)
 }
 
 make_report_WCE_bam <- function(report_bam, all_chip_bam){
