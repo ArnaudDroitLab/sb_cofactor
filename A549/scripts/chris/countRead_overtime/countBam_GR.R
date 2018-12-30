@@ -30,7 +30,7 @@ write.table(count_total_GR, file = file.path(output_path, "count_total_GR2.txt")
 ##################################################
 #     GR Background
 ##################################################
-##### Shift all Gr peaks to 10000 to get the background
+##### Shift all GR peaks to 10000 to get the background
 background_gr_regions_reduced <- shift(all_gr_regions_reduced, 10000)
 peaks_GR_background_coordVector <- generate_coordVector(background_gr_regions_reduced)
 ##### Count reads in GR background

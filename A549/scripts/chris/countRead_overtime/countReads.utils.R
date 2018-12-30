@@ -48,3 +48,52 @@ countRead <- function(regions, peaks_coordVector, bamPath, report_bam) {
                                                 "_", report_bam$file_accession))
   return(count_total)
 }
+
+##### index BAM (samtools must be in path)
+index_bam <- function(bamPath) {
+  for (bam in bamPath) {
+    bai <- gsub("\\.bam", ".bai", bam)
+    cmd_line <- paste("samtools index", bam, bai)
+    cat(cmd_line, "\n")
+    system(cmd_line)
+  }
+}
+
+##### Figures
+retrieve_sumcount <- function(countTable_filename) {
+  input_path <- "output/analyses/countTable_overtime"
+  countTable <- read.table(file.path(input_path, countTable_filename), header = TRUE)
+  rownames(countTable) <- countTable$Coordinates
+  sumcount <- colSums(countTable[, 2:ncol(countTable)])
+  return(sumcount)
+}
+
+# Assigned colnames relative to time in minutes (to have proper scaling on x axis)
+remove_unit <- function(time_wunit) {
+  # remove unit
+  # convert minute in hour
+  time <- gsub("minute", "", time_wunit)
+  if (grepl("hour", time)) {
+    time <- gsub("hour", "", time_wunit)
+    time <- as.integer(time) * 60
+  }
+  return(time)
+}
+
+assignTime <- function(ratioTable) {
+  oldColnames <- names(ratioTable)
+  lsplit <- strsplit(names(ratioTable), split = "_")
+  time_wunit <- sapply(lsplit, function(x) x[2])
+  newColnames <- sapply(time_wunit, remove_unit)
+  names(ratioTable) <- newColnames
+  return(ratioTable)
+}
+
+dfForPlot <- function(scaledRatioTable, protein) {
+  proteinVector <- rep(protein, length(scaledRatioTable))
+  df <- data.frame(Time = names(scaledRatioTable), Protein = proteinVector, Value = scaledRatioTable)
+  df$Time <- as.character(df$Time)
+  df$Time <- as.numeric(df$Time)
+  return(df)
+}
+
