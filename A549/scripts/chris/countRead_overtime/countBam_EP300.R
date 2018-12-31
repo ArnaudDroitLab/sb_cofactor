@@ -6,13 +6,18 @@ library(Rsamtools)
 library(knitr)
 library(dplyr)
 
-##### List of bam EP300
 all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bam", assay="ChIP-seq")
+output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
+
+##### List of bam EP300
 report_ep300_bam <- make_report_bam(target_name = "EP300", all_chip_bam)
 bamPath_ep300 <- generate_bamPath_from_report(report_ep300_bam, "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam/")
+# index_bam(bamPath_ep300) # Index EP300 bam files (to run only one time is sufficient)
 
-##### Index EP300 bam files (to run only one time is sufficient)
-# index_bam(bamPath_ep300)
+##### List of bam EP300 WCE
+report_ep300_wce_bam <- make_report_WCE_bam(report_ep300_bam, all_chip_bam)
+bamPath_ep300_wce <- generate_bamPath_from_report(report_ep300_wce_bam, "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam/")
+# index_bam(bamPath_ep300_wce) # Index EP300 WCE bam files (to run only one time is sufficient)
 
 ##################################################
 #     EP Peaks
@@ -26,9 +31,15 @@ peaks_ep300_coordVector <- generate_coordVector(all_ep300_regions_reduced)
 ##### Count reads in all EP300 peaks all over the time frame
 count_total_EP300 <- countRead(all_ep300_regions_reduced, peaks_ep300_coordVector, bamPath_ep300, report_ep300_bam)
 
-output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
 save(count_total_EP300, file = file.path(output_path, "count_total_EP300.RData"))
 write.table(count_total_EP300, file = file.path(output_path, "count_total_EP300.txt"),
+            sep = "\t", quote = FALSE, row.names = FALSE)
+
+##### Count reads in all EP300 peaks all over the time frame in EP300 WCE
+count_total_EP300_wce <- countRead(all_ep300_regions_reduced, peaks_ep300_coordVector, bamPath_ep300_wce, report_ep300_wce_bam)
+
+save(count_total_EP300_wce, file = file.path(output_path, "count_total_EP300_wce.RData"))
+write.table(count_total_EP300_wce, file = file.path(output_path, "count_total_EP300_wce.txt"),
             sep = "\t", quote = FALSE, row.names = FALSE)
 
 ##################################################
@@ -40,7 +51,6 @@ peaks_EP300_background_coordVector <- generate_coordVector(background_ep300_regi
 ##### Count reads in EP300 background
 count_total_EP300_background <- countRead(background_ep300_regions_reduced, peaks_EP300_background_coordVector, bamPath_ep300, report_ep300_bam)
 
-output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
 save(count_total_EP300, file = file.path(output_path, "count_total_EP300_background.RData"))
 write.table(count_total_EP300, file = file.path(output_path, "count_total_EP300_background.txt"),
             sep = "\t", quote = FALSE, row.names = FALSE)
@@ -56,7 +66,6 @@ peaks_EP300_gapbackground_coordVector <- generate_coordVector(gapbackground_ep30
 ##### Count reads in EP300 background
 count_total_EP300_gapbackground <- countRead(gapbackground_ep300_regions_reduced, peaks_EP300_gapbackground_coordVector, bamPath_ep300, report_ep300_bam)
 
-output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
 save(count_total_EP300, file = file.path(output_path, "count_total_EP300_gaps_background.RData"))
 write.table(count_total_EP300, file = file.path(output_path, "count_total_EP300_gaps_background.txt"),
             sep = "\t", quote = FALSE, row.names = FALSE)

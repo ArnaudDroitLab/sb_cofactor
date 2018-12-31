@@ -6,14 +6,14 @@ library(knitr)
 ##### Make ENCODE_Reddy_EP300_ChIP_experiments.txt file
 all_chip_bed <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bed", assay="ChIP-seq")
 ep300_bed <- all_chip_bed %>% filter(target == "EP300", assembly == "GRCh38", lab == "Tim Reddy, Duke")
-report_ep300_bed <- ep300_bed %>% select(accession, file_accession, submitted_by, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
+report_ep300_bed <- ep300_bed %>% dplyr::select(accession, file_accession, submitted_by, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
 report_ep300_bed$treatment_duration[is.na(report_ep300_bed$treatment_duration)] <- 0
 report_ep300_bed[which(report_ep300_bed$submitted_by == "Alejandro Barrera"), ]$treatment_duration_unit[is.na(report_ep300_bed[which(report_ep300_bed$submitted_by == "Alejandro Barrera"), ]$treatment_duration_unit)] <- "minute"
 report_ep300_bed[which(report_ep300_bed$submitted_by == "Ian McDowell"), ]$treatment_duration_unit[is.na(report_ep300_bed[which(report_ep300_bed$submitted_by == "Ian McDowell"), ]$treatment_duration_unit)] <- "hour"
 report_ep300_bed <- report_ep300_bed %>% arrange(desc(treatment_duration_unit), treatment_duration, submitted_by, biological_replicates)
 kable(report_ep300_bed)
 
-exp_tmp <- report_ep300_bed %>% select(accession, treatment_duration, treatment_duration_unit) %>% unique
+exp_tmp <- report_ep300_bed %>% dplyr::select(accession, treatment_duration, treatment_duration_unit) %>% unique
 exp_ep300 <- data.frame(Experiment = exp_tmp$accession, Time = paste0(exp_tmp$treatment_duration, " ", exp_tmp$treatment_duration_unit), Order = 1:nrow(exp_tmp))
 kable(exp_ep300)
 

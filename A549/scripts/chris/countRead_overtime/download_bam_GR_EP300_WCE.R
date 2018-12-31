@@ -34,25 +34,8 @@ download_bam_in_AccessionList <- function(accession_list, report_bam) {
 
         cmd <- paste0("mv", " ", oldfilename, " ", newfilename)
         message(cmd)
-        # system(cmd)
+        system(cmd)
   }
-}
-
-make_report_WCE_bam <- function(report_bam, all_chip_bam){
-  accession_WCE_list <- unique(report_bam$controls)
-  wce_bam <- all_chip_bam[all_chip_bam$accession %in% accession_WCE_list, ] %>%
-    arrange(factor(accession, levels = accession_WCE_list), biological_replicates)
-  report_wce_bam <- wce_bam %>% select(controls = accession, file_accession, file_size, submitted_by, target, treatment_duration, treatment_duration_unit, biological_replicates)
-  report_wce_bam$target <- paste0(unique(report_bam$target), "-WCE")
-  for (wce_acc in accession_WCE_list) {
-    tmp <- report_bam[report_bam$controls == wce_acc, ]
-    tmp_td <- unique(tmp$treatment_duration)
-    tmp_tdu <- unique(tmp$treatment_duration_unit)
-    report_wce_bam[which(report_wce_bam$controls == wce_acc), ]$treatment_duration <- tmp_td
-    report_wce_bam[which(report_wce_bam$controls == wce_acc), ]$treatment_duration_unit <- tmp_tdu 
-  }
-  print(kable(report_wce_bam))
-  return(report_wce_bam)
 }
 
 ### All bam files associated with ChIP-seq experiments in A549
