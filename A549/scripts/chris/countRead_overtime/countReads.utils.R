@@ -116,3 +116,35 @@ dfForPlot <- function(scaledRatioTable, protein) {
   df$Time <- as.numeric(df$Time)
   return(df)
 }
+
+bigdfForPlot <- function(valuesList, protein) {
+  bigdf <- data.frame()
+  cpt <- 0
+  for (values in valuesList) {
+    cpt <- cpt + 1
+    df <- dfForPlot(values, protein[cpt])
+    bigdf <- rbind(bigdf, df)
+  }
+  return(bigdf)
+}
+
+calculate_mean <- function(bigdf) {
+  df_mean <- aggregate(bigdf$Value, by=list(bigdf$Time, bigdf$Protein), mean)
+  colnames(df_mean) <- c("time", "protein", "mean")
+  return(df_mean)
+}
+
+plotReadCount <- function(bigdf) {
+  df_mean <- calculate_mean(bigdf)
+  
+  plot <- ggplot(bigdf, aes(x = Time, y = Value)) +
+    geom_point(aes(color = Protein), size = 1) +
+    geom_line(data=df_mean, aes(x=time, y=mean, group=protein, color=protein)) +
+    scale_x_continuous(name="Time",
+                       labels = c("0h", "", "", "", "", "", "", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "10h", "12h"),
+                       breaks = c(0, 5, 10, 15, 20, 25, 30, 60, 120, 180, 240, 300, 360, 420, 480, 600, 720)) +
+    # scale_x_continuous(name="Time", labels=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), breaks=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)) +
+    # scale_y_continuous(name="Value", labels=comma)
+    scale_y_continuous(name="Value")
+  return(plot)
+}
