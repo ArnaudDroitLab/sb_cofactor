@@ -18,8 +18,12 @@ EP300_gapbackground <- retrieve_sumcount("count_total_EP300_gaps_background.txt"
 
 ##### Plot figures
 # Raw count values
-bigdf_GR_EP300 <- bigdfForPlot(list(GR, EP300, GR_WCE, EP300_WCE), protein = c("GR", "EP300", "GR-WCE", "EP300-WCE"))
+bigdf_GR_EP300 <- bigdfForPlot(list(GR, EP300), protein = c("GR", "EP300"))
 plotReadCount(bigdf_GR_EP300)
+
+# Raw count values with WCE
+bigdf_GR_EP300_withWCE <- bigdfForPlot(list(GR, EP300, GR_WCE, EP300_WCE), protein = c("GR", "EP300", "GR-WCE", "EP300-WCE"))
+plotReadCount(bigdf_GR_EP300_withWCE)
 
 # Raw count / background (shift 10000)
 bigdf_GR_EP300_background <- bigdfForPlot(list(GR/GR_background, EP300/EP300_background), protein = c("GR", "EP300"))
