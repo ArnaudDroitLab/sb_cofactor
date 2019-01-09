@@ -141,7 +141,7 @@ plotReadCount <- function(bigdf) {
     geom_point(aes(color = Protein), size = 1) +
     geom_line(data=df_mean, aes(x=time, y=mean, group=protein, color=protein)) +
     scale_x_continuous(name="Time",
-                       labels = c("0h", "", "", "", "", "", "", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "10h", "12h"),
+                       labels = c("0h", "", "", "", "", "", "30m", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "10h", "12h"),
                        breaks = c(0, 5, 10, 15, 20, 25, 30, 60, 120, 180, 240, 300, 360, 420, 480, 600, 720)) +
     # scale_x_continuous(name="Time", labels=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), breaks=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)) +
     # scale_y_continuous(name="Value", labels=comma)

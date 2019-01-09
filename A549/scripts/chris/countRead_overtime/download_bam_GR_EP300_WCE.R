@@ -44,19 +44,19 @@ all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_fo
 ### Download bam GR
 report_gr_bam <- make_report_bam(target_name = "NR3C1", all_chip_bam)
 accession_list_gr <- unique(report_gr_bam$file_accession)
-download_bam_in_AccessionList(accession_list_gr, report_gr_bam)
+# download_bam_in_AccessionList(accession_list_gr, report_gr_bam)
 
 ### Download bam EP300
 report_ep300_bam <- make_report_bam(target_name = "EP300", all_chip_bam)
 accession_list_ep300 <- unique(report_ep300_bam$file_accession)
-download_bam_in_AccessionList(accession_list_ep300, report_ep300_bam)
+# download_bam_in_AccessionList(accession_list_ep300, report_ep300_bam)
 
 ### Download bam WCE GR
 report_gr_wce_bam <- make_report_WCE_bam(report_gr_bam, all_chip_bam)
 accession_list_gr_wce <- unique(report_gr_wce_bam$file_accession)
-download_bam_in_AccessionList(accession_list_gr_wce, report_gr_wce_bam)
+# download_bam_in_AccessionList(accession_list_gr_wce, report_gr_wce_bam)
 
 ### Download bam WCE GR
 report_ep300_wce_bam <- make_report_WCE_bam(report_ep300_bam, all_chip_bam)
 accession_list_ep300_wce <- unique(report_ep300_wce_bam$file_accession)
-download_bam_in_AccessionList(accession_list_ep300_wce, report_ep300_wce_bam)
+# download_bam_in_AccessionList(accession_list_ep300_wce, report_ep300_wce_bam)
