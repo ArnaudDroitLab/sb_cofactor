@@ -27,7 +27,7 @@ download_bam_in_AccessionList <- function(accession_list, report_bam) {
       
         message("####### ", acc, "\t", target, "\trep", rep, "\t", cpt, "\\", cptmax)
         message("####### ", td, " ", tdu)
-        # download_bam_from_ENCODE(acc)
+        download_bam_from_ENCODE(acc)
 
         oldfilename <- file.path(chip_bam_dir, paste0(acc, ".bam"))
         newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_rep", rep, "_", acc, ".bam"))
@@ -60,3 +60,9 @@ accession_list_gr_wce <- unique(report_gr_wce_bam$file_accession)
 report_ep300_wce_bam <- make_report_WCE_bam(report_ep300_bam, all_chip_bam)
 accession_list_ep300_wce <- unique(report_ep300_wce_bam$file_accession)
 # download_bam_in_AccessionList(accession_list_ep300_wce, report_ep300_wce_bam)
+
+### 2019-01-28
+### Download bam EP300
+report_ctcf_bam <- make_report_bam(target_name = "CTCF", all_chip_bam)
+accession_list_ctcf <- unique(report_ctcf_bam$file_accession)
+download_bam_in_AccessionList(accession_list_ctcf, report_ctcf_bam)
