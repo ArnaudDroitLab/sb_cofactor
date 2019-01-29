@@ -12,7 +12,7 @@ output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTabl
 ##### List of bam CTCF
 report_ctcf_bam <- make_report_bam(target_name = "CTCF", all_chip_bam)
 bamPath_ctcf <- generate_bamPath_from_report(report_ctcf_bam, "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam/")
-index_bam(bamPath_ctcf) # Index CTCF bam files (to run only one time is sufficient)
+indexBam(bamPath_ctcf) # Index CTCF bam files (to run only one time is sufficient)
 
 ##################################################
 #     CTCF Peaks

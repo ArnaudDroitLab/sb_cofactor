@@ -69,15 +69,16 @@ countRead <- function(regions, peaks_coordVector, bamPath, report_bam) {
   return(count_total)
 }
 
+##### 2019-01-29: Deprecated | use indexBam from Rsamtools instead > do not require samtools to be in path
 ##### index BAM (samtools must be in path)
-index_bam <- function(bamPath) {
-  for (bam in bamPath) {
-    bai <- gsub("\\.bam", ".bai", bam)
-    cmd_line <- paste("samtools index", bam, bai)
-    cat(cmd_line, "\n")
-    system(cmd_line)
-  }
-}
+# index_bam <- function(bamPath) {
+#   for (bam in bamPath) {
+#     bai <- gsub("\\.bam", ".bai", bam)
+#     cmd_line <- paste("samtools index", bam, bai)
+#     cat(cmd_line, "\n")
+#     system(cmd_line)
+#   }
+# }
 
 ##### Figures
 retrieve_sumcount <- function(countTable_filename) {
