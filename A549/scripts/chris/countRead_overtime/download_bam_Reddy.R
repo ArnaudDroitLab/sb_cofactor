@@ -86,4 +86,26 @@ accession_list_rad21 <- unique(report_rad21_bam$file_accession)
 ### Download bam FOSL2
 report_fosl2_bam <- make_report_bam(target_name = "FOSL2", all_chip_bam)
 accession_list_fosl2 <- unique(report_fosl2_bam$file_accession)
-download_bam_in_AccessionList(accession_list_fosl2[31:33], report_fosl2_bam)
+# download_bam_in_AccessionList(accession_list_fosl2, report_fosl2_bam)
+
+#######################
+# 2019-01-29
+#######################
+
+### Download bam BCL3
+report_bcl3_bam <- make_report_bam(target_name = "BCL3", all_chip_bam)
+accession_list_bcl3 <- unique(report_bcl3_bam$file_accession)
+# download_bam_in_AccessionList(accession_list_bcl3, report_bcl3_bam)
+
+### Download bam JUN
+report_jun_bam <- make_report_bam(target_name = "JUN", all_chip_bam)
+accession_list_jun <- unique(report_jun_bam$file_accession)
+# download_bam_in_AccessionList(accession_list_jun, report_jun_bam)
+
+targets <- c("JUNB", "HES2", "CEBPB")
+for (target in targets) {
+  message("####### ", target)
+  report_bam <- make_report_bam(target_name = target, all_chip_bam)
+  accession_list <- unique(report_bam$file_accession)
+  download_bam_in_AccessionList(accession_list, report_bam)
+}
