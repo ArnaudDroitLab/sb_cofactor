@@ -102,7 +102,8 @@ report_jun_bam <- make_report_bam(target_name = "JUN", all_chip_bam)
 accession_list_jun <- unique(report_jun_bam$file_accession)
 # download_bam_in_AccessionList(accession_list_jun, report_jun_bam)
 
-targets <- c("JUNB", "HES2", "CEBPB")
+# targets <- c("HES2", "CEBPB")
+targets <- c("CEBPB")
 for (target in targets) {
   message("####### ", target)
   report_bam <- make_report_bam(target_name = target, all_chip_bam)

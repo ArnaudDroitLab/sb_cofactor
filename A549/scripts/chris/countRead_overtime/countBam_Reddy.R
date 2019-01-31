@@ -37,8 +37,8 @@ all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_fo
 output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/output/analyses/countTable_overtime"
 
 ######################
-# targets <- c("SMC3", "CTCF", "RAD21", "FOSL2", "BCL3", "JUN")
-targets <- c("JUN")
+# targets <- c("SMC3", "CTCF", "RAD21", "FOSL2", "BCL3", "JUN", "JUNB", "HES2", "CEBPB")
+targets <- c("CEBPB")
 
 for (protein in targets) {
   message("#####\t", protein)

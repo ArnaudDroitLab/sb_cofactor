@@ -28,10 +28,16 @@ BCL3 <- retrieve_sumcount("count_total_BCL3.txt") %>% assignTime
 
 JUN <- retrieve_sumcount("count_total_JUN.txt") %>% assignTime
 
+JUNB <- retrieve_sumcount("count_total_JUNB.txt") %>% assignTime
+
+HES2 <- retrieve_sumcount("count_total_HES2.txt") %>% assignTime
+
+CEBPB <- retrieve_sumcount("count_total_CEBPB.txt") %>% assignTime
+
 ##### Plot figures
 # Raw count values
-bigdf_GR_EP300 <- bigdfForPlot(list(GR, EP300, CTCF, RAD21, SMC3, FOSL2, BCL3, JUN),
-                               protein = c("GR", "EP300", "CTCF", "RAD21", "SMC3", "FOSL2", "BCL3", "JUN"))
+bigdf_GR_EP300 <- bigdfForPlot(list(GR, EP300, CTCF, RAD21, SMC3, FOSL2, BCL3, JUN, JUNB, HES2, CEBPB),
+                               protein = c("GR", "EP300", "CTCF", "RAD21", "SMC3", "FOSL2", "BCL3", "JUN", "JUNB", "HES2", "CEBPB"))
 plotReadCount(bigdf_GR_EP300)
 
 # Raw count values with WCE
