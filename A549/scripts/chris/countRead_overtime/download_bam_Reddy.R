@@ -22,12 +22,15 @@ download_bam_in_AccessionList <- function(accession_list, report_bam) {
     message("#########################################################################")
       target <- report_bam %>% filter(file_accession == acc) %>% select(target)
       rep <- report_bam %>% filter(file_accession == acc) %>% select(biological_replicates)
+      size <- report_bam %>% filter(file_accession == acc) %>% select(file_size)
       td <- report_bam %>% filter(file_accession == acc) %>% select(treatment_duration) # td = treatment_duration
       tdu <- report_bam %>% filter(file_accession == acc) %>% select(treatment_duration_unit) # tdu = treatment_duration_unit
       
-        message("####### ", acc, "\t", target, "\trep", rep, "\t", cpt, "\\", cptmax)
-        message("####### ", td, " ", tdu)
-        # download_bam_from_ENCODE(acc)
+        message("####### ", acc, "\t", target, "\trep", rep, "\t",
+                td, " ", tdu, "\t",
+                "| ", size, "\t",
+                cpt, "\\", cptmax)
+        download_bam_from_ENCODE(acc)
 
         oldfilename <- file.path(chip_bam_dir, paste0(acc, ".bam"))
         newfilename <- file.path(chip_bam_dir, paste0(target, "_", td, tdu, "_rep", rep, "_", acc, ".bam"))
@@ -38,25 +41,32 @@ download_bam_in_AccessionList <- function(accession_list, report_bam) {
   }
 }
 
+download_Reddy_ChIP <- function(protein, WCE = FALSE) {
+  report_bam <- make_report_bam(target_name = protein, all_chip_bam)
+  if (WCE == TRUE) {
+    report_wce_bam <- make_report_WCE_bam(report_bam, all_chip_bam)
+    accession_list_wce <- unique(report_wce_bam$file_accession)
+    download_bam_in_AccessionList(accession_list_wce, report_wce_bam)
+  } else {
+    accession_list <- unique(report_bam$file_accession)
+    download_bam_in_AccessionList(accession_list, report_bam)
+  }
+}
+
 ### All bam files associated with ChIP-seq experiments in A549
 all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bam", assay="ChIP-seq")
 
-### Download bam GR
-report_gr_bam <- make_report_bam(target_name = "NR3C1", all_chip_bam)
-accession_list_gr <- unique(report_gr_bam$file_accession)
-# download_bam_in_AccessionList(accession_list_gr, report_gr_bam)
-
-### Download bam EP300
-report_ep300_bam <- make_report_bam(target_name = "EP300", all_chip_bam)
-accession_list_ep300 <- unique(report_ep300_bam$file_accession)
-# download_bam_in_AccessionList(accession_list_ep300, report_ep300_bam)
-
-### Download bam WCE GR
-report_gr_wce_bam <- make_report_WCE_bam(report_gr_bam, all_chip_bam)
-accession_list_gr_wce <- unique(report_gr_wce_bam$file_accession)
-# download_bam_in_AccessionList(accession_list_gr_wce, report_gr_wce_bam)
-
-### Download bam WCE GR
-report_ep300_wce_bam <- make_report_WCE_bam(report_ep300_bam, all_chip_bam)
-accession_list_ep300_wce <- unique(report_ep300_wce_bam$file_accession)
-# download_bam_in_AccessionList(accession_list_ep300_wce, report_ep300_wce_bam)
+### Download Bam
+download_Reddy_ChIP("NR3C1")
+download_Reddy_ChIP("EP300")
+download_Reddy_ChIP("NR3C1", WCE = TRUE)
+download_Reddy_ChIP("EP300", WCE = TRUE)
+download_Reddy_ChIP("CTCF")
+download_Reddy_ChIP("SMC3")
+download_Reddy_ChIP("RAD21")
+download_Reddy_ChIP("FOSL2")
+download_Reddy_ChIP("BCL3")
+download_Reddy_ChIP("JUN")
+download_Reddy_ChIP("JUNB")
+download_Reddy_ChIP("HES2")
+download_Reddy_ChIP("CEPBP")
