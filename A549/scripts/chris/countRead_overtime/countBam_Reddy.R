@@ -37,7 +37,7 @@ countInBam_wce <- function(target, indexBam = FALSE) {
   report_bam <- make_report_bam(target_name = target, all_chip_bam)
   report_wce_bam <- make_report_WCE_bam(report_bam, all_chip_bam)
   bamPath_wce <- generate_bamPath_from_report(report_wce_bam, "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam/")
-  if (indexBam == TRUE) {indexBam(bamPath)}
+  if (indexBam == TRUE) {indexBam(bamPath_wce)}
   
   ### Gather all peaks all over the time frame
   make_ENCODE_Reddy_ChIP_experiments_file(target)
