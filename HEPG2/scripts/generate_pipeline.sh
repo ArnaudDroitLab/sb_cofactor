@@ -1,6 +1,6 @@
 mkdir -p output/chip-pipeline-GRCh38
 
-chipseq.py -j slurm -s '1-12' \
+chipseq.py -j slurm -s '1-10,12' \
     -l debug \
     -r raw/chip-seq/readset.txt \
     -d raw/chip-seq/design.txt \
