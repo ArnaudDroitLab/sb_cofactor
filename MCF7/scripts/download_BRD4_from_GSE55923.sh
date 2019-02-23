@@ -11,11 +11,8 @@ export OUTDIR="/home/chris11/scratch/sb_cofactor/MCF7/raw/chip-seq"
 #SBATCH --mem-per-cpu=1G
 #SBATCH --account=def-stbil30
 
-for sra in SRX490426S SRX490427 SRX490428 SRX490429 SRX490430 SRX490431
+for sra in SRR1193526 SRR1193527 SRR1193528 SRR1193529 SRR1193530
 do
 	echo "Downloading $sra"
 	fastq-dump $sra -outdir $OUTDIR
 done
-
-
-
