@@ -1,9 +1,11 @@
 # get OS:http://conjugateprior.org/2015/06/identifying-the-os-from-r/
+# setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
+
 source("scripts/ckn_utils.R")
 library(ef.utils)
 library(GenomicRanges)
+library(eulerr)
 
 ##########
 cofactors_peaks <- load_cofactor_stdchr_peaks(cofactors = c("NIPBL", "BRD4", "CDK9"))
@@ -15,10 +17,10 @@ CDK9_CTRL <- cofactors_peaks[["CDK9_CTRL"]]; print(length(CDK9_CTRL)) # 10788
 NBC_CTRL <- GenomicRangesList("NIPBL_CTRL" = NIPBL_CTRL, "BRD4_CTRL" = BRD4_CTRL, "CDK9_CTRL" = CDK9_CTRL)
 plotVenn(NBC_CTRL)
 
-#########
+######### getVennRegions
 # input: GenomicRangesList
-# output: regions of each overlaps
-noname <- function(grl) {
+# output: List of GRanges corresponding to each regions of the Venn Diagramm, construted from the GenomicRangesList
+getVennRegions <- function(grl) {
   inter <- build_intersect(grl)
   regions <- inter$Regions
   M <- as.data.frame(inter$Matrix)
@@ -53,16 +55,21 @@ noname <- function(grl) {
               "C" = C_regions)
   return(res)
 }
+#########
+vennRegions_NBC_CTRL <- getVennRegions(NBC_CTRL)
+names(vennRegions_NBC_CTRL)
 
-test <- noname(NBC_CTRL)
-names(test)
-
+######### Construct list of GRanges to compare with
 NIPBL_DEX <- cofactors_peaks[["NIPBL_DEX"]] # 2733
 BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]] # 21225
 CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]] # 6061
 NBC_DEX <- list("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
 
-count_vs <- function(regions, region_list) {
+######### getTableCount
+# input:  1. GRanges
+#         2. List of GRanges to compare against input1
+# output: vector of integers, corresponding to the count of genomic ranges in input1 overlapping with each GRanges of input2
+getTableCount <- function(regions, region_list) {
   grl <- region_list
   all.regions = regions
   overlap.matrix <- matrix(0, nrow = length(all.regions), ncol = length(grl))
@@ -91,15 +98,19 @@ count_vs <- function(regions, region_list) {
   return(vres)
 }
 
+######### for loop to compare each GRanges of 
 df_res <- data.frame()
-for (region_name in names(test)) {
-  vres <- count_vs(test[[region_name]], NBC_DEX)
+for (region_name in names(vennRegions_NBC_CTRL)) {
+  vres <- getTableCount(vennRegions_NBC_CTRL[[region_name]], NBC_DEX)
   df_res <- rbind(df_res, vres)
 }
 
-rownames(df_res) <- names(test)
+rownames(df_res) <- names(vennRegions_NBC_CTRL)
 colnames(df_res) <- c("total", "NBC", "NB", "NC", "BC", "N", "B", "C", "None")
 df_res
 
-NBC_DEX2 <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
-plotVenn(NBC_DEX2)
+df_res_percent <- round(df_res / df_res$total * 100, 2)
+df_res_percent
+
+# NBC_DEX2 <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
+# plotVenn(NBC_DEX2)
