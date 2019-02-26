@@ -115,6 +115,8 @@ write.table(df_res, file = file.path(output_dir, "table_NBC_CTRL_regions_in_DEX.
 
 df_res_percent <- round(df_res / df_res$total * 100, 2)
 df_res_percent
+write.table(df_res_percent, file = file.path(output_dir, "table_NBC_CTRL_regions_in_DEX_percent.txt"),
+            sep = "\t", quote = FALSE)
 
 # NBC_DEX2 <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
 # plotVenn(NBC_DEX2)
