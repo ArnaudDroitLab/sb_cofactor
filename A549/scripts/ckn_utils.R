@@ -98,11 +98,11 @@ plotAnnotation <- function(anno_df) {
 }
 
 #####
-plotVenn <- function(gr_list) {
+plotVenn <- function(gr_list, labels = TRUE) {
   overlaps <- build_intersect(gr_list)
   mat <- overlaps$Matrix > 0
   fit <- euler(mat, shape = "ellipse")
-  p <- plot(fit, quantities = TRUE,
+  p <- plot(fit, quantities = TRUE, labels = labels,
             fills = list(fill = c("#FFB027", "#2B70AB", "#CD3301", "#449B2B")),
             edges = list(alpha = 0))
   return(p)
