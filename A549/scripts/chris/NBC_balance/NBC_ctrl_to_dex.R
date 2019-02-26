@@ -1,4 +1,6 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+# setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+# option: if system == Mac or Linux, do
 
 source("scripts/ckn_utils.R")
 library(GenomicRanges)
