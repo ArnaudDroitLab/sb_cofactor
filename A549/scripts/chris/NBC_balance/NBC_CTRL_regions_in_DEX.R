@@ -2,6 +2,8 @@
 # setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
+output_dir <- "output/analyses/NBC_balance"
+
 source("scripts/ckn_utils.R")
 library(ef.utils)
 library(GenomicRanges)
@@ -60,9 +62,9 @@ vennRegions_NBC_CTRL <- getVennRegions(NBC_CTRL)
 names(vennRegions_NBC_CTRL)
 
 ######### Construct list of GRanges to compare with
-NIPBL_DEX <- cofactors_peaks[["NIPBL_DEX"]] # 2733
-BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]] # 21225
-CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]] # 6061
+NIPBL_DEX <- cofactors_peaks[["NIPBL_DEX"]]; print(length(NIPBL_DEX)) # 2733
+BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]];  print(length(BRD4_DEX)) # 21225
+CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]];  print(length(CDK9_DEX)) # 6061
 NBC_DEX <- list("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
 
 ######### getTableCount
@@ -108,6 +110,8 @@ for (region_name in names(vennRegions_NBC_CTRL)) {
 rownames(df_res) <- names(vennRegions_NBC_CTRL)
 colnames(df_res) <- c("total", "NBC", "NB", "NC", "BC", "N", "B", "C", "None")
 df_res
+write.table(df_res, file = file.path(output_dir, "table_NBC_CTRL_regions_in_DEX.txt"),
+            sep = "\t", quote = FALSE)
 
 df_res_percent <- round(df_res / df_res$total * 100, 2)
 df_res_percent
