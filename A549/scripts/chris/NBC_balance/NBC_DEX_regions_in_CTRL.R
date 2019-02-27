@@ -8,6 +8,7 @@ source("scripts/ckn_utils.R")
 library(ef.utils)
 library(GenomicRanges)
 library(eulerr)
+library(cowplot)
 
 ##########
 cofactors_peaks <- load_cofactor_stdchr_peaks(cofactors = c("NIPBL", "BRD4", "CDK9"))
@@ -17,7 +18,7 @@ BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]]; print(length(BRD4_DEX)) # 28084
 CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]]; print(length(CDK9_DEX)) # 10788
 
 NBC_DEX <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
-plotVenn(NBC_DEX)
+plot_grid(plotVenn(NBC_DEX), labels = c("A549_DEX"))
 
 ######### getVennRegions
 # input: GenomicRangesList
