@@ -20,6 +20,19 @@ CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]]; print(length(CDK9_DEX)) # 10788
 NBC_DEX <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
 plot_grid(plotVenn(NBC_DEX), labels = c("A549_DEX"))
 
+##########
+gr_regions <- load_reddy_gr_binding_consensus()
+names(gr_regions)
+
+gr_1h <- gr_regions[["1 hour"]]; print(length(gr_1h)) # 
+
+NIPBL_DEX_GR <- subsetByOverlaps(NIPBL_DEX, gr_1h); print(length(NIPBL_DEX_GR)) #
+BRD4_DEX_GR <- subsetByOverlaps(BRD4_DEX, gr_1h); print(length(BRD4_DEX_GR)) #
+CDK9_DEX_GR <- subsetByOverlaps(CDK9_DEX, gr_1h); print(length(CDK9_DEX_GR)) #
+
+NBC_DEX_GR <- GenomicRangesList("NIPBL_DEX_GR" = NIPBL_DEX_GR, "BRD4_DEX_GR" = BRD4_DEX_GR, "CDK9_DEX_GR" = CDK9_DEX_GR)
+plot_grid(plotVenn(NBC_DEX_GR), labels = c("A549_DEX_GR"))
+
 ######### getVennRegions
 # input: GenomicRangesList
 # output: List of GRanges corresponding to each regions of the Venn Diagramm, construted from the GenomicRangesList
@@ -59,8 +72,8 @@ getVennRegions <- function(grl) {
   return(res)
 }
 #########
-vennRegions_NBC_DEX <- getVennRegions(NBC_DEX)
-names(vennRegions_NBC_DEX)
+vennRegions_NBC_DEX_GR <- getVennRegions(NBC_DEX_GR)
+names(vennRegions_NBC_DEX_GR)
 
 ######### Construct list of GRanges to compare with
 NIPBL_CTRL <- cofactors_peaks[["NIPBL_CTRL"]]; print(length(NIPBL_CTRL)) # 2733
@@ -103,21 +116,21 @@ getTableCount <- function(regions, region_list) {
 
 ######### for loop to compare each GRanges of 
 df_res <- data.frame()
-for (region_name in names(vennRegions_NBC_DEX)) {
-  vres <- getTableCount(vennRegions_NBC_DEX[[region_name]], NBC_CTRL)
+for (region_name in names(vennRegions_NBC_DEX_GR)) {
+  vres <- getTableCount(vennRegions_NBC_DEX_GR[[region_name]], NBC_CTRL)
   df_res <- rbind(df_res, vres)
 }
 
-rownames(df_res) <- names(vennRegions_NBC_DEX)
+rownames(df_res) <- names(vennRegions_NBC_DEX_GR)
 colnames(df_res) <- c("total", "NBC", "NB", "NC", "BC", "N", "B", "C", "None")
 df_res
-write.table(df_res, file = file.path(output_dir, "table_NBC_DEX_regions_in_CTRL.txt"),
+write.table(df_res, file = file.path(output_dir, "table_NBC_DEX_regions_with_GR_in_CTRL.txt"),
             sep = "\t", quote = FALSE)
 
 df_res_percent <- round(df_res / df_res$total * 100, 2)
 df_res_percent
-write.table(df_res_percent, file = file.path(output_dir, "table_NBC_DEX_regions_in_CTRL_percent.txt"),
+write.table(df_res_percent, file = file.path(output_dir, "table_NBC_DEX_regions_with_GR_in_CTRL_percent.txt"),
             sep = "\t", quote = FALSE)
 
-# NBC_DEX2 <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
-# plotVenn(NBC_DEX2)
+# Next step: au niveau de quel gènes agit le binding de nouveau NBC? integration 3D
+# > quel proportion de nos NBC se bind au niveau des datas 3D?
