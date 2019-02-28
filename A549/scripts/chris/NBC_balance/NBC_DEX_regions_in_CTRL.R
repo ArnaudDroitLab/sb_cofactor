@@ -88,6 +88,7 @@ getTableCount <- function(regions, region_list) {
   
   resM <- as.data.frame(res); nrow(resM) # 5200
   NBC <- sum(resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL != 0); print(NBC) # 1343
+  print(resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL != 0)
   NB <- sum(resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL == 0); print(NB) # 136
   NC <- sum(resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL != 0); print(NC) # 3
   BC <- sum(resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL != 0); print(BC) # 1404
