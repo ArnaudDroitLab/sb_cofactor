@@ -145,7 +145,7 @@ getRegions <- function(regions, region_list) {
   zero_regions <- all.regions[resM$NIPBL_DEX == 0 & resM$BRD4_DEX == 0 & resM$CDK9_DEX == 0]; print(length(zero_regions))
   total_regions <- all.regions; print(length(all.regions)) # 5200
   
-  individual_list <- list("total_DEX" = total_regions,
+  individual_list <- list("total" = total_regions,
                           "NBC_DEX" = NBC_regions,
                           "NB_DEX" = NB_regions,
                           "NC_DEX" = NC_regions,
@@ -182,7 +182,7 @@ for (ctrl_regions in names(list_res)) {
   
   vres <- c()
   for (dex_regions in names(list_res[[ctrl_regions]])) {
-    message("    ### ", ctrl_regions)
+    message("    ### ", dex_regions)
     initial_regions <- list_res[[ctrl_regions]][[dex_regions]]
     cat("\t", length(initial_regions), "regions \n")
     ov_with_GR <- subsetByOverlaps(initial_regions, gr_1h)
@@ -203,14 +203,14 @@ rownames(df_res_overlapsGR) <- names(list_res)
 colnames(df_res_overlapsGR) <- names(list_res[["NBC_CTRL"]])
 df_res_overlapsGR
 
-write.table(df_res_overlapsGR, file = file.path(output_dir, "table_NBC_CTRL_withGR_regions_in_DEX.txt"),
+write.table(df_res_overlapsGR, file = file.path(output_dir, "table_NBC_CTRL_withGR1h_regions_in_DEX.txt"),
             sep = "\t", quote = FALSE)
 
 #### ratio table of GR overlapping
 df_res_overlapsGR_percent <- round(df_res_overlapsGR/df_res*100, 2)
 df_res_overlapsGR_percent
 
-write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_CTRL_withGR_regions_in_DEX_percent.txt"),
+write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_CTRL_withGR1h_regions_in_DEX_percent.txt"),
             sep = "\t", quote = FALSE)
 
 ########################################
