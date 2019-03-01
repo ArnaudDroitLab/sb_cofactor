@@ -27,6 +27,9 @@ vennpie(anno)
 upsetplot(anno)
 upsetplot(anno, vennpie = TRUE)
 
+#
+anno_df %>% filter(Annot == "Promoter")
+
 # input to GREAT: Genomic Regions Enrichment of Annotations Tool
 # GREAT predicts functions of cis-regulatory regions
   # liftover to hg39
