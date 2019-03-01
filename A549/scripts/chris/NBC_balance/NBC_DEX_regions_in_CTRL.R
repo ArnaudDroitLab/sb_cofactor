@@ -205,16 +205,43 @@ rownames(df_res_overlapsGR) <- names(list_res)
 colnames(df_res_overlapsGR) <- names(list_res[["NBC_DEX"]])
 df_res_overlapsGR
 
-write.table(df_res_overlapsGR, file = file.path(output_dir, "table_NBC_DEX_withGR_regions_in_CTRL.txt"),
+write.table(df_res_overlapsGR, file = file.path(output_dir, "table_NBC_DEX_withGR1h_regions_in_CTRL.txt"),
             sep = "\t", quote = FALSE)
 
 #### ratio table of GR overlapping
 df_res_overlapsGR_percent <- round(df_res_overlapsGR/df_res*100, 2)
 df_res_overlapsGR_percent
 
-write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_DEX_withGR_regions_in_CTRL_percent.txt"),
+write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_DEX_withGR1h_regions_in_CTRL_percent.txt"),
             sep = "\t", quote = FALSE)
 
 ########################################
-#
+# Gain de NBC:
+# Dans NBC_DEX qui étaient None_CTRL, voici le binding de GR:
+# A 5 min: 100 %
+# A 10 min: 100 %
+# A 15 min: 100 %
+# A 20 min: 100 %
+# A 25 min:  100 %
+# A 30 m:  99,32 %
+# A 1h:  99,32 %
 ########################################
+########################################
+# Retrieve sequences NBC_DEX>None_CTRL that overlaps with GR
+# Take the set of sequences that maximizes the overlaps with GR between 0 and 1 hour
+########################################
+# step1: retrieve the genomic coordinates of NBC_DEX>None_CTRL
+genomic_regions <- list_res[["NBC_DEX"]][["None_CTRL"]]
+
+# step2: retrieve the genomic coordinades of NBC_DEX>None_CTRL with GR at the time point that maximize the number of regions
+gr_10min <- gr_regions[["10 minute"]]
+ov_gr_regions <- subsetByOverlaps(genomic_regions, gr_10min); print(length(ov_gr_regions)) # 294 (as expected)
+summary(width(ov_gr_regions))
+
+# step3: export to bed file for further analysis
+output_dir <- "output/chip-pipeline-GRCh38/peak_call/A549_NBC"
+command <- paste("mkdir -p", output_dir, sep = " ")
+system(command)
+
+bedname <- "NBC_DEX_to_None_CTRL_ovGR.bed"
+rtracklayer::export(ov_gr_regions, con = file.path(output_dir, bedname))

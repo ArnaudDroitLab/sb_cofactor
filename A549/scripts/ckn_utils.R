@@ -2,6 +2,7 @@
 
 library(GenomicRanges)
 library(org.Hs.eg.db)
+library(plotly)
 source("scripts/load_reddy.R")
 
 most_expressed = load_most_expressed_transcripts()
