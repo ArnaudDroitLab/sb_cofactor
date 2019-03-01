@@ -13,9 +13,9 @@ library(cowplot)
 ##########
 cofactors_peaks <- load_cofactor_stdchr_peaks(cofactors = c("NIPBL", "BRD4", "CDK9"))
 
-NIPBL_DEX <- cofactors_peaks[["NIPBL_DEX"]]; print(length(NIPBL_DEX)) # 9470
-BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]]; print(length(BRD4_DEX)) # 28084
-CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]]; print(length(CDK9_DEX)) # 10788
+NIPBL_DEX <- cofactors_peaks[["NIPBL_DEX"]]; print(length(NIPBL_DEX)) #
+BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]]; print(length(BRD4_DEX)) #
+CDK9_DEX <- cofactors_peaks[["CDK9_DEX"]]; print(length(CDK9_DEX)) #
 
 NBC_DEX <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
 plot_grid(plotVenn(NBC_DEX), labels = c("A549_DEX"))
@@ -27,28 +27,28 @@ getVennRegions <- function(grl) {
   inter <- build_intersect(grl)
   regions <- inter$Regions
   M <- as.data.frame(inter$Matrix)
-  
-  NBC <- (M$NIPBL_DEX != 0 & M$BRD4_DEX != 0 & M$CDK9_DEX != 0); print(sum(NBC)) # 5200
+
+  NBC <- (M$NIPBL_DEX != 0 & M$BRD4_DEX != 0 & M$CDK9_DEX != 0); print(sum(NBC)) #
   NBC_DEX_regions <- regions[NBC,]
-  
-  NB <- (M$NIPBL_DEX != 0 & M$BRD4_DEX != 0 & M$CDK9_DEX == 0); print(sum(NB)) # 2439
+
+  NB <- (M$NIPBL_DEX != 0 & M$BRD4_DEX != 0 & M$CDK9_DEX == 0); print(sum(NB)) #
   NB_DEX_regions <- regions[NB,]
-  
-  NC <- (M$NIPBL_DEX != 0 & M$BRD4_DEX == 0 & M$CDK9_DEX != 0); print(sum(NC)) # 104
+
+  NC <- (M$NIPBL_DEX != 0 & M$BRD4_DEX == 0 & M$CDK9_DEX != 0); print(sum(NC)) #
   NC_DEX_regions <- regions[NC,]
-  
-  BC <- (M$NIPBL_DEX == 0 & M$BRD4_DEX != 0 & M$CDK9_DEX != 0); print(sum(BC)) # 3683
+
+  BC <- (M$NIPBL_DEX == 0 & M$BRD4_DEX != 0 & M$CDK9_DEX != 0); print(sum(BC)) #
   BC_DEX_regions <- regions[BC,]
-  
-  N <- (M$NIPBL_DEX != 0 & M$BRD4_DEX == 0 & M$CDK9_DEX == 0); print(sum(N)) # 1080
+
+  N <- (M$NIPBL_DEX != 0 & M$BRD4_DEX == 0 & M$CDK9_DEX == 0); print(sum(N)) #
   N_DEX_regions <- regions[N,]
-  
-  B <- (M$NIPBL_DEX == 0 & M$BRD4_DEX != 0 & M$CDK9_DEX == 0); print(sum(B)) # 16540
+
+  B <- (M$NIPBL_DEX == 0 & M$BRD4_DEX != 0 & M$CDK9_DEX == 0); print(sum(B)) #
   B_DEX_regions <- regions[B,]
-  
-  C <- (M$NIPBL_DEX == 0 & M$BRD4_DEX == 0 & M$CDK9_DEX != 0); print(sum(C)) # 883
+
+  C <- (M$NIPBL_DEX == 0 & M$BRD4_DEX == 0 & M$CDK9_DEX != 0); print(sum(C)) #
   C_DEX_regions <- regions[C,]
-  
+
   res <- list("NBC_DEX" = NBC_DEX_regions,
               "NB_DEX" = NB_DEX_regions,
               "NC_DEX" = NC_DEX_regions,
@@ -77,15 +77,15 @@ getTableCount <- function(regions, region_list) {
   all.regions = regions
   overlap.matrix <- matrix(0, nrow = length(all.regions), ncol = length(grl))
   overlap.list = list()
-  
+
   for (i in 1:length(grl)) {
-    overlap.matrix[, i] <- GenomicRanges::countOverlaps(all.regions, 
+    overlap.matrix[, i] <- GenomicRanges::countOverlaps(all.regions,
                                                         grl[[i]], type = "any")
     overlap.list[[names(grl)[i]]] <- which(overlap.matrix[, i] != 0)
   }
   colnames(overlap.matrix) <- names(grl)
   res <- overlap.matrix
-  
+
   resM <- as.data.frame(res); nrow(resM) # 5200
   NBC <- sum(resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL != 0); print(NBC) # 1343
   NB <- sum(resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL == 0); print(NB) # 136
@@ -96,12 +96,12 @@ getTableCount <- function(regions, region_list) {
   C <- sum(resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL != 0); print(C) # 56
   zero <- sum(resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL == 0); print(zero) # 421
   total <- NBC + NB + NC + BC + N + B + C + zero; print(total) # 5200
-  
+
   vres <- c(total, NBC, NB, NC, BC, N, B, C, zero)
   return(vres)
 }
 
-######### for loop to compare each GRanges of 
+######### for loop to compare each GRanges of
 df_res <- data.frame()
 for (region_name in names(vennRegions_NBC_DEX)) {
   vres <- getTableCount(vennRegions_NBC_DEX[[region_name]], NBC_CTRL)
@@ -119,24 +119,21 @@ df_res_percent
 write.table(df_res_percent, file = file.path(output_dir, "table_NBC_DEX_regions_in_CTRL_percent.txt"),
             sep = "\t", quote = FALSE)
 
-# NBC_DEX2 <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX, "CDK9_DEX" = CDK9_DEX)
-# plotVenn(NBC_DEX2)
-
 ############################
 getRegions <- function(regions, region_list) {
   grl <- region_list
   all.regions = regions
   overlap.matrix <- matrix(0, nrow = length(all.regions), ncol = length(grl))
   overlap.list = list()
-  
+
   for (i in 1:length(grl)) {
-    overlap.matrix[, i] <- GenomicRanges::countOverlaps(all.regions, 
+    overlap.matrix[, i] <- GenomicRanges::countOverlaps(all.regions,
                                                         grl[[i]], type = "any")
     overlap.list[[names(grl)[i]]] <- which(overlap.matrix[, i] != 0)
   }
   colnames(overlap.matrix) <- names(grl)
   res <- overlap.matrix
-  
+
   resM <- as.data.frame(res); nrow(resM) # 5200
   NBC_regions <- all.regions[resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL != 0]; print(length(NBC_regions))
   NB_regions <- all.regions[resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL == 0]; print(length(NB_regions))
@@ -144,10 +141,10 @@ getRegions <- function(regions, region_list) {
   BC_regions <- all.regions[resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL != 0]; print(length(BC_regions))
   N_regions <- all.regions[resM$NIPBL_CTRL != 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL == 0]; print(length(N_regions))
   B_regions <- all.regions[resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL != 0 & resM$CDK9_CTRL == 0]; print(length(B_regions))
-  C_regions <- all.regions[resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL != 0]; print(length(C_regions)) 
+  C_regions <- all.regions[resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL != 0]; print(length(C_regions))
   zero_regions <- all.regions[resM$NIPBL_CTRL == 0 & resM$BRD4_CTRL == 0 & resM$CDK9_CTRL == 0]; print(length(zero_regions))
   total_regions <- all.regions; print(length(all.regions)) # 5200
-  
+
   individual_list <- list("total_CTRL" = total_regions,
                           "NBC_CTRL" = NBC_regions,
                           "NB_CTRL" = NB_regions,
@@ -184,7 +181,7 @@ gr_1h <- gr_regions[["1 hour"]]
 df_res_overlapsGR <- data.frame()
 for (dex_regions in names(list_res)) {
   message("\n##### ", dex_regions)
-  
+
   vres <- c()
   for (ctrl_regions in names(list_res[[dex_regions]])) {
     message("    ### ", ctrl_regions)
@@ -192,12 +189,12 @@ for (dex_regions in names(list_res)) {
     cat("\t", length(initial_regions), "regions \n")
     ov_with_GR <- subsetByOverlaps(initial_regions, gr_1h)
     cat("\t", length(ov_with_GR), "regions overlapping with GR\n")
-    
+
     nb_regions <- length(initial_regions)
     nb_regions_withGR <- length(ov_with_GR)
     ratio <- round(nb_regions_withGR/nb_regions*100, 2)
     cat("\t", ratio, " %\n")
-    
+
     vres <- c(vres, nb_regions_withGR)
   }
   df_res_overlapsGR <- rbind(df_res_overlapsGR, vres)
@@ -217,3 +214,7 @@ df_res_overlapsGR_percent
 
 write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_DEX_withGR_regions_in_CTRL_percent.txt"),
             sep = "\t", quote = FALSE)
+
+########################################
+#
+########################################
