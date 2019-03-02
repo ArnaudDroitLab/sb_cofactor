@@ -214,5 +214,53 @@ write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_C
             sep = "\t", quote = FALSE)
 
 ########################################
-#
+# Perte de NBC:
+# Dans NBC_CTRL qui sont None_DEX, voici le binding de GR:
+# A 5 min: 40 %
+# A 10 min: 46,32 %
+# A 15 min: 41,81 %
+# A 20 min: 35,87 %
+# A 25 min:  30,64 %
+# A 30 m: 8,55 %
+# A 1h: 2,85 %
 ########################################
+########################################
+# Il existe donc deux groupes NBC_CTRL>None_DEX: ceux bindés par GR et ceux non bindés par GR
+# L'idée est donc de déterminer ces deux groupes
+# step1: retrieve the genomic coordinates of NBC_DEX>None_CTRL
+genomic_regions <- list_res[["NBC_CTRL"]][["None_DEX"]] # 421
+
+# step2: gather all gr regions from 5min to 1h
+gr_5m_1h <- GRanges()
+for (time in names(gr_regions)[2:8]) {
+  gr_time <- gr_regions[[time]]
+  gr_5m_1h <- append(gr_5m_1h, gr_time)
+}
+
+# step3a: retrieve the genomic coordinates of NBC_CTRL>None_DEX that are binded by GR at least one time between 5m and 1 hour
+ov_gr_regions <- subsetByOverlaps(genomic_regions, gr_5m_1h); print(length(ov_gr_regions)) # 205 ; 205/421 = 48,69%
+
+# step3b
+not_ov_gr_regions <- genomic_regions[!(genomic_regions %in% ov_gr_regions)]; print(length(not_ov_gr_regions)) # 216 ; 216/421 = 51,31%
+
+# step4: export to bed file for further analysis (hg38)
+output_dir <- "output/chip-pipeline-GRCh38/peak_call/A549_NBC"
+command <- paste("mkdir -p", output_dir, sep = " ")
+system(command)
+
+bedname_gr_hg38 <- "NBC_CTRL_to_None_DEX_ovGR_hg38.bed"
+rtracklayer::export(ov_gr_regions, con = file.path(output_dir, bedname_gr_hg38))
+
+bedname_notgr_hg38 <- "NBC_CTRL_to_None_DEX_notovGR_hg38.bed"
+rtracklayer::export(not_ov_gr_regions, con = file.path(output_dir, bedname_notgr_hg38))
+
+# step4: convert to hg19 in order to be submitted to GREAT
+chain.hg38tog19 <- import.chain("input/hg38ToHg19.over.chain")
+ov_gr_regions_hg19 <- liftOver(ov_gr_regions, chain.hg38tog19)
+not_ov_gr_regions_hg19 <- liftOver(not_ov_gr_regions, chain.hg38tog19)
+
+bedname_gr_hg19 <- "NBC_CTRL_to_None_DEX_ovGR_hg19.bed"
+rtracklayer::export(ov_gr_regions_hg19, con = file.path(output_dir, bedname_gr_hg19))
+
+bedname_notgr_hg19 <- "NBC_CTRL_to_None_DEX_notovGR_hg19.bed"
+rtracklayer::export(not_ov_gr_regions_hg19, con = file.path(output_dir, bedname_notgr_hg19))
