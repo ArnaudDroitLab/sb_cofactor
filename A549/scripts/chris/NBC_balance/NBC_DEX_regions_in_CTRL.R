@@ -238,10 +238,14 @@ gr_10min <- gr_regions[["10 minute"]]
 ov_gr_regions <- subsetByOverlaps(genomic_regions, gr_10min); print(length(ov_gr_regions)) # 294 (as expected)
 summary(width(ov_gr_regions))
 
-# step3: export to bed file for further analysis
+# step3: export to bed file for further analysis (hg38)
 output_dir <- "output/chip-pipeline-GRCh38/peak_call/A549_NBC"
 command <- paste("mkdir -p", output_dir, sep = " ")
 system(command)
 
-bedname <- "NBC_DEX_to_None_CTRL_ovGR.bed"
+bednamehg38 <- "NBC_DEX_to_None_CTRL_ovGR_hg38.bed"
 rtracklayer::export(ov_gr_regions, con = file.path(output_dir, bedname))
+
+# step4: convert to hg19 in order to be submitted to GREAT
+chain.hg38tog19 <- import.chain("input/hg38ToHg19.over.chain")
+liftOver(ov_gr_regions, chain.hg38tog19)
