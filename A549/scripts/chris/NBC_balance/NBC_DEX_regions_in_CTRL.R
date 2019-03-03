@@ -247,7 +247,7 @@ bednamehg38 <- "NBC_DEX_to_None_CTRL_ovGR_hg38.bed"
 rtracklayer::export(ov_gr_regions, con = file.path(output_dir,bednamehg38))
 
 # step4: convert to hg19 in order to be submitted to GREAT
-chain.hg38tog19 <- import.chain("input/hg38ToHg19.over.chain")
-ov_gr_regions_hg19 <- liftOver(ov_gr_regions, chain.hg38tog19)
+chain.hg38tog19 <- rtracklayer::import.chain("input/hg38ToHg19.over.chain")
+ov_gr_regions_hg19 <- unlist(rtracklayer::liftOver(ov_gr_regions, chain.hg38tog19)); print(length(ov_gr_regions_hg19)) # 293
 bednamehg19 <- "NBC_DEX_to_None_CTRL_ovGR_hg19.bed"
 rtracklayer::export(ov_gr_regions_hg19, con = file.path(output_dir, bednamehg19))
