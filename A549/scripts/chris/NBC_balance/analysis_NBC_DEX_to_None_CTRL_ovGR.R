@@ -34,6 +34,17 @@ upsetplot(anno2, vennpie = TRUE)
 # anno_df %>% filter(abs(distanceToTSS) <= 500)
 GainNBC_promoter <- anno_df2 %>% filter(Annot == "Promoter")
 unique(GainNBC_promoter$SYMBOL)
+       
+geneList <- function(geneVector) {
+  res <- character()
+  for (gene in geneVector) {
+    print(gene)
+    res <- paste0(res, ",", gene)
+  }
+  return(res)
+}       
+
+l <- geneList(unique(GainNBC_promoter$SYMBOL))
 
 # input to GREAT: Genomic Regions Enrichment of Annotations Tool
 # GREAT predicts functions of cis-regulatory regions
