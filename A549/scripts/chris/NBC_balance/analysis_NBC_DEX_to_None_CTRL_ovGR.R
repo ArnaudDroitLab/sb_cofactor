@@ -32,8 +32,8 @@ upsetplot(anno2, vennpie = TRUE)
 
 #
 # anno_df %>% filter(abs(distanceToTSS) <= 500)
-anno_df2 %>% filter(Annot == "Promoter")
-
+GainNBC_promoter <- anno_df2 %>% filter(Annot == "Promoter")
+unique(GainNBC_promoter$SYMBOL)
 
 # input to GREAT: Genomic Regions Enrichment of Annotations Tool
 # GREAT predicts functions of cis-regulatory regions

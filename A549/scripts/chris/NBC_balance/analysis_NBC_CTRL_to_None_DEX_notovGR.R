@@ -38,5 +38,8 @@ upsetplot(anno2, vennpie = TRUE)
 anno_df2 %>% filter(Annot == "Promoter")
 anno_df2 %>% filter(abs(distanceToTSS) >= 3000)
 
+LossNBC_withoutGR_promoter <- anno_df2 %>% filter(Annot == "Promoter")
+unique(LossNBC_withoutGR_promoter$SYMBOL)
+
 # les premières observations ne montre pas de grand changements dans le niveau de fold change de gene expression
 # réservoir de cofacteurs?
