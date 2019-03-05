@@ -64,7 +64,7 @@ draw_time_course_pergroup_FC <- function(genes_group_list, counts_mat = FC_mat) 
   # Make the plot
   plot <- ggplot(df, aes(x = hours, y = mean)) +
     geom_point(aes(color = Gene_group), size = 1) +
-    #    theme(legend.position='none') +
+#    theme(legend.position='none') +
     geom_line(data=df, aes(x=hours, y=mean, group=Gene_group, color=Gene_group)) +
     scale_x_continuous(name="Hours", labels=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), breaks=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)) +
     scale_y_continuous(name="mean(log2(FC))", labels=comma)

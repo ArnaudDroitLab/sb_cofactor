@@ -43,3 +43,6 @@ draw_time_course_FC(geneGainNBC$ENSEMBL)
 draw_time_course_FC(geneLossNBC_ovGR$ENSEMBL)
 draw_time_course_FC(geneLossNBC_notovGR$ENSEMBL)
 draw_time_course_pergroup_FC(geneGroupList)
+
+# geneLossNBC_ovGR: Action répressive de GR par binding direct
+# geneLossNBC_notovGR: Les premières observations ne montre pas de grand changements dans le niveau de fold change de gene expression, réservoir de cofacteurs?
