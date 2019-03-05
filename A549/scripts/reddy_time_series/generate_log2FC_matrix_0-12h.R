@@ -27,3 +27,4 @@ colnames(FC_mat) <- c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)
 FC_mat <- FC_mat * (-1)
 
 write.table(FC_mat, file="results/a549_dex_time_points/FC_mat.csv", sep=",", quote=FALSE)
+
