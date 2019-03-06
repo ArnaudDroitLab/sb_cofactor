@@ -30,6 +30,10 @@ geneGainNBC <- gainNBC_annodf2 %>% filter(Annot == "Promoter") %>% select(ENSEMB
 geneLossNBC_ovGR <- lossNBC_ovGR_annodf2 %>% filter(Annot == "Promoter") %>% select(ENSEMBL) %>% unique
 geneLossNBC_notovGR <- lossNBC_notovGR_annodf2 %>% filter(Annot == "Promoter") %>% select(ENSEMBL) %>% unique
 
+gainNBC_annodf2 %>% filter(Annot == "Promoter") %>% select(SYMBOL) %>% unique
+lossNBC_ovGR_annodf2 %>% filter(Annot == "Promoter") %>% select(SYMBOL) %>% unique
+lossNBC_notovGR_annodf2 %>% filter(Annot == "Promoter") %>% select(SYMBOL) %>% unique
+
 ######################
 # Draw FC time series
 ######################
