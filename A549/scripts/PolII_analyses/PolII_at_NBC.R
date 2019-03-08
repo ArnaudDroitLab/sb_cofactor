@@ -3,7 +3,9 @@ library(dplyr)
 
 source("scripts/load_reddy.R")
 
-USE_MACS2_BGDIFF=TRUE
+USE_MACS2_BGDIFF=FALSE
+WHICH_TXDB="all"
+
 if(!USE_MACS2_BGDIFF) {
     # Load peaks.
     cofactor_peaks = load_cofactor_binding(consensus_method="replicate_1")
@@ -11,8 +13,10 @@ if(!USE_MACS2_BGDIFF) {
     # Determine losses/gains in individual cofactors.
     peak_diff = list(Gain=GRangesList(), Loss=GRangesList(), Common=GRangesList())
     for(cofactor in c("NIPBL", "BRD4", "CDK9")) {
-        intersect_obj = build_intersect(GRangesList(DEX=cofactor_peaks[["DEX"]][[cofactor]], 
-                                                    CTRL=cofactor_peaks[["CTRL"]][[cofactor]]))
+        dex_rep_name = grep(cofactor, names(cofactor_peaks[["DEX"]]), value=TRUE)
+        ctrl_rep_name = grep(cofactor, names(cofactor_peaks[["CTRL"]]), value=TRUE)
+        intersect_obj = build_intersect(GRangesList(DEX=cofactor_peaks[["DEX"]][[dex_rep_name]], 
+                                                    CTRL=cofactor_peaks[["CTRL"]][[ctrl_rep_name]]))
         gains = intersect_obj$Matrix[,"DEX"] > 0 & intersect_obj$Matrix[,"CTRL"] == 0
         losses = intersect_obj$Matrix[,"DEX"] == 0 & intersect_obj$Matrix[,"CTRL"] > 0
         common = intersect_obj$Matrix[,"DEX"] > 0 & intersect_obj$Matrix[,"CTRL"] > 0
@@ -24,6 +28,9 @@ if(!USE_MACS2_BGDIFF) {
     peak_diff = load_macs2_diffpeaks(threshold="0.7")
 }
 
+# lapply(peak_diff, function(x) {lapply(x,length)})
+
+
 # Identify losses/gains in all three cofactors.
 all_diff = GRangesList()
 for(type in c("Gain", "Loss")) {
@@ -31,12 +38,13 @@ for(type in c("Gain", "Loss")) {
     all_diff[[type]] = intersect_overlap(intersect_obj)
 }
 
-
-
-
 # Annotate peaks.
 annotation_set = select_annotations("hg38")
-most_expressed_TxDb = load_most_expressed_TxDb()
+if(WHICH_TXDB=="all") {
+    most_expressed_TxDb = annotation_set$TxDb 
+} else {
+    most_expressed_TxDb = load_most_expressed_TxDb()
+}
 seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
 #annotated_regions = lapply(all_diff, annotate_region, annotations.list=annotation_set)
 annotated_regions = lapply(all_diff, ChIPseeker::annotatePeak, 
