@@ -2,11 +2,14 @@
 
 library(GenomicRanges)
 library(org.Hs.eg.db)
+library(plotly)
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 source("scripts/load_reddy.R")
 
 most_expressed = load_most_expressed_transcripts()
 most_expressed_TxDb = load_most_expressed_TxDb()
 seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
+txdb.hg38 <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
 #####
 load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1","SMC1A")) {
@@ -84,6 +87,24 @@ annotatePeaks <- function(gr, output = "df") {
   }
 }
 
+annotatePeaks2 <- function(gr, output = "df") {
+  # difference between txdb and most expressed txdb???
+  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-3000, 3000), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
+  if (output == "anno") {
+    message("Return a csAnno object")
+    return(gr_anno)
+  } else if (output == "df") {
+    gr_anno_df <- as.data.frame(gr_anno)
+    gr_anno_df$Annot <- gr_anno_df$annotation
+    gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)
+    gr_anno_df$Annot <- as.factor(gr_anno_df$Annot)
+    # gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
+    gr_anno_df$Coordinates <- paste0(gr_anno_df$seqnames, ":", gr_anno_df$start, "-", gr_anno_df$end)
+    message("Return a data.frame object")
+    return(gr_anno_df)
+  }
+}
+
 #####
 plotAnnotation <- function(anno_df) {
   data <- as.data.frame(table(anno_df$Annot))
@@ -94,5 +115,16 @@ plotAnnotation <- function(anno_df) {
                textinfo = "label+percent",
                insidetextfont = list(color = "#FFFFFF")) %>%
     add_pie(hole = 0.4)
+  return(p)
+}
+
+#####
+plotVenn <- function(gr_list, labels = TRUE) {
+  overlaps <- build_intersect(gr_list)
+  mat <- overlaps$Matrix > 0
+  fit <- euler(mat, shape = "ellipse")
+  p <- plot(fit, quantities = TRUE, labels = labels,
+            fills = list(fill = c("#FFB027", "#2B70AB", "#CD3301", "#449B2B")),
+            edges = list(alpha = 0))
   return(p)
 }
