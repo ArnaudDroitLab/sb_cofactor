@@ -38,7 +38,7 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
   write.table(annodf, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
 }
 
-stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
+stats_diffbind <- function(pol, cst, effect, peak, pval, geneList = FALSE) {
   message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
   if (pval == TRUE) {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_pval.txt")}
   else {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_fdr.txt")}
@@ -58,51 +58,67 @@ stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
     geneList_tmp <- annodf %>% filter(Fold > 0, Annot == "Promoter") %>% select(geneId)
     geneList <- unique(geneList_tmp$geneId)
     message("   Length of geneList (increase) : ", length(geneList))
+    print(annodf %>% filter(Fold > 0, Annot == "Promoter") %>% select(SYMBOL) %>% unique)
     return(geneList)
   } else if (geneList == "decrease") {
     geneList_tmp <- annodf %>% filter(Fold < 0, Annot == "Promoter") %>% select(geneId)
     geneList <- unique(geneList_tmp$geneId)
     message("   Length of geneList (decrease) : ", length(geneList))
+    print(annodf %>% filter(Fold < 0, Annot == "Promoter") %>% select(SYMBOL))
     return(geneList)
   }
 }
 
-### Differential analysis
-for (pol in c("POL2-ser2")) {
-  for (peak in c("broad")) {
+open_annodf <- function(pol, cst, effect, peak, pval) {
+  message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
+  if (pval == TRUE) {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_pval.txt")}
+  else {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_fdr.txt")}
+  
+  output_path <- file.path("output/analyses/diffbind_pol2", annodf_filename)
+  message("   # >>> ", output_path)
+  
+  annodf <- read.delim(output_path, sep = "\t" , header = TRUE)
+  return(annodf)
+}
+
+## Differential analysis
+for (pol in c("POL2")) {
+  for (peak in c("narrow")) {
     for (cst in c("shCTRL", "shNIPBL")) {
       effect <- "DEX"
-      perform_diffbind(pol, cst, effect, peak, pval = TRUE)
+      perform_diffbind(pol, cst, effect, peak, pval = FALSE)
     }
     for (cst in c("CTRL", "DEX")) {
       effect <- "shNIPBL"
-      perform_diffbind(pol, cst, effect, peak, pval = TRUE)
+      perform_diffbind(pol, cst, effect, peak, pval = FALSE)
     }
   }
 }
 
 ### Stats
-# for (pol in c("POL2-ser2")) {
-#   for (peak in c("narrow")) {
-#     for (cst in c("shCTRL", "shNIPBL")) {
-#       effect <- "DEX"
-#       stats_diffbind(pol, cst, effect, peak, pval = TRUE)
-#     }
-#     for (cst in c("CTRL", "DEX")) {
-#       effect <- "shNIPBL"
-#       stats_diffbind(pol, cst, effect, peak, pval = TRUE)
-#     }
-#   }
-# }
+for (pol in c("POL2")) {
+  for (peak in c("narrow")) {
+    for (cst in c("shCTRL", "shNIPBL")) {
+      effect <- "DEX"
+      stats_diffbind(pol, cst, effect, peak, pval = FALSE, geneList = "increase")
+      stats_diffbind(pol, cst, effect, peak, pval = FALSE, geneList = "decrease")
+    }
+    for (cst in c("CTRL", "DEX")) {
+      effect <- "shNIPBL"
+      stats_diffbind(pol, cst, effect, peak, pval = FALSE, geneList = "increase")
+      stats_diffbind(pol, cst, effect, peak, pval = FALSE, geneList = "decrease")
+    }
+  }
+}
 
-shCTRL_DEX_increase <- stats_diffbind(pol = "POL2-ser2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 6 | pval: 110
-shCTRL_DEX_decrease <- stats_diffbind(pol = "POL2-ser2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 4 | pval: 33
-shNIPBL_DEX_increase <- stats_diffbind(pol = "POL2-ser2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 29 | pval: 511
-shNIPBL_DEX_decrease <- stats_diffbind(pol = "POL2-ser2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 0 | pval: 7
-CTRL_shNIPBL_increase <- stats_diffbind(pol = "POL2-ser2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 0 | pval: 29
-CTRL_shNIPBL_decrease <- stats_diffbind(pol = "POL2-ser2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 2 | pval: 53
-DEX_shNIPBL_increase <- stats_diffbind(pol = "POL2-ser2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 0 | pval: 250
-DEX_shNIPBL_decrease <- stats_diffbind(pol = "POL2-ser2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 0 | pval: 35
+shCTRL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "increase")
+shCTRL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "decrease")
+shNIPBL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "increase")
+shNIPBL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "decrease")
+CTRL_shNIPBL_increase <- stats_diffbind(pol = "POL2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "increase")
+CTRL_shNIPBL_decrease <- stats_diffbind(pol = "POL2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "decrease") 
+DEX_shNIPBL_increase <- stats_diffbind(pol = "POL2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "increase") 
+DEX_shNIPBL_decrease <- stats_diffbind(pol = "POL2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "decrease") 
 
 draw_time_course_FC(shCTRL_DEX_increase)
 draw_time_course_FC(shCTRL_DEX_decrease)
