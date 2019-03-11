@@ -127,9 +127,9 @@ draw_time_course_pergroup_FC(geneList_increase)
 
 # Test Annotation
 # pol <- "POL2"
-# cst <- "DEX"
-# effect <- "shNIPBL"
-# peak <- "broad"
+# cst <- "shCTRL"
+# effect <- "DEX"
+# peak <- "narrow"
 # 
 # message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
 # filename = paste0("sSheet_", pol, "_", cst, "_", effect, "_effect_", peak, "Peak.csv")
@@ -146,16 +146,16 @@ draw_time_course_pergroup_FC(geneList_increase)
 # contrast <- dba.contrast(count, categories = category, minMembers = 2)
 # 
 # analyze <- dba.analyze(contrast)
-# # 
+# #
 # # report <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
 # report <- dba.report(analyze, bCounts = T)
-# # 
+# #
 # annodf1 <- annotatePeaks(report, output = "df"); print(nrow(annodf1)); print(sum(annodf1$Annot == "Promoter")); print(sort(annodf1$SYMBOL))
 # annodf2 <- annotatePeaks2(report, output = "df"); print(nrow(annodf2)); print(sum(annodf2$Annot == "Promoter")); print(sort(annodf2$SYMBOL))
 # 
 # data.frame(annodf1$Fold, annodf2$Fold)
 # annodf1$Fold == annodf2$Fold
-# annodf1 <- annodf1 %>% arrange(desc(Fold)) 
+# annodf1 <- annodf1 %>% arrange(desc(Fold))
 # annodf2 <- annodf2 %>% arrange(desc(Fold))
 # 
 # comparison <- data.frame(annodf1$Fold, annodf1$p.value, annodf1$FDR,
