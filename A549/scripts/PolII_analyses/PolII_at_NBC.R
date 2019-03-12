@@ -102,7 +102,7 @@ dev.off()
 
 # Look at GR binding sites' intersection with NBC regions.
 gr_sites = load_reddy_gr_binding_consensus()
-gr_sites_flat = reduce(unlist(gr_sites[c("5 minutes", "10 minutes", "15 minutes", "20 minutes", "25 minutes", "30 minutes", "1 hour")]))
+gr_sites_flat = reduce(unlist(GRangesList(gr_sites[c("5 minutes", "10 minutes", "15 minutes", "20 minutes", "25 minutes", "30 minutes", "1 hour")])))
 
 gr_with_NBC = lapply(all_diff, function(x) {
     return(gr_sites_flat[from(findOverlaps(gr_sites_flat, x))])
@@ -111,13 +111,18 @@ gr_with_NBC = lapply(all_diff, function(x) {
 center_gr_with_nbc = lapply(gr_with_NBC, function(x) {
     range_df = data.frame(seqnames=seqnames(x),
                           start=start(x) + as.integer(width(x) / 2))
+    range_df$end = range_df$start
     res_range = flank(GRanges(range_df), width=2000, start=TRUE, both=TRUE)
     return(res_range)
-}
+})
+
+mg = metagene2$new(bam_files=sample_sheet$Bam, regions=center_gr_with_nbc, cores=1, normalization="RPM",
+                   design_metadata=sample_sheet)
+  
 
 dir.create("output/analyses/PolII/metagenes/", recursive=TRUE, showWarnings=FALSE)
-pdf("output/analyses/PolII/metagenes/GR with NBC Gains.pdf", width=14, height=7)
-mg$produce_metagene(facet_by=Target~sh*GeneExtremity, group_by="Condition", region_filter=quo(CofactorType=="Gain"))
+pdf("output/analyses/PolII/metagenes/GR with NBC.pdf", width=14, height=7)
+mg$produce_metagene(facet_by=Target~sh*region_name, group_by="Condition")
 dev.off()
 
 pdf("output/analyses/PolII/metagenes/GR with NBC Losses.pdf", width=14, height=7)
