@@ -54,6 +54,8 @@ stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
   message("       Increased signal : ", nrow(annodf %>% filter(Fold > 0)), " (including ", nrow(annodf %>% filter(Fold > 0, Annot == "Promoter")), " regions at promoters)")
   message("       Decreased signal : ", nrow(annodf %>% filter(Fold < 0)), " (including ", nrow(annodf %>% filter(Fold < 0, Annot == "Promoter")), " regions at promoters)")
   
+  annodf_promoters <- annodf %>% filter(Annot == "Promoter")
+  
   if (geneList == "increase") {
     geneList_tmp <- annodf %>% filter(Fold > 0, Annot == "Promoter") %>% select(geneId)
     geneList <- unique(geneList_tmp$geneId)
@@ -68,33 +70,30 @@ stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
 }
 
 ### Differential analysis
-for (pol in c("POL2")) {
+for (pol in c("POL2", "POL2-ser2")) {
   for (peak in c("narrow", "broad")) {
     for (cst in c("shCTRL", "shNIPBL")) {
-      effect <- "DEX"
-      perform_diffbind(pol, cst, effect, peak, pval = TRUE)
+      perform_diffbind(pol, cst, effect = "DEX", peak, pval = TRUE)
     }
     for (cst in c("CTRL", "DEX")) {
-      effect <- "shNIPBL"
-      perform_diffbind(pol, cst, effect, peak, pval = TRUE)
+      perform_diffbind(pol, cst, effect = "shNIPBL", peak, pval = TRUE)
     }
   }
 }
 
 ### Stats
-# for (pol in c("POL2")) {
-#   for (peak in c("narrow")) {
+# for (pol in c("POL2", "POL2-ser2")) {
+#   for (peak in c("narrow", "broad")) {
 #     for (cst in c("shCTRL", "shNIPBL")) {
-#       effect <- "DEX"
-#       stats_diffbind(pol, cst, effect, peak, pval = TRUE)
+#       stats_diffbind(pol, cst, effect = "DEX", peak, pval = TRUE)
 #     }
 #     for (cst in c("CTRL", "DEX")) {
-#       effect <- "shNIPBL"
-#       stats_diffbind(pol, cst, effect, peak, pval = TRUE)
+#       stats_diffbind(pol, cst, effect = "shNIPBL", peak, pval = TRUE)
 #     }
 #   }
 # }
 
+# Retrieve geneList and plot RNA expression over time with Reddy's data
 shCTRL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 6 | pval: 110
 shCTRL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 4 | pval: 33
 shNIPBL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 29 | pval: 511
