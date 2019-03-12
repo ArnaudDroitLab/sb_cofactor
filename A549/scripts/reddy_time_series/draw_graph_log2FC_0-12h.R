@@ -35,7 +35,7 @@ draw_time_course_FC <- function(genes_list, counts_mat = FC_mat) {
     theme(legend.position='none') +
     geom_line(data=df_mean, aes(x=hours, y=mean, group=genes, color=genes)) +
     scale_x_continuous(name="Hours", labels=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), breaks=c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)) +
-    scale_y_continuous(name="log2(FC)", labels=comma)
+    scale_y_continuous(name="log2(FC)")
     
   return (plot)
 }
