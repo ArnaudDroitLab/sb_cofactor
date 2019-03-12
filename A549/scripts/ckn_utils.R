@@ -69,9 +69,9 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
   return(cofactors_peaks)
 }
 
-annotatePeaks <- function(gr, output = "df") {
+annotatePeaks <- function(gr, output = "df", tss = 3000) {
   # difference between txdb and most expressed txdb???
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-5000, 5000), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
+  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
   if (output == "anno") {
     message("Return a csAnno object")
     return(gr_anno)
@@ -87,9 +87,9 @@ annotatePeaks <- function(gr, output = "df") {
   }
 }
 
-annotatePeaks2 <- function(gr, output = "df") {
+annotatePeaks2 <- function(gr, output = "df", tss = 3000) {
   # difference between txdb and most expressed txdb???
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-5000, 5000), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
+  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
   if (output == "anno") {
     message("Return a csAnno object")
     return(gr_anno)

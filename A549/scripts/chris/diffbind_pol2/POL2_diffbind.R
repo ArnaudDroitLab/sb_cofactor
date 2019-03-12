@@ -29,7 +29,7 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
     report <- dba.report(analyze, bCounts = T)
   }
 
-  annodf <- annotatePeaks(report, output = "df"); print(nrow(annodf)); print(sum(annodf$Annot == "Promoter")); print(sort(annodf$SYMBOL))
+  annodf <- annotatePeaks(report, output = "df", tss = 5000); print(nrow(annodf)); print(sum(annodf$Annot == "Promoter")); print(sort(annodf$SYMBOL))
   
   if (pval == TRUE) {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_pval.txt")}
   else {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_fdr.txt")}
@@ -150,8 +150,8 @@ draw_time_course_pergroup_FC(geneList_increase)
 # # report <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
 # report <- dba.report(analyze, bCounts = T)
 # #
-# annodf1 <- annotatePeaks(report, output = "df"); print(nrow(annodf1)); print(sum(annodf1$Annot == "Promoter")); print(sort(annodf1$SYMBOL))
-# annodf2 <- annotatePeaks2(report, output = "df"); print(nrow(annodf2)); print(sum(annodf2$Annot == "Promoter")); print(sort(annodf2$SYMBOL))
+# annodf1 <- annotatePeaks(report, output = "df", tss = 5000); print(nrow(annodf1)); print(sum(annodf1$Annot == "Promoter")); print(sort(annodf1$SYMBOL))
+# annodf2 <- annotatePeaks2(report, output = "df", tss = 5000); print(nrow(annodf2)); print(sum(annodf2$Annot == "Promoter")); print(sort(annodf2$SYMBOL))
 # 
 # data.frame(annodf1$Fold, annodf2$Fold)
 # annodf1$Fold == annodf2$Fold
