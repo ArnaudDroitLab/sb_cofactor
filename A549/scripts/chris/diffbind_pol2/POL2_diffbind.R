@@ -7,7 +7,8 @@ source("scripts/reddy_time_series/draw_graph_log2FC_0-12h.R")
 ###
 perform_diffbind <- function(pol, cst, effect, peak, pval) {
   message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
-  filename = paste0("sSheet_", pol, "_", cst, "_", effect, "_effect_", peak, "Peak.csv")
+  basename <- paste0(pol, "_", cst, "_", effect, "_effect_", peak)
+  filename = paste0("sSheet_", basename, "Peak.csv")
   message("   # >>> ", filename)
   sSheet <- read.table(file.path("scripts/chris/diffbind_pol2/sampleSheet", filename), sep= "," , header = TRUE)
   
@@ -16,23 +17,30 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
   message("Counting...")
   count <- dba.count(dba)
 
-  if (effect == "DEX") {category = DBA_TREATMENT} else if (effect == "shNIPBL") {category = DBA_CONDITION}
+  if (effect == "DEX") {
+    category = DBA_TREATMENT
+  } else if (effect == "shNIPBL") {
+      category = DBA_CONDITION
+      }
   message(effect , " | ", category)
   
   contrast <- dba.contrast(count, categories = category, minMembers = 2)
 
   analyze <- dba.analyze(contrast)
   
-  if (pval == TRUE) {
-  report <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
+  if (pval) {
+  report <- dba.report(analyze, bCounts = T, bUsePval = pval)
   } else {
     report <- dba.report(analyze, bCounts = T)
   }
 
   annodf <- annotatePeaks(report, output = "df", tss = 5000); print(nrow(annodf)); print(sum(annodf$Annot == "Promoter")); print(sort(annodf$SYMBOL))
   
-  if (pval == TRUE) {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_pval.txt")}
-  else {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_fdr.txt")}
+  if (pval) {
+    annodf_filename <- paste0("diffbind_", basename, "_pval.txt")
+  } else {
+      annodf_filename <- paste0("diffbind_", basename, "_fdr.txt")
+      }
   
   output_path <- file.path("output/analyses/diffbind_pol2", annodf_filename)
   write.table(annodf, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
@@ -40,8 +48,12 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
 
 stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
   message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
-  if (pval == TRUE) {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_pval.txt")}
-  else {annodf_filename <- paste0("diffbind_", pol, "_", cst, "_", effect, "_effect_", peak, "_fdr.txt")}
+  basename <- paste0(pol, "_", cst, "_", effect, "_effect_", peak)
+  if (pval) {
+    annodf_filename <- paste0("diffbind_", basename, "_pval.txt")
+  } else {
+    annodf_filename <- paste0("diffbind_", basename, "_fdr.txt")
+    }
   
   output_path <- file.path("output/analyses/diffbind_pol2", annodf_filename)
   message("   # >>> ", output_path)
@@ -57,11 +69,14 @@ stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
   annodf_promoters <- annodf %>% filter(Annot == "Promoter")
   
   if (geneList == "increase") {
+    # use annodf_promoters
+    # geneList <- annodf_promoters %>% filter(Fold > 0) %>% pull(geneId) %>% unique
     geneList_tmp <- annodf %>% filter(Fold > 0, Annot == "Promoter") %>% select(geneId)
     geneList <- unique(geneList_tmp$geneId)
     message("   Length of geneList (increase) : ", length(geneList))
     return(geneList)
   } else if (geneList == "decrease") {
+    # geneList <- annodf_promoters %>% filter(Fold < 0) %>% pull(geneId) %>% unique
     geneList_tmp <- annodf %>% filter(Fold < 0, Annot == "Promoter") %>% select(geneId)
     geneList <- unique(geneList_tmp$geneId)
     message("   Length of geneList (decrease) : ", length(geneList))
@@ -113,7 +128,7 @@ draw_time_course_FC(DEX_shNIPBL_increase)
 draw_time_course_FC(DEX_shNIPBL_decrease)
 
 
-geneList_increase <- list("shCTRL_DEX_increase" = shCTRL_DEX_increase,
+geneList_group <- list("shCTRL_DEX_increase" = shCTRL_DEX_increase,
                           "shCTRL_DEX_decrease" = shCTRL_DEX_decrease,
                           "shNIPBL_DEX_increase" = shNIPBL_DEX_increase,
                           "shNIPBL_DEX_decrease" = shNIPBL_DEX_decrease,
@@ -122,7 +137,7 @@ geneList_increase <- list("shCTRL_DEX_increase" = shCTRL_DEX_increase,
                           "DEX_shNIPBL_increase" = DEX_shNIPBL_increase,
                           "DEX_shNIPBL_decrease" = DEX_shNIPBL_decrease)
 
-draw_time_course_pergroup_FC(geneList_increase)
+draw_time_course_pergroup_FC(geneList_group)
 
 # Test Annotation
 # pol <- "POL2"
