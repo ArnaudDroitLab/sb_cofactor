@@ -87,15 +87,39 @@ sample_sheet$design = basename(gsub(".bam", "", sample_sheet$Bam))
 
 # Generate the metagenes.
 library(metagene2)
-mg = metagene2$new(bam_files=sample_sheet$Bam, regions=single_gr, cores=4, normalization="RPM",
+mg = metagene2$new(bam_files=sample_sheet$Bam, regions=single_gr, cores=1, normalization="RPM",
                    design_metadata=sample_sheet, 
                    split_by=c("GeneExtremity", "CofactorType"))
                    
 dir.create("output/analyses/PolII/metagenes/", recursive=TRUE, showWarnings=FALSE)
-pdf("output/analyses/PolII/metagenes/NBC Gains.pdf", width=14, height=7)
+pdf("output/analyses/PolII/metagenes/TSS with NBC Gains.pdf", width=14, height=7)
 mg$produce_metagene(facet_by=Target~sh*GeneExtremity, group_by="Condition", region_filter=quo(CofactorType=="Gain"))
 dev.off()
 
-pdf("output/analyses/PolII/metagenes/NBC Losses.pdf", width=14, height=7)
+pdf("output/analyses/PolII/metagenes/TSS with NBC Losses.pdf", width=14, height=7)
+mg$produce_metagene(facet_by=Target~sh*GeneExtremity, group_by="Condition", region_filter=quo(CofactorType=="Loss"))
+dev.off()
+
+# Look at GR binding sites' intersection with NBC regions.
+gr_sites = load_reddy_gr_binding_consensus()
+gr_sites_flat = reduce(unlist(gr_sites[c("5 minutes", "10 minutes", "15 minutes", "20 minutes", "25 minutes", "30 minutes", "1 hour")]))
+
+gr_with_NBC = lapply(all_diff, function(x) {
+    return(gr_sites_flat[from(findOverlaps(gr_sites_flat, x))])
+})
+
+center_gr_with_nbc = lapply(gr_with_NBC, function(x) {
+    range_df = data.frame(seqnames=seqnames(x),
+                          start=start(x) + as.integer(width(x) / 2))
+    res_range = flank(GRanges(range_df), width=2000, start=TRUE, both=TRUE)
+    return(res_range)
+}
+
+dir.create("output/analyses/PolII/metagenes/", recursive=TRUE, showWarnings=FALSE)
+pdf("output/analyses/PolII/metagenes/GR with NBC Gains.pdf", width=14, height=7)
+mg$produce_metagene(facet_by=Target~sh*GeneExtremity, group_by="Condition", region_filter=quo(CofactorType=="Gain"))
+dev.off()
+
+pdf("output/analyses/PolII/metagenes/GR with NBC Losses.pdf", width=14, height=7)
 mg$produce_metagene(facet_by=Target~sh*GeneExtremity, group_by="Condition", region_filter=quo(CofactorType=="Loss"))
 dev.off()

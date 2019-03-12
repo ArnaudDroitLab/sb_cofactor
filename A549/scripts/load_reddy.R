@@ -89,7 +89,7 @@ load_reddy_binding_consensus <- function(target_name, diagnostic_dir=NULL) {
 # Results are provided as a named-list of GRanges object, in chronological
 # order.
 load_reddy_gr_binding_consensus <- function(diagnostic_dir=NULL) {
-    gr_regions <- load_reddy_binding_consensus("NR3C1", diagnostic_dir)
+    gr_regions <- load_reddy_binding_consensus("GR", diagnostic_dir)
     return(gr_regions)
 }
 
