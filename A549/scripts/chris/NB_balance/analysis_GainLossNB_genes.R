@@ -36,10 +36,22 @@ geneGainNB_notovGR <- gainNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% 
 geneLossNB_ovGR <- lossNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 geneLossNB_notovGR <- lossNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 
-gainNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
-gainNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
-lossNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
-lossNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
+symbol_all_geneGainNB_ovGR <- gainNB_ovGR_annodf %>% pull(SYMBOL) %>% unique
+symbol_all_geneGainNB_notovGR <- gainNB_notovGR_annodf %>% pull(SYMBOL) %>% unique
+symbol_all_geneLossNB_ovGR <- lossNB_ovGR_annodf %>% pull(SYMBOL) %>% unique
+symbol_all_geneLossNB_notovGR <- lossNB_notovGR_annodf %>% pull(SYMBOL) %>% unique
+
+symbol_prom_geneGainNB_ovGR <- gainNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
+symbol_prom_geneGainNB_notovGR <- gainNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
+symbol_prom_geneLossNB_ovGR <- lossNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
+symbol_prom_geneLossNB_notovGR <- lossNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(SYMBOL) %>% unique
+
+#########
+upDEX <- c("PER1", "ZFP36", "ERRFI1", "ANGPTL4", "NR1D2", "CRY2")
+upDEX_in_gainNB <- upDEX %in% symbol_all_geneGainNB_ovGR; names(upDEX_in_gainNB) <- upDEX
+upDEX_in_gainNB
+
+downDEX <- c("IL11", )
 
 ######################
 # Draw FC time series
@@ -52,6 +64,7 @@ geneGroupList <- list("GainNB_ovGR_withGR" = geneGainNB_ovGR,
                       "LossNB_withoutGR" = geneLossNB_notovGR)
 
 draw_time_course_FC(geneGainNB_ovGR)
+draw_time_course_FC(gainNB_ovGR_annodf %>% pull(geneId) %>% unique)
 draw_time_course_FC(geneGainNB_notovGR)
 draw_time_course_FC(geneLossNB_ovGR)
 draw_time_course_FC(geneLossNB_notovGR)
