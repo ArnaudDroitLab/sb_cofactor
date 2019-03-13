@@ -7,9 +7,12 @@ source("scripts/reddy_time_series/draw_graph_log2FC_0-12h.R")
 ###
 perform_diffbind <- function(pol, cst, effect, peak, pval) {
   message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
+  
   basename <- paste0(pol, "_", cst, "_", effect, "_effect_", peak)
+  
   filename = paste0("sSheet_", basename, "Peak.csv")
   message("   # >>> ", filename)
+  
   sSheet <- read.table(file.path("scripts/chris/diffbind_pol2/sampleSheet", filename), sep= "," , header = TRUE)
   
   dba <- dba(sampleSheet = sSheet)
@@ -22,7 +25,7 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
   } else if (effect == "shNIPBL") {
       category = DBA_CONDITION
       }
-  message(effect , " | ", category)
+  message("effect : ", effect , " | ", category)
   
   contrast <- dba.contrast(count, categories = category, minMembers = 2)
 
@@ -34,8 +37,9 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
     report <- dba.report(analyze, bCounts = T)
   }
 
-  annodf <- annotatePeaks(report, output = "df", tss = 5000); print(nrow(annodf)); print(sum(annodf$Annot == "Promoter")); print(sort(annodf$SYMBOL))
-  
+  annodf <- annotatePeaks(report, output = "df", tss = 5000)
+  # print(nrow(annodf)); print(sum(annodf$Annot == "Promoter")); print(sort(unique(annodf$SYMBOL)))
+
   if (pval) {
     annodf_filename <- paste0("diffbind_", basename, "_pval.txt")
   } else {
@@ -46,9 +50,12 @@ perform_diffbind <- function(pol, cst, effect, peak, pval) {
   write.table(annodf, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
 }
 
-stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
+###
+stats_diffbind <- function(pol, cst, effect, peak, pval, geneList = FALSE) {
   message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
+  
   basename <- paste0(pol, "_", cst, "_", effect, "_effect_", peak)
+  
   if (pval) {
     annodf_filename <- paste0("diffbind_", basename, "_pval.txt")
   } else {
@@ -62,61 +69,57 @@ stats_diffbind <- function(pol, cst, effect, peak, pval, geneList) {
   annodf$geneId <- as.character(annodf$geneId)
   annodf$SYMBOL <- as.character(annodf$SYMBOL)
   
-  message("    Number of differential regions : ", nrow(annodf))
-  message("       Increased signal : ", nrow(annodf %>% filter(Fold > 0)), " (including ", nrow(annodf %>% filter(Fold > 0, Annot == "Promoter")), " regions at promoters)")
-  message("       Decreased signal : ", nrow(annodf %>% filter(Fold < 0)), " (including ", nrow(annodf %>% filter(Fold < 0, Annot == "Promoter")), " regions at promoters)")
+  annodf_up <- annodf %>% filter(Fold > 0)
+  annodf_down <- annodf %>% filter(Fold < 0)
   
-  annodf_promoters <- annodf %>% filter(Annot == "Promoter")
+  message("    Number of differential regions : ", nrow(annodf))
+  message("       Increased signal : ", nrow(annodf_up), " (including ", nrow(annodf_up %>% filter(Annot == "Promoter")), " regions at promoters)")
+  message("       Decreased signal : ", nrow(annodf_down), " (including ", nrow(annodf_down %>% filter(Annot == "Promoter")), " regions at promoters)")
   
   if (geneList == "increase") {
-    # use annodf_promoters
-    # geneList <- annodf_promoters %>% filter(Fold > 0) %>% pull(geneId) %>% unique
-    geneList_tmp <- annodf %>% filter(Fold > 0, Annot == "Promoter") %>% select(geneId)
-    geneList <- unique(geneList_tmp$geneId)
+    geneList <- annodf_up %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
     message("   Length of geneList (increase) : ", length(geneList))
     return(geneList)
   } else if (geneList == "decrease") {
-    # geneList <- annodf_promoters %>% filter(Fold < 0) %>% pull(geneId) %>% unique
-    geneList_tmp <- annodf %>% filter(Fold < 0, Annot == "Promoter") %>% select(geneId)
-    geneList <- unique(geneList_tmp$geneId)
+    geneList <- annodf_down %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
     message("   Length of geneList (decrease) : ", length(geneList))
     return(geneList)
   }
 }
 
 ### Differential analysis
-for (pol in c("POL2", "POL2-ser2")) {
-  for (peak in c("narrow", "broad")) {
-    for (cst in c("shCTRL", "shNIPBL")) {
-      perform_diffbind(pol, cst, effect = "DEX", peak, pval = TRUE)
-    }
-    for (cst in c("CTRL", "DEX")) {
-      perform_diffbind(pol, cst, effect = "shNIPBL", peak, pval = TRUE)
-    }
-  }
-}
-
-### Stats
 # for (pol in c("POL2", "POL2-ser2")) {
 #   for (peak in c("narrow", "broad")) {
 #     for (cst in c("shCTRL", "shNIPBL")) {
-#       stats_diffbind(pol, cst, effect = "DEX", peak, pval = TRUE)
+#       perform_diffbind(pol, cst, effect = "DEX", peak, pval = FALSE)
 #     }
 #     for (cst in c("CTRL", "DEX")) {
-#       stats_diffbind(pol, cst, effect = "shNIPBL", peak, pval = TRUE)
+#       perform_diffbind(pol, cst, effect = "shNIPBL", peak, pval = FALSE)
 #     }
 #   }
 # }
 
+### Stats
+for (pol in c("POL2", "POL2-ser2")) {
+  for (peak in c("narrow", "broad")) {
+    for (cst in c("shCTRL", "shNIPBL")) {
+      stats_diffbind(pol, cst, effect = "DEX", peak, pval = FALSE)
+    }
+    for (cst in c("CTRL", "DEX")) {
+      stats_diffbind(pol, cst, effect = "shNIPBL", peak, pval = FALSE)
+    }
+  }
+}
+
 # Retrieve geneList and plot RNA expression over time with Reddy's data
-shCTRL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 6 | pval: 110
-shCTRL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 4 | pval: 33
-shNIPBL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 29 | pval: 511
-shNIPBL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 0 | pval: 7
-CTRL_shNIPBL_increase <- stats_diffbind(pol = "POL2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 0 | pval: 29
-CTRL_shNIPBL_decrease <- stats_diffbind(pol = "POL2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 2 | pval: 53
-DEX_shNIPBL_increase <- stats_diffbind(pol = "POL2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "increase") # fdr: 0 | pval: 250
-DEX_shNIPBL_decrease <- stats_diffbind(pol = "POL2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = TRUE, geneList = "decrease") # fdr: 0 | pval: 35
+shCTRL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "increase") # fdr: 6 | pval: 110
+shCTRL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shCTRL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "decrease") # fdr: 4 | pval: 33
+shNIPBL_DEX_increase <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "increase") # fdr: 29 | pval: 511
+shNIPBL_DEX_decrease <- stats_diffbind(pol = "POL2", cst = "shNIPBL", effect = "DEX", peak = "narrow", pval = FALSE, geneList = "decrease") # fdr: 0 | pval: 7
+CTRL_shNIPBL_increase <- stats_diffbind(pol = "POL2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "increase") # fdr: 0 | pval: 29
+CTRL_shNIPBL_decrease <- stats_diffbind(pol = "POL2", cst = "CTRL", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "decrease") # fdr: 2 | pval: 53
+DEX_shNIPBL_increase <- stats_diffbind(pol = "POL2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "increase") # fdr: 0 | pval: 250
+DEX_shNIPBL_decrease <- stats_diffbind(pol = "POL2", cst = "DEX", effect = "shNIPBL", peak = "narrow", pval = FALSE, geneList = "decrease") # fdr: 0 | pval: 35
 
 draw_time_course_FC(shCTRL_DEX_increase)
 draw_time_course_FC(shCTRL_DEX_decrease)
@@ -126,7 +129,6 @@ draw_time_course_FC(CTRL_shNIPBL_increase)
 draw_time_course_FC(CTRL_shNIPBL_decrease)
 draw_time_course_FC(DEX_shNIPBL_increase)
 draw_time_course_FC(DEX_shNIPBL_decrease)
-
 
 geneList_group <- list("shCTRL_DEX_increase" = shCTRL_DEX_increase,
                           "shCTRL_DEX_decrease" = shCTRL_DEX_decrease,
