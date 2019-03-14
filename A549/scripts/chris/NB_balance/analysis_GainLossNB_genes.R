@@ -51,7 +51,7 @@ upDEX <- c("PER1", "ZFP36", "ERRFI1", "ANGPTL4", "NR1D2", "CRY2")
 upDEX_in_gainNB <- upDEX %in% symbol_all_geneGainNB_ovGR; names(upDEX_in_gainNB) <- upDEX
 upDEX_in_gainNB
 
-downDEX <- c("IL11", )
+downDEX <- c("IL11")
 
 ######################
 # Draw FC time series
