@@ -234,3 +234,37 @@ rtracklayer::export(not_ov_gr_regions, con = file.path(output_dir, bedname_notgr
 # ov_gr_regions_hg19 <- unlist(rtracklayer::liftOver(ov_gr_regions, chain.hg38tog19)); print(length(ov_gr_regions_hg19)) # 293
 # bednamehg19 <- "NBC_DEX_to_None_CTRL_ovGR_hg19.bed"
 # rtracklayer::export(ov_gr_regions_hg19, con = file.path(output_dir, bednamehg19))
+
+##### To remove after pull request would be integrated in master
+##### Use when rtracklayer::import is not working
+BedToGRanges <- function(bedpath) {
+    peak_df <- read.table(bedpath)[1:3]
+    colnames(peak_df) <- c("seqnames", "start", "end")
+    peak <- GRanges(peak_df)
+    return(peak)
+  }
+
+#####
+load_POLR2A_peaks_Myers <- function() {
+  peaks_dir <- "output/chip-POLR2A-Myers/peaks"
+  ctrl <- "A549_CTRL_POLR2A_ENCFF664KTN.bed"
+  dex <- "A549_DEX_POLR2A_ENCFF915LKZ.bed"
+    
+  peak_pol2_ctrl <- BedToGRanges(file.path(peaks_dir, ctrl))
+  peak_pol2_dex <- BedToGRanges(file.path(peaks_dir, dex))
+      
+  peaks <- GRangesList("POLR2A_CTRL" = peak_pol2_ctrl,
+                             "POLR2A_DEX" = peak_pol2_dex)
+        
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(peaks))
+  
+  return(peaks)
+}
+
+# step5: does this regions colocalize with POL2?
+POLR2A_peaks <- load_POLR2A_peaks_Myers()
+POLR2A_DEX <- POLR2A_peaks[["POLR2A_DEX"]]
+ov <- subsetByOverlaps(genomic_regions, POLR2A_DEX)
+genomic_regions[!(genomic_regions %in% ov)]
