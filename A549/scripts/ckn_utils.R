@@ -128,3 +128,30 @@ plotVenn <- function(gr_list, labels = TRUE) {
             edges = list(alpha = 0))
   return(p)
 }
+
+##### Use when rtracklayer::import is not working
+BedToGRanges <- function(bedpath) {
+  peak_df <- read.table(bedpath)[1:3]
+  colnames(peak_df) <- c("seqnames", "start", "end")
+  peak <- GRanges(peak_df)
+  return(peak)
+}
+
+#####
+load_POLR2A_peaks_Myers <- function() {
+  peaks_dir <- "output/chip-POLR2A-Myers/peaks"
+  ctrl <- "A549_CTRL_POLR2A_ENCFF664KTN.bed"
+  dex <- "A549_DEX_POLR2A_ENCFF915LKZ.bed"
+  
+  peak_pol2_ctrl <- BedToGRanges(file.path(peaks_dir, ctrl))
+  peak_pol2_dex <- BedToGRanges(file.path(peaks_dir, dex))
+  
+  peaks <- GRangesList("POLR2A_CTRL" = peak_pol2_ctrl,
+                       "POLR2A_DEX" = peak_pol2_dex)
+  
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(peaks))
+  
+  return(peaks)
+}
