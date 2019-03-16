@@ -2,7 +2,7 @@
 # setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
-output_dir <- "output/analyses/NBC_balance"
+output_dir <- "output/analyses/NB_balance"
 
 source("scripts/ckn_utils.R")
 library(ef.utils)

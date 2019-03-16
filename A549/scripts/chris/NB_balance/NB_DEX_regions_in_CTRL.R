@@ -17,6 +17,7 @@ NIPBL_DEX <- cofactors_peaks[["NIPBL_DEX"]]; print(length(NIPBL_DEX)) # 2733
 BRD4_DEX <- cofactors_peaks[["BRD4_DEX"]]; print(length(BRD4_DEX)) # 21225
 
 NB_DEX <- GenomicRangesList("NIPBL_DEX" = NIPBL_DEX, "BRD4_DEX" = BRD4_DEX)
+plotVenn(NB_DEX)
 plot_grid(plotVenn(NB_DEX), labels = c("A549_DEX"))
 
 ######### getVennRegions
