@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OUTPUT_DIR=output/chip-pipeline-GRCh38/analysis/heatmap_NIPBL_A549
+OUTPUT_DIR=output/analyses/heatmap_NIPBL_A549
 mkdir -p $OUTPUT_DIR
 
 PEAKS_DIR=output/chip-pipeline-GRCh38/peak_call
@@ -11,6 +11,7 @@ MATRIX_NAME=20190416_NIPBL_A549.gzip
 HEATMAP_NAME=20190416_NIPBL_A549_heatmap_greens.png
 
 ### computeMatrix
+echo "computeMatrix..."
 time computeMatrix reference-point --referencePoint center \
 	--regionsFileName \
 		$PEAKS_DIR/A549_CTRL_NIPBL_rep1/A549_CTRL_NIPBL_rep1_peaks.narrowPeak.stdchr.bed \
@@ -30,6 +31,7 @@ time computeMatrix reference-point --referencePoint center \
 	--outFileName $OUTPUT_DIR/$MATRIX_NAME
 
 ### plotHeatmap
+echo "plotHeatmap..."
 time plotHeatmap \
 	--matrixFile $OUTPUT_DIR/$MATRIX_NAME \
 	--colorMap Greens \
