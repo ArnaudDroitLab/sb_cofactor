@@ -31,7 +31,7 @@ lossNB_ovGR_annodf <- annotatePeaks(lossNB_ovGR, output = "df")
 lossNB_notovGR_annodf <- annotatePeaks(lossNB_notovGR, output = "df")
 
 # Retrieve genes which gain or lose NBC at the promoters
-geneGainNB_ovGR <- gainNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
+geneGainNB_ovGR <- gainNB_ovGR_annodf %>% filter(Annot %in% c("Promoter")) %>% pull(geneId) %>% unique
 geneGainNB_notovGR <- gainNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 geneLossNB_ovGR <- lossNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 geneLossNB_notovGR <- lossNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
@@ -52,6 +52,8 @@ upDEX_in_gainNB <- upDEX %in% symbol_all_geneGainNB_ovGR; names(upDEX_in_gainNB)
 upDEX_in_gainNB
 
 downDEX <- c("IL11")
+downDEX_in_gainNB <- downDEX %in% symbol_all_geneGainNB_ovGR; names(downDEX_in_gainNB) <- downDEX
+downDEX_in_gainNB
 
 ######################
 # Draw FC time series
