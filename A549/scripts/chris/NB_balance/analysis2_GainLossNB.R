@@ -29,26 +29,21 @@ commonNB_ovGR <- subsetByOverlaps(commonNB, gr_5m_1h); print(length(commonNB_ovG
 commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) # 48 ; 48/1680 = 2.85%
 
 # Width
-summary(width(gainNB_ovGR))
-hist(width(gainNB_ovGR), breaks = 60)
-
-summary(width(gainNB_notovGR))
-hist(width(gainNB_notovGR), breaks = 60)
-
-summary(width(lossNB_ovGR))
-hist(width(lossNB_ovGR), breaks = 60)
-
-summary(width(lossNB_notovGR))
-hist(width(lossNB_notovGR), breaks = 60)
+summary(width(gainNB_ovGR)); hist(width(gainNB_ovGR), breaks = 60)
+summary(width(gainNB_notovGR)); hist(width(gainNB_notovGR), breaks = 60)
+summary(width(lossNB_ovGR)); hist(width(lossNB_ovGR), breaks = 60)
+summary(width(lossNB_notovGR)); hist(width(lossNB_notovGR), breaks = 60)
 
 # Annotation
 gainNB_ovGR_annodf <- annotatePeaks(gainNB_ovGR, output = "df")
 gainNB_notovGR_annodf <- annotatePeaks(gainNB_notovGR, output = "df")
 lossNB_ovGR_annodf <- annotatePeaks(lossNB_ovGR, output = "df")
 lossNB_notovGR_annodf <- annotatePeaks(lossNB_notovGR, output = "df")
+commonNB_ovGR_annodf <- annotatePeaks(commonNB_ovGR, output = "df")
+commonNB_notovGR_annodf <- annotatePeaks(commonNB_notovGR, output = "df")
 
 # Retrieve genes which gain or lose NBC at the promoters
-geneGainNB_ovGR <- gainNB_ovGR_annodf %>% filter(Annot %in% c("Promoter")) %>% pull(geneId) %>% unique
+geneGainNB_ovGR <- gainNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 geneGainNB_notovGR <- gainNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 geneLossNB_ovGR <- lossNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
 geneLossNB_notovGR <- lossNB_notovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
