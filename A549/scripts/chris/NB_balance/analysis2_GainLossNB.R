@@ -11,8 +11,22 @@ gainNB <- rtracklayer::import(con = file.path(peaks_dir, "NB_specific_DEX.bed"))
 lossNB <- rtracklayer::import(con = file.path(peaks_dir, "NB_specific_CTRL.bed")); print(length(lossNB)) # 5952
 commonNB <- rtracklayer::import(con = file.path(peaks_dir, "NB_common.bed")); print(length(commonNB)) # 1680
 
-# Overlaps with GR
+### Overlaps with GR
 gr_regions <- load_reddy_binding_consensus("NR3C1")
+
+# Overlaps with GR at 1h
+gr_1h <- gr_regions[["1 hour"]]
+
+gainNB_ovGR1h <- subsetByOverlaps(gainNB, gr_1h); print(length(gainNB_ovGR1h)) # 741 ; 741/803 = 92.28 %
+gainNB_notovGR1h <- gainNB[!(gainNB %in% gainNB_ovGR1h)]; print(length(gainNB_notovGR1h)) # 62 ; 62/803 = 7.72 %
+
+lossNB_ovGR1h <- subsetByOverlaps(lossNB, gr_1h); print(length(lossNB_ovGR1h)) # 935 ; 935/5952 = 15.71 %
+lossNB_notovGR1h <- lossNB[!(lossNB %in% lossNB_ovGR1h)]; print(length(lossNB_notovGR1h)) # 5017 ; 5017/5952 = 84.29 %
+
+commonNB_ovGR1h <- subsetByOverlaps(commonNB, gr_1h); print(length(commonNB_ovGR1h)) # 1397 ; 1397/1680 = 83.15 %
+commonNB_notovGR1h <- commonNB[!(commonNB %in% commonNB_ovGR1h)]; print(length(commonNB_notovGR1h)) # 283 ; 283/1680 = 16.84 %
+
+# Overlaps with GR at between 0 and 1h
 gr_5m_1h <- GRanges()
 for (time in names(gr_regions)[2:8]) {
   gr_time <- gr_regions[[time]]
@@ -23,7 +37,7 @@ gainNB_ovGR <- subsetByOverlaps(gainNB, gr_5m_1h); print(length(gainNB_ovGR)) # 
 gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) # 12 ; 12/803 = 1.49%
 
 lossNB_ovGR <- subsetByOverlaps(lossNB, gr_5m_1h); print(length(lossNB_ovGR)) # 3600 ; 3600/5952 = 60.48%
-lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) # 2352 ; 2352/803 = 2.93%
+lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) # 2352 ; 2352/5952 = 39.51%
 
 commonNB_ovGR <- subsetByOverlaps(commonNB, gr_5m_1h); print(length(commonNB_ovGR)) # 1632 ; 1632/1680 = 97.14%
 commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) # 48 ; 48/1680 = 2.85%

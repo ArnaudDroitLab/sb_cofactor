@@ -30,7 +30,7 @@ echo "plotHeatmap..."
 time plotHeatmap \
 	--matrixFile $OUTPUT_DIR/$MATRIX_NAME \
 	--colorMap Greens Greens Oranges Oranges \
-	--regionsLabel NIPBL_CTRL NIPBL_common NIPBL_DEX \
+	--regionsLabel NB_CTRL NB_common NB_DEX \
 	--samplesLabel \
 		NIPBL_CTRL BRD4_CTRL \
 		NIPBL_DEX BRD4_DEX \
