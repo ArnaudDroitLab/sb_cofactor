@@ -7,8 +7,8 @@ PEAKS_DIR=output/chip-pipeline-GRCh38/peak_call
 
 BW_DIR_A549=/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-pipeline-GRCh38/tracks
 
-MATRIX_NAME=20190421_NB_A549.gzip
-HEATMAP_NAME=20190421_NB_A549_heatmap.png
+MATRIX_NAME=20190422_NB_A549.gzip
+HEATMAP_NAME=20190422_NB_A549_heatmap.png
 
 ### computeMatrix
 echo "computeMatrix..."
@@ -23,6 +23,7 @@ time computeMatrix reference-point --referencePoint center \
 		$BW_DIR_A549/A549_DEX_NIPBL_rep1.bw \
 		$BW_DIR_A549/A549_DEX_BRD4_rep1.bw \
 	--upstream 1000 --downstream 1000 -p 8 \
+	--sortRegions keep \
 	--outFileName $OUTPUT_DIR/$MATRIX_NAME
 
 ### plotHeatmap
@@ -34,5 +35,5 @@ time plotHeatmap \
 	--samplesLabel \
 		NIPBL_CTRL BRD4_CTRL \
 		NIPBL_DEX BRD4_DEX \
-	--whatToShow 'heatmap only'\
+	--sortRegions no \
 	--outFileName $OUTPUT_DIR/$HEATMAP_NAME
