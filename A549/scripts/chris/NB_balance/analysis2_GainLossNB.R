@@ -27,6 +27,21 @@ commonNB_ovGR1h <- subsetByOverlaps(commonNB, gr_1h); print(length(commonNB_ovGR
 commonNB_notovGR1h <- commonNB[!(commonNB %in% commonNB_ovGR1h)]; print(length(commonNB_notovGR1h)) # 283 ; 283/1680 = 16.84 %
 
 # Overlaps with GR at between 0 and 1h
+for (timepoint in names(gr_regions)[1:8]) {
+  message(timepoint)
+  gr_time <- gr_regions[[timepoint]]
+  
+  gainNB_ovGR <- subsetByOverlaps(gainNB, gr_time); print(length(gainNB_ovGR)) #  ; /803 = 92.28 %
+  gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) #  ; /803 = 7.72 %
+  
+  lossNB_ovGR <- subsetByOverlaps(lossNB, gr_time); print(length(lossNB_ovGR)) #  ; /5952 = 15.71 %
+  lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) #  ; /5952 = 84.29 %
+  
+  commonNB_ovGR <- subsetByOverlaps(commonNB, gr_time); print(length(commonNB_ovGR)) #  ; /1680 = 83.15 %
+  commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) #  ; /1680 = 16.84 %
+}
+
+# Overlaps with GR at between 0 and 1h (reduced)
 gr_5m_1h <- GRanges()
 for (time in names(gr_regions)[2:8]) {
   gr_time <- gr_regions[[time]]
