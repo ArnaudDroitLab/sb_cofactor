@@ -27,35 +27,35 @@ commonNB_ovGR1h <- subsetByOverlaps(commonNB, gr_1h); print(length(commonNB_ovGR
 commonNB_notovGR1h <- commonNB[!(commonNB %in% commonNB_ovGR1h)]; print(length(commonNB_notovGR1h)) # 283 ; 283/1680 = 16.84 %
 
 # Overlaps with GR at between 0 and 1h
-for (timepoint in names(gr_regions)[1:8]) {
-  message(timepoint)
-  gr_time <- gr_regions[[timepoint]]
-  
-  gainNB_ovGR <- subsetByOverlaps(gainNB, gr_time); print(length(gainNB_ovGR)) #  ; /803 = 92.28 %
-  gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) #  ; /803 = 7.72 %
-  
-  lossNB_ovGR <- subsetByOverlaps(lossNB, gr_time); print(length(lossNB_ovGR)) #  ; /5952 = 15.71 %
-  lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) #  ; /5952 = 84.29 %
-  
-  commonNB_ovGR <- subsetByOverlaps(commonNB, gr_time); print(length(commonNB_ovGR)) #  ; /1680 = 83.15 %
-  commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) #  ; /1680 = 16.84 %
-}
+# for (timepoint in names(gr_regions)[1:8]) {
+#   message(timepoint)
+#   gr_time <- gr_regions[[timepoint]]
+#   
+#   gainNB_ovGR <- subsetByOverlaps(gainNB, gr_time); print(length(gainNB_ovGR)) #  ; /803 = 92.28 %
+#   gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) #  ; /803 = 7.72 %
+#   
+#   lossNB_ovGR <- subsetByOverlaps(lossNB, gr_time); print(length(lossNB_ovGR)) #  ; /5952 = 15.71 %
+#   lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) #  ; /5952 = 84.29 %
+#   
+#   commonNB_ovGR <- subsetByOverlaps(commonNB, gr_time); print(length(commonNB_ovGR)) #  ; /1680 = 83.15 %
+#   commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) #  ; /1680 = 16.84 %
+# }
 
 # Overlaps with GR at between 0 and 1h (reduced)
-gr_5m_1h <- GRanges()
-for (time in names(gr_regions)[2:8]) {
-  gr_time <- gr_regions[[time]]
-  gr_5m_1h <- append(gr_5m_1h, gr_time)
-}
-
-gainNB_ovGR <- subsetByOverlaps(gainNB, gr_5m_1h); print(length(gainNB_ovGR)) # 791 ; 791/803 = 98.51%
-gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) # 12 ; 12/803 = 1.49%
-
-lossNB_ovGR <- subsetByOverlaps(lossNB, gr_5m_1h); print(length(lossNB_ovGR)) # 3600 ; 3600/5952 = 60.48%
-lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) # 2352 ; 2352/5952 = 39.51%
-
-commonNB_ovGR <- subsetByOverlaps(commonNB, gr_5m_1h); print(length(commonNB_ovGR)) # 1632 ; 1632/1680 = 97.14%
-commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) # 48 ; 48/1680 = 2.85%
+# gr_5m_1h <- GRanges()
+# for (time in names(gr_regions)[2:8]) {
+#   gr_time <- gr_regions[[time]]
+#   gr_5m_1h <- append(gr_5m_1h, gr_time)
+# }
+# 
+# gainNB_ovGR <- subsetByOverlaps(gainNB, gr_5m_1h); print(length(gainNB_ovGR)) # 791 ; 791/803 = 98.51%
+# gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) # 12 ; 12/803 = 1.49%
+# 
+# lossNB_ovGR <- subsetByOverlaps(lossNB, gr_5m_1h); print(length(lossNB_ovGR)) # 3600 ; 3600/5952 = 60.48%
+# lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) # 2352 ; 2352/5952 = 39.51%
+# 
+# commonNB_ovGR <- subsetByOverlaps(commonNB, gr_5m_1h); print(length(commonNB_ovGR)) # 1632 ; 1632/1680 = 97.14%
+# commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) # 48 ; 48/1680 = 2.85%
 
 # Width
 summary(width(gainNB_ovGR)); hist(width(gainNB_ovGR), breaks = 60)
@@ -64,12 +64,12 @@ summary(width(lossNB_ovGR)); hist(width(lossNB_ovGR), breaks = 60)
 summary(width(lossNB_notovGR)); hist(width(lossNB_notovGR), breaks = 60)
 
 # Annotation
-gainNB_ovGR_annodf <- annotatePeaks(gainNB_ovGR, output = "df")
-gainNB_notovGR_annodf <- annotatePeaks(gainNB_notovGR, output = "df")
-lossNB_ovGR_annodf <- annotatePeaks(lossNB_ovGR, output = "df")
-lossNB_notovGR_annodf <- annotatePeaks(lossNB_notovGR, output = "df")
-commonNB_ovGR_annodf <- annotatePeaks(commonNB_ovGR, output = "df")
-commonNB_notovGR_annodf <- annotatePeaks(commonNB_notovGR, output = "df")
+gainNB_ovGR_annodf <- annotatePeaks(gainNB_ovGR1h, output = "df")
+gainNB_notovGR_annodf <- annotatePeaks(gainNB_notovGR1h, output = "df")
+lossNB_ovGR_annodf <- annotatePeaks(lossNB_ovGR1h, output = "df")
+lossNB_notovGR_annodf <- annotatePeaks(lossNB_notovGR1h, output = "df")
+commonNB_ovGR_annodf <- annotatePeaks(commonNB_ovGR1h, output = "df")
+commonNB_notovGR_annodf <- annotatePeaks(commonNB_notovGR1h, output = "df")
 
 # Retrieve genes which gain or lose NBC at the promoters
 geneGainNB_ovGR <- gainNB_ovGR_annodf %>% filter(Annot == "Promoter") %>% pull(geneId) %>% unique
