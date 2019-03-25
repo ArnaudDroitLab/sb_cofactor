@@ -7,8 +7,8 @@ PEAKS_DIR=output/chip-pipeline-GRCh38/peak_call
 
 BW_DIR_GR=/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-Reddy/tracks
 
-MATRIX_NAME=20190422_GR_A549.gzip
-HEATMAP_NAME=20190422_GR_A549_heatmap.png
+MATRIX_NAME=20190425_GR_A549.gzip
+HEATMAP_NAME=20190425_GR_A549_heatmap.png
 
 ### computeMatrix
 echo "computeMatrix..."
@@ -26,7 +26,7 @@ time computeMatrix reference-point --referencePoint center \
 		$BW_DIR_GR/A549_DEX_25m_NR3C1_rep1_ENCFF883JID.bw \
 		$BW_DIR_GR/A549_DEX_30m_NR3C1_rep1_ENCFF613TLN.bw \
 		$BW_DIR_GR/A549_DEX_1h_NR3C1_rep1_ENCFF331QXR.bw \
-	--upstream 1000 --downstream 1000 -p 8 \
+	--upstream 2500 --downstream 2500 -p 8 \
 	--sortRegions keep \
 	--outFileName $OUTPUT_DIR/$MATRIX_NAME
 
@@ -39,4 +39,5 @@ time plotHeatmap \
 	--samplesLabel \
 		GR_CTRL GR_DEX_5m GR_DEX_10m GR_DEX_15m GR_DEX_20m GR_DEX_25m GR_DEX_30m GR_DEX_1h \
 	--sortRegions no \
+	--whatToShow 'heatmap only' \
 	--outFileName $OUTPUT_DIR/$HEATMAP_NAME
