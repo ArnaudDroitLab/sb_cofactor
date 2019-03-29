@@ -69,9 +69,9 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
   return(cofactors_peaks)
 }
 
-annotatePeaks <- function(gr, output = "df") {
+annotatePeaks <- function(gr, output = "df", tss = 3000) {
   # difference between txdb and most expressed txdb???
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-5000, 5000), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
+  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
   if (output == "anno") {
     message("Return a csAnno object")
     return(gr_anno)
@@ -87,9 +87,9 @@ annotatePeaks <- function(gr, output = "df") {
   }
 }
 
-annotatePeaks2 <- function(gr, output = "df") {
+annotatePeaks2 <- function(gr, output = "df", tss = 3000) {
   # difference between txdb and most expressed txdb???
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-5000, 5000), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
+  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
   if (output == "anno") {
     message("Return a csAnno object")
     return(gr_anno)
@@ -127,4 +127,24 @@ plotVenn <- function(gr_list, labels = TRUE) {
             fills = list(fill = c("#FFB027", "#2B70AB", "#CD3301", "#449B2B")),
             edges = list(alpha = 0))
   return(p)
+}
+
+##### load POLR2A peaks from Myers Lab (EtOH and DEX)
+# nb: import_files_into_grl function from ef.utils
+load_POLR2A_peaks_Myers <- function() {
+  peaks_dir <- "output/chip-POLR2A-Myers/peaks"
+  ctrl <- "A549_CTRL_POLR2A_ENCFF664KTN.bed"
+  dex <- "A549_DEX_POLR2A_ENCFF915LKZ.bed"
+  
+  bed_path <- paste(peaks_dir, c(ctrl, dex), sep="/")
+  names(bed_path) <- c("POLR2A_CTRL", "POLR2A_DEX")
+  
+  peaks <- import_files_into_grl(bed_path,
+                                 file.format = "narrow",
+                                 file.ext = "")
+  
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(peaks))
+  return(peaks)
 }
