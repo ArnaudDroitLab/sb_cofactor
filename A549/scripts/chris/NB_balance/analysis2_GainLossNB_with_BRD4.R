@@ -11,57 +11,20 @@ gainNB <- rtracklayer::import(con = file.path(peaks_dir, "NB_specific_DEX.bed"))
 lossNB <- rtracklayer::import(con = file.path(peaks_dir, "NB_specific_CTRL.bed")); print(length(lossNB)) # 5952
 commonNB <- rtracklayer::import(con = file.path(peaks_dir, "NB_common.bed")); print(length(commonNB)) # 1680
 
-### Overlaps with GR
-gr_regions <- load_reddy_binding_consensus("NR3C1")
+### Overlaps with BRD4
+BRD4 <- load_cofactor_peaks(cofactors = c("BRD4"))
+BRD4_CTRL <- BRD4[["BRD4_CTRL"]]
+BRD4_DEX <- BRD4[["BRD4_DEX"]]
 
-# Overlaps with GR at 1h
-# gr_1h <- gr_regions[["1 hour"]]
-# 
-# gainNB_ovGR1h <- subsetByOverlaps(gainNB, gr_1h); print(length(gainNB_ovGR1h)) # 741 ; 741/803 = 92.28 %
-# gainNB_notovGR1h <- gainNB[!(gainNB %in% gainNB_ovGR1h)]; print(length(gainNB_notovGR1h)) # 62 ; 62/803 = 7.72 %
-# 
-# lossNB_ovGR1h <- subsetByOverlaps(lossNB, gr_1h); print(length(lossNB_ovGR1h)) # 935 ; 935/5952 = 15.71 %
-# lossNB_notovGR1h <- lossNB[!(lossNB %in% lossNB_ovGR1h)]; print(length(lossNB_notovGR1h)) # 5017 ; 5017/5952 = 84.29 %
-# 
-# commonNB_ovGR1h <- subsetByOverlaps(commonNB, gr_1h); print(length(commonNB_ovGR1h)) # 1397 ; 1397/1680 = 83.15 %
-# commonNB_notovGR1h <- commonNB[!(commonNB %in% commonNB_ovGR1h)]; print(length(commonNB_notovGR1h)) # 283 ; 283/1680 = 16.84 %
+gainNB_ovBRD4 <- subsetByOverlaps(gainNB, BRD4_DEX); print(length(gainNB_ovBRD4)) #  ; 803 / 803 = .%
+gainNB_notovBRD4 <- gainNB[!(gainNB %in% gainNB_ovBRD4)]; print(length(gainNB_notovBRD4)) # ; 0 / 803 = .%
+lossNB_ovBRD4 <- subsetByOverlaps(lossNB, BRD4_CTRL); print(length(lossNB_ovBRD4)) # ; / 5952 = .%
+lossNB_notovBRD4 <- lossNB[!(lossNB %in% lossNB_ovBRD4)]; print(length(lossNB_notovBRD4)) #  ; / 5952 = .%
 
-# Overlaps with GR at between 0 and 1h
-# for (timepoint in names(gr_regions)[1:8]) {
-#   message(timepoint)
-#   gr_time <- gr_regions[[timepoint]]
-#   
-#   gainNB_ovGR <- subsetByOverlaps(gainNB, gr_time); print(length(gainNB_ovGR)) #  ; /803 = 92.28 %
-#   gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) #  ; /803 = 7.72 %
-#   
-#   lossNB_ovGR <- subsetByOverlaps(lossNB, gr_time); print(length(lossNB_ovGR)) #  ; /5952 = 15.71 %
-#   lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) #  ; /5952 = 84.29 %
-#   
-#   commonNB_ovGR <- subsetByOverlaps(commonNB, gr_time); print(length(commonNB_ovGR)) #  ; /1680 = 83.15 %
-#   commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) #  ; /1680 = 16.84 %
-# }
 
-# Overlaps with GR at between 0 and 1h (reduced)
-gr_5m_1h <- GRanges()
-for (time in names(gr_regions)[2:8]) {
-  gr_time <- gr_regions[[time]]
-  gr_5m_1h <- append(gr_5m_1h, gr_time)
-}
 
-gainNB_ovGR <- subsetByOverlaps(gainNB, gr_5m_1h); print(length(gainNB_ovGR)) # 791 ; 791/803 = 98.51%
-gainNB_notovGR <- gainNB[!(gainNB %in% gainNB_ovGR)]; print(length(gainNB_notovGR)) # 12 ; 12/803 = 1.49%
 
-lossNB_ovGR <- subsetByOverlaps(lossNB, gr_5m_1h); print(length(lossNB_ovGR)) # 3600 ; 3600/5952 = 60.48%
-lossNB_notovGR <- lossNB[!(lossNB %in% lossNB_ovGR)]; print(length(lossNB_notovGR)) # 2352 ; 2352/5952 = 39.51%
 
-commonNB_ovGR <- subsetByOverlaps(commonNB, gr_5m_1h); print(length(commonNB_ovGR)) # 1632 ; 1632/1680 = 97.14%
-commonNB_notovGR <- commonNB[!(commonNB %in% commonNB_ovGR)]; print(length(commonNB_notovGR)) # 48 ; 48/1680 = 2.85%
-
-# Width
-summary(width(gainNB_ovGR)); hist(width(gainNB_ovGR), breaks = 60)
-summary(width(gainNB_notovGR)); hist(width(gainNB_notovGR), breaks = 60)
-summary(width(lossNB_ovGR)); hist(width(lossNB_ovGR), breaks = 60)
-summary(width(lossNB_notovGR)); hist(width(lossNB_notovGR), breaks = 60)
 
 # Annotation
 gainNB_ovGR_annodf <- annotatePeaks(gainNB_ovGR, output = "df")
@@ -121,8 +84,4 @@ draw_time_course_pergroup_FC(geneGroupList)
 # geneLossNBC_ovGR: Action répressive de GR par binding direct
 # geneLossNBC_notovGR: Les premières observations ne montre pas de grand changements dans le niveau de fold change de gene expression, réservoir de cofacteurs?
 
-### is there a recruitement of POL2 ?
-
-POL2_Myers <- load_POLR2A_peaks_Myers()
-POLR2A_CTRL <- POL2_Myers[["POLR2A_CTRL"]]
-POLR2A_DEX <- POL2_Myers[["POLR2A_DEX"]]
+gainNB_ovGR_annodf %>% filter(distanceToTSS > 500000)
