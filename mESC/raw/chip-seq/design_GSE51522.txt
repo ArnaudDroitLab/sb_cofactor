@@ -1,0 +1,2 @@
+Sample	mESC_CBP_rep1,N
+mESC_CBP_rep1	2
