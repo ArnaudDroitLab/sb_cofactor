@@ -158,13 +158,10 @@ load_diffbind_POLR2A_peaks_Myers <- function() {
   up_pval <- "POLR2A_up_peaks_pval.bed"
   down_pval <- "POLR2A_down_peaks_pval.bed"
   
-  
   bed_path <- paste(peaks_dir, c(up_fdr, down_fdr, up_pval, down_pval), sep="/")
-  names(bed_path) <- c("UP_POLR2A_FDR", "DOWN_POLR2A_FDR", "UP_POLR2A_PVAL", "DOWN_POLR2A_PVAL")
+  names(bed_path) <- c("POLR2A_UP_FDR", "POLR2A_DOWN_FDR", "POLR2A_UP_PVAL", "POLR2A_DOWN_PVAL")
   
-  peaks <- import_files_into_grl(bed_path,
-                                 file.format = "narrow",
-                                 file.ext = "")
+  peaks <- lapply(bed_path, rtracklayer::import)
   
   message("#####################################")
   message("Available set of regions: ")
