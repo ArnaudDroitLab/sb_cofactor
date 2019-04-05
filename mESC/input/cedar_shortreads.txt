@@ -3,6 +3,6 @@ cluster_cpu=-N 1 -n 12
 cluster_queue=--mem=64G
 
 [trimmomatic]
-leading_min_quality=10
+leading_min_quality=25
 trailing_min_quality=25
 min_length=25
