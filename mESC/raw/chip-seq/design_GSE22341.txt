@@ -1,0 +1,6 @@
+Sample	mESC_CHD7_rep1,N	mESC_CHD7_rep2 ,N	mESC_CHD7,N	mESC_P300_rep1,N	mESC_P300_rep2,N	mESC_P300_rep3,N	mESC_P300,N
+mESC_CHD7_rep1	2	0	2	0	0	0	0
+mESC_CHD7_rep2	0	2	2	0	0	0	0
+mESC_P300_rep1	0	0	0	2	0	0	2
+mESC_P300_rep2	0	0	0	0	2	0	2
+mESC_P300_rep3	0	0	0	0	0	2	2
