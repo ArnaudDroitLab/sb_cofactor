@@ -1,0 +1,7 @@
+[bwa_mem_picard_sort_sam]
+cluster_cpu=-N 1 -n 12
+cluster_queue=--mem=64G
+
+[trimmomatic]
+trailing_min_quality=18
+min_length=25
