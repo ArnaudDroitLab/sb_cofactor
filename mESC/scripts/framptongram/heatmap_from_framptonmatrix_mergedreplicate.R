@@ -35,10 +35,21 @@ Heatmap(mat,
         row_dend_width = unit(50, "mm"),
         column_dend_height = unit(50, "mm"),
         col = col_fun,
-        rect_gp = gpar(col = "white", lwd = 2),
+        rect_gp = gpar(col = "white", lwd = 1),
         cell_fun = function(j, i, x, y, width, height, fill) {
         grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 10))
         })
+
+Heatmap(mat,
+        row_names_side = "left",
+        row_dend_side = "right",
+        column_names_side = "top",
+        column_names_rot = 45,
+        column_dend_side = "bottom",
+        row_dend_width = unit(50, "mm"),
+        column_dend_height = unit(50, "mm"),
+        col = col_fun,
+        rect_gp = gpar(col = "white", lwd = 1))
 
 #
 # Heatmap(mat,
