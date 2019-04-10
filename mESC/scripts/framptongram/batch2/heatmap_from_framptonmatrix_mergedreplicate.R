@@ -5,6 +5,7 @@ library(circlize)
 
 #
 col_fun = colorRamp2(c(0, 0.5, 1), c("#0f4259", "white", "#800020"))
+# col_fun = colorRamp2(c(0, 1), c("#0f4259", "#800020"))
 
 ###
 get_nth_element <- function(lst, n) {
