@@ -1,0 +1,3 @@
+Sample	mESC_YY1_rep1,N
+mESC_YY1_rep1	2
+mESC_WCE_rep1	1
