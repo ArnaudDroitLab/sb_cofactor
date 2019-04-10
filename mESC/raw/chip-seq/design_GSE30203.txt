@@ -1,0 +1,8 @@
+Sample	mESC_CTCF_rep1,N	mESC_CTCF_rep2,N	mESC_CTCF_rep3,N	mESC_CTCF,N	mESC_POL2_rep1,N	mESC_POL2_rep2,N	mESC_POL2,N
+mESC_CTCF_rep1	2	0	0	2	0	0	0
+mESC_CTCF_rep2	0	2	0	2	0	0	0
+mESC_CTCF_rep3	0	0	2	2	0	0	0
+mESC_WCE_rep1	1	1	1	1	1	1	1
+mESC_WCE_rep2	1	1	1	1	1	1	1
+mESC_POL2_rep1	0	0	0	0	2	0	2
+mESC_POL2_rep2	0	0	0	0	0	2	2
