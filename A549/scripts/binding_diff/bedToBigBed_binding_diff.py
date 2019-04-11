@@ -14,8 +14,8 @@ for cofactor in cofactors:
     basename_ctrl = "A549_CTRL_" + cofactor + "_rep1"
     peaks_path = os.path.join(bd_path, A_cofactor, "output_filters")
     
-    up_peaks = os.path.join(peaks_path, basename_dex + "_peaks.narrowPeak_M_above_0.8_biased_peaks.bed")
-    down_peaks = os.path.join(peaks_path, basename_ctrl + "_peaks.narrowPeak_M_below_-0.8_biased_peaks.bed")
+    up_peaks = os.path.join(peaks_path, basename_dex + "_peaks.narrowPeak_M_above_0.5_biased_peaks.bed")
+    down_peaks = os.path.join(peaks_path, basename_ctrl + "_peaks.narrowPeak_M_below_-0.5_biased_peaks.bed")
     unbiased_peaks = os.path.join(peaks_path, A_cofactor + "_unbiased_peaks.bed")
     
     basename_up_peaks = A_cofactor + "_up_peaks"

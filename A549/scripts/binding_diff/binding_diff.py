@@ -27,7 +27,7 @@ for cofactor in cofactors:
            "--p2", p2,
            "--r1", r1,
            "--r2", r2,
-	   "-m", "0.8",
+	   "-m", "0.5",
            "-o", output]
                
     sub2 = " ".join(sub)
