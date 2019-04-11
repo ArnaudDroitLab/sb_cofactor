@@ -75,7 +75,7 @@ list_chrom_regions = []
 for filename in file_list:
 	list_chrom_regions.append( read_chrom_regions( filename ) )
 
-outfile = open( '/home/chris/Bureau/sb_cofactor_hr/mESC/scripts/framptongram/batch2/comparison_matrix_20190409_mergedreplicate.txt', 'w' )
+outfile = open( '/home/chris/Bureau/sb_cofactor_hr/mESC/scripts/framptongram/batch2/comparison_matrix_20190410_mergedreplicate.txt', 'w' )
 # outfile.write( 'NAME' + '\t' + 'REGIONS' + '\t' + 'BP' + '\t' + string.join( file_list, '\t' ) + '\n' )
 outfile.write( 'NAME' + '\t' + 'REGIONS' + '\t' + 'BP' + '\t' + '\t'.join(file_list) + '\n' )
 

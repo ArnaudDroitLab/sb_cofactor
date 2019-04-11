@@ -4,7 +4,7 @@ library(ComplexHeatmap)
 library(circlize)
 
 #
-col_fun = colorRamp2(c(0, 0.5, 1), c("#0f4259", "white", "#800020"))
+col_fun = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
 # col_fun = colorRamp2(c(0, 1), c("#0f4259", "#800020"))
 
 ###
@@ -13,7 +13,7 @@ get_nth_element <- function(lst, n) {
 }
 
 ###
-data <- read.table("scripts/framptongram/batch2/comparison_matrix_20190409_mergedreplicate.txt", header = TRUE)
+data <- read.table("scripts/framptongram/batch2/comparison_matrix_20190410_mergedreplicate.txt", header = TRUE)
 
 mat <- as.matrix(data[, 4:ncol(data)])
 
@@ -29,8 +29,10 @@ rownames(mat) <- sample_names
 
 Heatmap(mat,
         row_names_side = "left",
+        row_names_gp = gpar(fontsize = 11),
         row_dend_side = "right",
         column_names_side = "top",
+        column_names_gp = gpar(fontsize = 11),
         column_names_rot = 45,
         column_dend_side = "bottom",
         row_dend_width = unit(50, "mm"),
@@ -38,19 +40,23 @@ Heatmap(mat,
         col = col_fun,
         rect_gp = gpar(col = "white", lwd = 1),
         cell_fun = function(j, i, x, y, width, height, fill) {
-        grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+        grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
         })
 
 Heatmap(mat,
         row_names_side = "left",
+        row_names_gp = gpar(fontsize = 11),
         row_dend_side = "right",
         column_names_side = "top",
+        column_names_gp = gpar(fontsize = 11),
         column_names_rot = 45,
         column_dend_side = "bottom",
         row_dend_width = unit(50, "mm"),
         column_dend_height = unit(50, "mm"),
         col = col_fun,
         rect_gp = gpar(col = "white", lwd = 1))
+
+# Add lignée cellulaire sur le cote
 
 #
 # Heatmap(mat,

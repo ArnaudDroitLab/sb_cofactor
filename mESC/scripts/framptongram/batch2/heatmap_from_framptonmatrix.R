@@ -4,7 +4,7 @@ library(ComplexHeatmap)
 library(circlize)
 
 #
-col_fun = colorRamp2(c(0, 0.5, 1), c("#0f4259", "white", "#800020"))
+col_fun = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
 # col_fun = colorRamp2(c(0, 0.5, 1), c("#800020", "white", "#0f4259"))
 
 ###
@@ -13,7 +13,7 @@ get_nth_element <- function(lst, n) {
 }
 ###
 
-data <- read.table("scripts/framptongram/batch2/comparison_matrix_20190409_all.txt", header = TRUE)
+data <- read.table("scripts/framptongram/batch2/comparison_matrix_20190410_all.txt", header = TRUE)
 
 mat <- as.matrix(data[, 4:ncol(data)])
 
@@ -27,8 +27,10 @@ rownames(mat) <- sample_names
 
 Heatmap(mat,
         row_names_side = "left",
+        row_names_gp = gpar(fontsize = 7),
         row_dend_side = "right",
         column_names_side = "top",
+        column_names_gp = gpar(fontsize = 7),
         column_names_rot = 45,
         column_dend_side = "bottom",
         row_dend_width = unit(50, "mm"),
