@@ -6,7 +6,7 @@ library(circlize)
 
 col_fun = colorRamp2(c(-2, 0, 2), c("#0f4259", "white", "#800020"))
 
-# Manually downloaded : learn how to use API if we continue in that direction
+# Manually downloaded : learn how to use API if we continue in this direction
 GeneSymbol <- read.csv("input/iLINCS_KD/AFF4_sig_Sat_Apr_13_19_05_48_2019_323144.xls", sep="\t") %>% pull(Name_GeneSymbol) %>% as.character
 AFF4 <- read.csv("input/iLINCS_KD/AFF4_sig_Sat_Apr_13_19_05_48_2019_323144.xls", sep="\t") %>% select(Value_LogDiffExp)
 BRPF1 <- read.csv("input/iLINCS_KD/BRPF1_sig_Sat_Apr_13_19_39_44_2019_4075752.xls", sep="\t") %>% select(Value_LogDiffExp)
