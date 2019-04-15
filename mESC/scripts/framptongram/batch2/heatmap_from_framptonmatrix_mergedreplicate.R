@@ -27,7 +27,7 @@ sample_names <- get_nth_element(sample_names_split, 1)
 colnames(mat) <- sample_names
 rownames(mat) <- sample_names
 
-Heatmap(mat,
+h <- Heatmap(mat,
         row_names_side = "left",
         row_names_gp = gpar(fontsize = 11),
         row_dend_side = "right",
@@ -43,7 +43,8 @@ Heatmap(mat,
         grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
         })
 
-Heatmap(mat,
+pdf("L1000_KD_16prot_20190414.pdf")
+h2 <- Heatmap(mat,
         row_names_side = "left",
         row_names_gp = gpar(fontsize = 11),
         row_dend_side = "right",
@@ -55,6 +56,9 @@ Heatmap(mat,
         column_dend_height = unit(50, "mm"),
         col = col_fun,
         rect_gp = gpar(col = "white", lwd = 1))
+h2
+dev.off()
+
 
 # Add lignée cellulaire sur le cote
 
