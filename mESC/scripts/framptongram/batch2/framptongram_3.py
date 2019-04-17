@@ -70,12 +70,12 @@ genome_length = 2000000000
 
 #file_list = glob.glob( 'ENRICHED_REGIONS*' )
 # file_list = glob.glob( '*narrowPeak*' )
-file_list = get_filename("/home/chris/Bureau/sb_cofactor_hr/mESC/scripts/framptongram/batch2/bed_file_path_v2_mergedreplicate.txt")
+file_list = get_filename("/home/chris/Bureau/sb_cofactor_hr/mESC/scripts/framptongram/batch2/bed_file_path_v2_mergedreplicate_v2.txt")
 list_chrom_regions = []
 for filename in file_list:
 	list_chrom_regions.append( read_chrom_regions( filename ) )
 
-outfile = open( '/home/chris/Bureau/sb_cofactor_hr/mESC/scripts/framptongram/batch2/comparison_matrix_20190410_mergedreplicate.txt', 'w' )
+outfile = open( '/home/chris/Bureau/sb_cofactor_hr/mESC/scripts/framptongram/batch2/comparison_matrix_20190417_mergedreplicate.txt', 'w' )
 # outfile.write( 'NAME' + '\t' + 'REGIONS' + '\t' + 'BP' + '\t' + string.join( file_list, '\t' ) + '\n' )
 outfile.write( 'NAME' + '\t' + 'REGIONS' + '\t' + 'BP' + '\t' + '\t'.join(file_list) + '\n' )
 
