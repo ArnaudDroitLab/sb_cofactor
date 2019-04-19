@@ -1,0 +1,3 @@
+Sample	mESC_SUZ12_rep1,N	mESC_RING1B_rep1,N
+mESC_SUZ12_rep1	2	0
+mESC_RING1B_rep1	0	2

@@ -227,7 +227,7 @@ write.table(df_res_overlapsGR_percent, file = file.path(output_dir, "table_NBC_C
 ########################################
 # Il existe donc deux groupes NBC_CTRL>None_DEX: ceux bindés par GR et ceux non bindés par GR
 # L'idée est donc de déterminer ces deux groupes
-# step1: retrieve the genomic coordinates of NBC_DEX>None_CTRL
+# step1: retrieve the genomic coordinates of NBC_CTRL>None_DEX
 genomic_regions <- list_res[["NBC_CTRL"]][["None_DEX"]] # 421
 
 # step2: gather all gr regions from 5min to 1h

@@ -148,3 +148,23 @@ load_POLR2A_peaks_Myers <- function() {
   print(names(peaks))
   return(peaks)
 }
+
+##### load POLR2A diffbind peaks from Myers Lab (EtOH and DEX)
+# nb: import_files_into_grl function from ef.utils
+load_diffbind_POLR2A_peaks_Myers <- function() {
+  peaks_dir <- "output/chip-POLR2A-Myers/peaks"
+  up_fdr <- "POLR2A_up_peaks_fdr.bed"
+  down_fdr <- "POLR2A_down_peaks_fdr.bed"
+  up_pval <- "POLR2A_up_peaks_pval.bed"
+  down_pval <- "POLR2A_down_peaks_pval.bed"
+  
+  bed_path <- paste(peaks_dir, c(up_fdr, down_fdr, up_pval, down_pval), sep="/")
+  names(bed_path) <- c("POLR2A_UP_FDR", "POLR2A_DOWN_FDR", "POLR2A_UP_PVAL", "POLR2A_DOWN_PVAL")
+  
+  peaks <- lapply(bed_path, rtracklayer::import)
+  
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(peaks))
+  return(peaks)
+}

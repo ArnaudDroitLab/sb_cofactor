@@ -1,0 +1,4 @@
+Sample	mESC_H3K4me3_rep1,N	mESC_SUZ12_rep1,N
+mESC_WCE_rep1	1	1
+mESC_H3K4me3_rep1	2	0
+mESC_SUZ12_rep1	0	2

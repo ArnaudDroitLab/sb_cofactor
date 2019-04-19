@@ -1,0 +1,7 @@
+Sample	mESC_POL2_rep1,N	mESC_ELL2_rep1,N	mESC_AFF4_rep1,N	mESC_CDK9_rep1,N
+mESC_POL2_rep1	2	0	0	0
+mESC_POL2_WCE_rep1	1	0	0	0
+mESC_ELL2_rep1	0	2	0	0
+mESC_AFF4_rep1	0	0	2	0
+mESC_WCE_rep1	0	1	1	1
+mESC_CDK9_rep1	0	0	0	2

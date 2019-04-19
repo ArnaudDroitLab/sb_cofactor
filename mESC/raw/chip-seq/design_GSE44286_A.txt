@@ -1,0 +1,7 @@
+Sample	mESC_OCT4_rep1,N	mESC_SOX2_rep1,N	mESC_NANOG_rep1,N	mESC_CDK8_rep1,N	mESC_CDK9_rep1,N
+mESC_OCT4_rep1	2	0	0	0	0
+mESC_SOX2_rep1	0	2	0	0	0
+mESC_NANOG_rep1	0	0	2	0	0
+mESC_WCE_rep1	1	1	1	1	1
+mESC_CDK8_rep1	0	0	0	2	0
+mESC_CDK9_rep1	0	0	0	0	2

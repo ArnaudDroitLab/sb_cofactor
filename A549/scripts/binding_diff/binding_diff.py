@@ -2,10 +2,8 @@ import subprocess
 import os
 import time
 
-# cofactors = ["BRD4", "CDK9", "MED1", "NIPBL", "SMC1A"]
-cofactors = ["SMC1A"]
+cofactors = ["BRD4", "CDK9", "MED1", "NIPBL", "SMC1A"]
 
-manorm = "/usr/local/bin/manorm"
 read_path = "/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-pipeline-GRCh38/alignment"
 peak_path = "/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-pipeline-GRCh38/peak_call"
 output_path = "/home/chris/Bureau/sb_cofactor_hr/A549/output/chip-pipeline-GRCh38/binding_diff"
@@ -24,11 +22,12 @@ for cofactor in cofactors:
     r2 = os.path.join(read_path, basename_ctrl, basename_ctrl + extension_read)
     output = os.path.join(output_path, "A549_" + cofactor )
         
-    sub = [manorm,
+    sub = ["manorm",
            "--p1", p1,
            "--p2", p2,
            "--r1", r1,
            "--r2", r2,
+	   "-m", "0.5",
            "-o", output]
                
     sub2 = " ".join(sub)
