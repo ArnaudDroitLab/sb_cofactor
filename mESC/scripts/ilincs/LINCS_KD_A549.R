@@ -35,20 +35,36 @@ downloadSignature <- function(signId) {
 }
 
 downloadSignatureInBatch <- function(signIds, targets) {
-  l <- list()
-  for (i in 1:length(signIds)) {
+  cat(1, " ")
+  sign1 <- signIds[1]
+  target1 <- targets[1]
+  tmp1 <- downloadSignature(sign1)
+  colnames(tmp1) <- c("Name_GeneSymbol", target1)
+  
+  l <- data.frame(tmp1)
+  for (i in 2:length(signIds)) {
+    cat(i, " ")
     sign <- signIds[i]
     target <- targets[i]
     tmp <- downloadSignature(sign)
-    tmp_l <- list(tmp)
-    names(tmp_l) <- target
-    l <- append(l, tmp_l)
+    colnames(tmp) <- c("Name_GeneSymbol", target)
+    l <- merge(l, tmp, by = "Name_GeneSymbol")
+    # tmp_l <- list(tmp)
+    # names(tmp_l) <- target
+    # l <- append(l, tmp_l)
   }
   return(l)
 }
 
 # signIds <- "LINCSKD_5664"
+test <- downloadSignature("LINCSKD_5664")
+
+#
 ten_signIds <- signIds_A549[1:5]
 ten_target_A549 <- targets_A549[1:5]
 
-t <- downloadSignatureInBatch(ten_signIds, ten_target_A549)
+t <- downloadSignatureInBatch(signIds_A549, targets_A549)
+
+A549_ILINCs_KD_matrix <- t
+save(A549_ILINCs_KD_matrix, file = "output/analysis/ILINCS/A549_ILINCs_KD_matrix.rds")
+saveRDS(A549_ILINCs_KD_matrix, file = "output/analysis/ILINCS/A549_ILINCs_KD_matrix2.rds")
