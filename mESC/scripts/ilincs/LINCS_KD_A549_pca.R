@@ -1,4 +1,5 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/mESC")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/mESC")
+setwd("/Users/chris/Desktop/sb_cofactor_hr/mESC")
 
 mutated_cofactors <- c("NIPBL", "SMC1A", "SMC3", "RAD21", "HDAC8", "BRD4", "CREBBP", "EP300", "KAT6A", "KAT6B",
                        "SRCAP", "BRPF1", "RAI1", "MBD5", "EHMT1", "HDAC4", "ARID1A", "ARID1B", "SMARCA4", "SMARCB1",
