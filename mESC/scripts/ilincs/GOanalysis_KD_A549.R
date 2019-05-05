@@ -21,4 +21,4 @@ m <- useMart("ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host = "
 listAttributes(m)
 go <- getBM(attributes = c("hgnc_symbol", "go_id", "name_1006", "namespace_1003"), mart = m)
 
-go[, 4] != 
+# go[, 4] != 
