@@ -1,9 +1,11 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/mESC")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/mESC")
+setwd("/Users/chris/Desktop/sb_cofactor_hr/mESC")
 
 library(dplyr)
 library(factoextra)
 library(ComplexHeatmap)
 library(circlize)
+source("scripts/ilincs/lincs.utils.R")
 
 col_fun = colorRamp2(c(-2, 0, 2), c("#0f4259", "white", "#800020"))
 
@@ -16,11 +18,11 @@ protKD <- colnames(A549_ILINCs_KD_matrix)
 mutated <- ifelse(protKD %in% mutated_cofactors, TRUE, FALSE)
 isMutated <- data.frame(protKD, mutated)
 
-# Heatmap
 mat <- as.matrix(A549_ILINCs_KD_matrix)
 max(mat)
 min(mat)
 
+# Heatmap
 Heatmap(mat, name = "LogDiffExp",
         row_names_side = "left",
         row_names_gp = gpar(fontsize = 0),
@@ -37,9 +39,9 @@ Heatmap(mat, name = "LogDiffExp",
         col = col_fun,
         rect_gp = gpar(col = "white", lwd = 0))
         
-#
-res.dist <- get_dist(t(A549_ILINCs_KD_matrix), stand = TRUE, method = "pearson")
-fviz_dist(res.dist, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+# test method from package factoextra to plot distance matrix
+# res.dist <- get_dist(t(A549_ILINCs_KD_matrix), stand = TRUE, method = "pearson")
+# fviz_dist(res.dist, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
 
 #
 dmat <- dist(t(mat))
@@ -51,6 +53,12 @@ table(clusterCut3, isMutated$mutated)
 
 clusterCut4 <- cutree(clusters, 4)
 table(clusterCut4, isMutated$mutated)
+
+clusterCut5 <- cutree(clusters, 5)
+table(clusterCut5, isMutated$mutated)
+
+clusterCut7 <- cutree(clusters, 7)
+table(clusterCut7, isMutated$mutated)
 
 clusterCut10 <- cutree(clusters, 10)
 table(clusterCut10, isMutated$mutated)
