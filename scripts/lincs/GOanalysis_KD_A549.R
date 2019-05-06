@@ -5,7 +5,7 @@ library(dplyr)
 library(httr)
 library(jsonlite)
 library(systemPipeR)
-source("scripts/ilincs/lincs.utils.R")
+source("scripts/lincs/lincs.utils.R")
 
 A549_ILINCs_KD_matrix_path <- "output/analysis/ILINCS/A549_ILINCs_KD_matrix.rds"
 A549_ILINCs_KD_matrix <- readRDS(A549_ILINCs_KD_matrix_path)

@@ -1,4 +1,6 @@
 library(dplyr)
+library(httr)
+library(jsonlite)
 
 get_mutated_cofactors <- function() {
   # 39 mutated cofactors associated with developmental syndromes / trasncriptomopathies
