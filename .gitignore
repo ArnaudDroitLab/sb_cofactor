@@ -3,3 +3,4 @@ A549/raw/rna-seq/*tsv
 A549/input/ENCODE
 */output
 */*/*/*.fastq
+output
