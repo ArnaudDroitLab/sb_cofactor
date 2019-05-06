@@ -4,6 +4,7 @@ setwd("/Users/chris/Desktop/sb_cofactor_hr")
 library(factoextra)
 library(ComplexHeatmap)
 library(circlize)
+library(ape)
 source("scripts/lincs/lincs.utils.R")
 
 ###
@@ -49,7 +50,9 @@ Heatmap(mat, name = "LogDiffExp",
 dmat <- dist(t(mat))
 clusters <- hclust(dmat)
 
+pdf(file = "output/analysis/lincs/clustering_A549_20190506_v1.pdf", width = 500, height = 500)
 plot(clusters)
+dev.off()
 
 clusterCut3 <- cutree(clusters, 3)
 table(clusterCut3, isMutated$mutated)

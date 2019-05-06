@@ -17,4 +17,4 @@ sum(MUTATED_COFACTORS %in% targets_A549)
 
 ###
 A549_ILINCs_KD_matrix <- downloadSignatureInBatch(signIds_A549, targets_A549)
-saveRDS(A549_ILINCs_KD_matrix, file = "output/analysis/lincs/A549_ILINCs_KD_matrix.rds")
+saveRDS(A549_ILINCs_KD_matrix, file = "output/analysis/lincs/A549_LINCS_KD_matrix.rds")
