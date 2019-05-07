@@ -46,8 +46,8 @@ Heatmap(mat, name = "LogDiffExp",
 # res.dist <- get_dist(t(A549_LINCs_KD_matrix), stand = TRUE, method = "pearson")
 # fviz_dist(res.dist, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
 
-#
-dmat <- dist(t(mat))
+# Dissimilarity measure: Euclidian distance
+dmat <- dist(t(mat), method = "euclidian")
 clusters <- hclust(dmat)
 
 pdf(file = "output/analysis/lincs/clustering_A549_20190506_v1.pdf", width = 500, height = 500)
@@ -74,3 +74,18 @@ table(clusterCut20, isMutated$mutated)
 
 clusterCut30 <- cutree(clusters, 30)
 table(clusterCut30, isMutated$mutated)
+
+clusterCut100 <- cutree(clusters, 100)
+table(clusterCut100, isMutated$mutated)
+
+# http://www.sthda.com/english/wiki/print.php?id=237
+# Try correlation-based distance: 
+res.cor <- cor(mat, method = "spearman")
+d.cor <- as.dist(1 - res.cor)
+clusters.cor <- hclust(d.cor)
+
+cut3 <- cutree(clusters.cor, 3)
+table(cut3, isMutated$mutated)
+
+cut10 <- cutree(clusters.cor, 10)
+table(cut10, isMutated$mutated)
