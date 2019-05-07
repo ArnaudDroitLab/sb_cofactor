@@ -50,7 +50,12 @@ Heatmap(mat, name = "LogDiffExp",
 dmat <- dist(t(mat), method = "euclidian")
 dmat.mat <- as.matrix(dmat)
 
-sort(dmat.mat["NIPBL", ])[1:40]
+closeToNIPBL <- sort(dmat.mat["NIPBL", ])[1:40]
+
+matNIPBL <- as.matrix(A549_LINCs_KD_matrix[, names(closeToNIPBL)])
+# dmat.closeToNIPBL <- dist(t(matNIPBL), method = "euclidian")
+Heatmap(matNIPBL)
+
 sort(dmat.mat["IGF1R", ])[1:40]
 sort(dmat.mat["SCP2", ])[1:40]
 
