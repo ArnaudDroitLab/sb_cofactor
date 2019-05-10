@@ -1,5 +1,5 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr")
-setwd("//1Users/chris/Desktop/sb_cofactor_hr")
+setwd("/Users/chris/Desktop/sb_cofactor_hr")
 
 source("scripts/lincs/lincs.utils.R")
 
@@ -15,7 +15,6 @@ overview_KD <- all_signatures %>% group_by(CellLine) %>%
   summarize(NumberOfKD = n(), MutatedCofactor = sum(TargetGene %in% MUTATED_COFACTORS))
 kable(overview_KD)
 
-#
 # cell_lines <- c("A549", "HA1E")
 cell_lines <- c("HA1E")
 

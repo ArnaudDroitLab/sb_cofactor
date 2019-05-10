@@ -33,7 +33,7 @@ downloadSignature <- function(signId) {
 }
 
 downloadSignatureInBatch <- function(signIds, targets) {
-  message(1, " \ ", length(signIds))
+  message(1, " / ", length(signIds))
   sign1 <- signIds[1]
   target1 <- targets[1]
   tmp1 <- downloadSignature(sign1)
@@ -41,7 +41,7 @@ downloadSignatureInBatch <- function(signIds, targets) {
   
   signMat <- data.frame(tmp1)
   for (i in 2:length(signIds)) {
-    message(i, " \ ", length(signIds))
+    message(i, " / ", length(signIds))
     sign <- signIds[i]
     target <- targets[i]
     tmp <- downloadSignature(sign)
