@@ -39,8 +39,6 @@ for (COF in MUTCOF_A549) {
   closeToCOF <- sort(cor.pearson[COF, ], decreasing = TRUE)[1:20]
   matCOF <-  as.matrix(A549_LINCs_KD_matrix[, names(closeToCOF)])
   
-  pdf_name <- file.path(output, paste0(COF, "_top20closerKD_", date, ".pdf"))
-  pdf(pdf_name)
   heatmapCOF <- Heatmap(matCOF, name = "LogDiffExp",
           show_row_names = FALSE,
           show_row_dend = FALSE,
@@ -51,19 +49,21 @@ for (COF in MUTCOF_A549) {
           bottom_annotation = HeatmapAnnotation(correlation = anno_text(round(closeToCOF,3),
                                                                         rot = 0,
                                                                         just = "center")))
-  heatmapCOF
+  
+  pdf_name <- file.path(output, paste0(COF, "_top20closerKD_", date, ".pdf"))
+  pdf(file = pdf_name, width = 10, height = 5)
+  print(heatmapCOF)
   dev.off()
 }
 
 #######
 # Pearson correlation matrix between each KD sample
-mat_mutcof <- mat[, MUTCOF_A549]
 cor.pearson.mutcof <- cor.pearson[MUTCOF_A549, MUTCOF_A549]
 max(cor.pearson.mutcof - diag(nrow(cor.pearson.mutcof)))
 min(cor.pearson.mutcof)
 
-col_fun1 = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
-Heatmap(cor.pearson.mutcof, name = "Pearson's correlation",
+col_fun2 = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
+Heatmap(cor.pearson.mutcof, name = "Pearson correlation",
         row_names_side = "left",
         row_dend_side = "right",
         column_names_side = "top",
@@ -71,8 +71,18 @@ Heatmap(cor.pearson.mutcof, name = "Pearson's correlation",
         row_dend_width = unit(30, "mm"),
         column_dend_height = unit(30, "mm"),
         column_dend_reorder = TRUE,
-        col = col_fun1,
+        col = col_fun2,
         rect_gp = gpar(col = "white", lwd = 1),
         cell_fun = function(j, i, x, y, width, height, fill) {
         grid.text(sprintf("%.2f", cor.pearson.mutcof[i, j]), x, y, gp = gpar(fontsize = 10))
         })
+
+#######
+# Is there a set of genes highly correlated in KD samples?
+mat_mutcof <- mat[, MUTCOF_A549]
+cor.pearson.mutcof.genes <- cor(t(mat_mutcof), method = "pearson")
+max(cor.pearson.mutcof.genes - diag(nrow(cor.pearson.mutcof.genes)))
+min(cor.pearson.mutcof.genes)
+
+Heatmap(cor.pearson.mutcof.genes,
+        col = col_fun2)
