@@ -1,5 +1,5 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr")
-setwd("/Users/chris/Desktop/sb_cofactor_hr")
+setwd("//1Users/chris/Desktop/sb_cofactor_hr")
 
 source("scripts/lincs/lincs.utils.R")
 
