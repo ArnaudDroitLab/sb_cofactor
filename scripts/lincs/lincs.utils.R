@@ -33,23 +33,23 @@ downloadSignature <- function(signId) {
 }
 
 downloadSignatureInBatch <- function(signIds, targets) {
-  cat(1, " ")
+  message(1, " \ ", length(signIds))
   sign1 <- signIds[1]
   target1 <- targets[1]
   tmp1 <- downloadSignature(sign1)
   colnames(tmp1) <- c("Name_GeneSymbol", target1)
   
-  resMat <- data.frame(tmp1)
+  signMat <- data.frame(tmp1)
   for (i in 2:length(signIds)) {
-    cat(i, " ")
+    message(i, " \ ", length(signIds))
     sign <- signIds[i]
     target <- targets[i]
     tmp <- downloadSignature(sign)
     colnames(tmp) <- c("Name_GeneSymbol", target)
-    resMat <- merge(resMat, tmp, by = "Name_GeneSymbol")
+    signMat <- merge(signMat, tmp, by = "Name_GeneSymbol")
     # tmp_l <- list(tmp)
     # names(tmp_l) <- target
     # l <- append(l, tmp_l)
   }
-  return(resMat)
+  return(signMat)
 }
