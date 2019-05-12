@@ -30,5 +30,5 @@ for (CL in cell_lines) {
   sum(MUTATED_COFACTORS %in% targets_CL)
   
   CL_ILINCs_KD_matrix <- downloadSignatureInBatch(signIds_CL, targets_CL)
-  saveRDS(CL_ILINCs_KD_matrix, file = paste("output/analysis/lincs/", CL, "_LINCS_KD_matrix.rds"))
+  saveRDS(CL_ILINCs_KD_matrix, file = paste0("output/analysis/lincs/", CL, "_LINCS_KD_matrix.rds"))
 }

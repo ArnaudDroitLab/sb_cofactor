@@ -25,7 +25,7 @@ MUTCOF_A549 <- MUTATED_COFACTORS[MUTATED_COFACTORS %in% colnames(A549_LINCs_KD_m
 #######
 # Pearson correlation matrix between each KD sample
 cor.pearson <- cor(mat, method = "pearson")
-max(cor.pearson - diag(nrow(cor.pearson)))
+max(cor.pearson - diag(nrow(cor.pearson))) # -diag(n) allow to remove the identity matrix
 min(cor.pearson)
 
 #######
