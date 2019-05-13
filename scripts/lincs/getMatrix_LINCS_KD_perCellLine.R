@@ -15,9 +15,9 @@ overview_KD <- all_signatures %>% group_by(CellLine) %>%
   summarize(NumberOfKD = n(), MutatedCofactor = sum(TargetGene %in% MUTATED_COFACTORS))
 kable(overview_KD)
 
-# cell_lines <- c("A549", "HA1E", "A375")
+# cell_lines <- c("A549", "HA1E", "A375", "HCC515", "HEPG2", "HT29", "MCF7", "NPC", "PC3", "VCAP")
 # créer une fonction downloadSignature_KD_CellLine(cell_line
-cell_lines <- c("A375")
+cell_lines <- c("A375", "MCF7")
 
 for (CL in cell_lines) {
   message("#####\t", CL)
