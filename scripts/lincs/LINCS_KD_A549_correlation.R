@@ -79,6 +79,7 @@ Heatmap(cor.pearson.mutcof, name = "Pearson correlation",
 
 #######
 # Is there a set of genes highly correlated in KD samples?
+# Methods to detect a set of genes that is able to segregate between mutated cofactors and others? supervised machine learning?
 mat_mutcof <- mat[, MUTCOF_A549]
 cor.pearson.mutcof.genes <- cor(t(mat_mutcof), method = "pearson")
 max(cor.pearson.mutcof.genes - diag(nrow(cor.pearson.mutcof.genes)))
