@@ -2,6 +2,7 @@ library(dplyr)
 library(httr)
 library(jsonlite)
 
+#####
 get_mutated_cofactors <- function() {
   # 39 mutated cofactors associated with developmental syndromes / trasncriptomopathies
   mutated_cofactors <- c("NIPBL", "SMC1A", "SMC3", "RAD21", "HDAC8", "BRD4", "CREBBP", "EP300", "KAT6A", "KAT6B",
@@ -11,16 +12,19 @@ get_mutated_cofactors <- function() {
   return(mutated_cofactors)
 }
 
-get_signIds <- function(df, cell_line) {
-  res <- df %>% filter(CellLine == cell_line) %>% pull(SignatureId) %>% as.character
+#####
+get_signIds <- function(df, cell_line, time) {
+  res <- df %>% filter(CellLine == cell_line, Time == time) %>% pull(SignatureId) %>% as.character
   return(res)
 }
 
-get_target <- function(df, cell_line) {
-  res <- df %>% filter(CellLine == cell_line) %>% pull(TargetGene) %>% as.character
+#####
+get_target <- function(df, cell_line, time) {
+  res <- df %>% filter(CellLine == cell_line, Time == time) %>% pull(TargetGene) %>% as.character
   return(res)
 }
 
+####
 downloadSignature <- function(signId) {
   www <- "http://www.ilincs.org/api/ilincsR/downloadSignature"
   
@@ -32,6 +36,7 @@ downloadSignature <- function(signId) {
   return(res)
 }
 
+#####
 downloadSignatureInBatch <- function(signIds, targets) {
   message(1, " / ", length(signIds))
   sign1 <- signIds[1]
@@ -52,4 +57,22 @@ downloadSignatureInBatch <- function(signIds, targets) {
     # l <- append(l, tmp_l)
   }
   return(signMat)
+}
+
+#### Download all KD signatures from a specific cell line
+downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
+  message("#####\t Cell line : ", CL)
+  CL_cell_line <- all_signatures %>% filter(CellLine == CL, Time == time)
+  message("Number of KD signatures : ", nrow(CL_cell_line))
+  
+  signIds_CL <- get_signIds(CL_cell_line, cell_line = CL, time = time)
+  targets_CL <- get_target(CL_cell_line, cell_line = CL, time = time)
+  message("Including ", sum(MUTATED_COFACTORS %in% targets_CL), " transcriptional coregulators (mutated in dev. syndromes)")
+  
+  CL_ILINCs_KD_matrix <- downloadSignatureInBatch(signIds_CL, targets_CL)
+  
+  time_withoutspace <- gsub(" ", "", time)
+  output_filename <- file.path(output_path, paste0(CL, "_", time_withoutspace, "_LINCS_KD_matrix.rds"))
+  saveRDS(CL_ILINCs_KD_matrix, file = output_filename)
+  message("Matrix has been save in ", output_filename)
 }
