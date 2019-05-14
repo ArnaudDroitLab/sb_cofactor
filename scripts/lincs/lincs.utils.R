@@ -74,5 +74,5 @@ downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
   time_withoutspace <- gsub(" ", "", time)
   output_filename <- file.path(output_path, paste0(CL, "_", time_withoutspace, "_LINCS_KD_matrix.rds"))
   saveRDS(CL_ILINCs_KD_matrix, file = output_filename)
-  message("Matrix has been save in ", output_filename)
+  message("\t >>> Matrix has been save in ", output_filename)
 }

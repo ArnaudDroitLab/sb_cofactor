@@ -26,7 +26,7 @@ our_cell_lines <- overview_KD_96h %>% filter(MutatedCofactor != 0) %>% pull(Cell
 our_cell_lines
 
 #### Downloading matrix
-cell_lines_toDL <- c("HEKTE")
+cell_lines_toDL <- c("A549", "HA1E")
 for (CL in cell_lines_toDL) {
   downloadSignature_KD_CellLine(CellLine = CL, time = "96 h", output_path = "output/analysis/lincs")
 }
