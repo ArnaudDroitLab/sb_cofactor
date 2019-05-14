@@ -12,10 +12,10 @@ all_signatures <- read.csv("input/lincs/LINCS_consensus_gene_KD_Signatures_all_3
 
 #### Explore LINCS KD database
 all_cell_lines <- table(all_signatures$CellLine)
-overview_KD <- all_signatures %>% group_by(CellLine)
+overview_KD <- all_signatures %>% group_by(CellLine, Time)
 
 # All time points
-overview_KD_allTime <- overview_KD %>% summarize(NumberOfKD = n(), MutatedCofactor = sum(TargetGene %in% MUTATED_COFACTORS))
+overview_KD_allTime <- overview_KD %>% summarize(NumberOfKD = n(), MutatedCofactor = sum(TargetGene %in% MUTATED_COFACTORS), Time = "TO COMPLETE")
 kable(overview_KD_allTime)
 
 # Only 96h
@@ -26,7 +26,7 @@ our_cell_lines <- overview_KD_96h %>% filter(MutatedCofactor != 0) %>% pull(Cell
 our_cell_lines
 
 #### Downloading matrix
-cell_lines_toDL <- c("A549", "HA1E")
+cell_lines_toDL <- c("A375")
 for (CL in cell_lines_toDL) {
   downloadSignature_KD_CellLine(CellLine = CL, time = "96 h", output_path = "output/analysis/lincs")
 }

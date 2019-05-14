@@ -7,6 +7,7 @@ get_mutated_cofactors <- function() {
   # 39 mutated cofactors associated with developmental syndromes / trasncriptomopathies
   mutated_cofactors <- c("NIPBL", "SMC1A", "SMC3", "RAD21", "HDAC8", "BRD4", "CREBBP", "EP300", "KAT6A", "KAT6B",
                          "SRCAP", "BRPF1", "RAI1", "MBD5", "EHMT1", "HDAC4", "ARID1A", "ARID1B", "SMARCA4", "SMARCB1",
+                         "ARID2", "SMARCC2", "DFP2",
                          "SMARCE1", "ANKRD11", "KMT2A", "SMARCA2", "AFF4", "KMT2D", "KDM6A", "TAF6", "ESCO2", "CHD7",
                          "DDX11", "STAG1", "STAG2", "SETD5", "MED12", "MED13L", "MED17", "MED23", "MED25")
   return(mutated_cofactors)
@@ -74,5 +75,5 @@ downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
   time_withoutspace <- gsub(" ", "", time)
   output_filename <- file.path(output_path, paste0(CL, "_", time_withoutspace, "_LINCS_KD_matrix.rds"))
   saveRDS(CL_ILINCs_KD_matrix, file = output_filename)
-  message("\t >>> Matrix has been save in ", output_filename)
+  message(" >>> Matrix has been save in ", output_filename)
 }
