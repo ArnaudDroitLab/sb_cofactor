@@ -15,7 +15,8 @@ all_cell_lines <- table(all_signatures$CellLine)
 overview_KD <- all_signatures %>% group_by(CellLine, Time)
 
 # All time points
-overview_KD_allTime <- overview_KD %>% summarize(NumberOfKD = n(), MutatedCofactor = sum(TargetGene %in% MUTATED_COFACTORS))
+overview_KD_allTime <- overview_KD %>% summarize(NumberOfKD = n(), MutatedCofactor = sum(TargetGene %in% MUTATED_COFACTORS)) %>%
+  arrange(Time, CellLine) %>% select(Time, CellLine, everything())
 kable(overview_KD_allTime)
 
 # Remove CellLine where MutatedCofactor == 0
@@ -25,7 +26,7 @@ kable(overview_KD_allTime_with_MutCof)
 # Only 96h
 overview_KD_96h <- overview_KD_allTime_with_MutCof %>% filter(Time == "96 h")
 kable(overview_KD_96h)
-our_cell_lines <- overview_KD_96h %>% filter(MutatedCofactor != 0) %>% pull(CellLine)
+our_cell_lines <- overview_KD_96h %>% filter(MutatedCofactor != 0) %>% pull(CellLine) %>% as.character
 our_cell_lines
 
 #### Downloading matrix
