@@ -22,6 +22,67 @@ names(available_KD_HEPG2) <- OurFavoritesGenes
 kable(as.data.frame(available_KD_HEPG2))
 
 ####################
+#   ZNF707 + others in HEPG2
+####################
+### ZNF707 KD + others in HEPG2 cell lines
+ZNF707o_HEPG2 <- all_signatures %>% filter(CellLine == "HEPG2", TargetGene %in% OurFavoritesGenes, Time == "96 h")
+signIds_ZNF707o_HEPG2 <- ZNF707o_HEPG2 %>% pull(SignatureId) %>% as.character
+targets_ZNF707o_HEPG2 <- ZNF707o_HEPG2  %>% pull(TargetGene) %>% as.character
+signature_ZNF707o_HEPG2 <- downloadSignatureInBatch(signIds_ZNF707o_HEPG2, targets_ZNF707o_HEPG2)
+
+rownames(signature_ZNF707o_HEPG2) <- signature_ZNF707o_HEPG2$Name_GeneSymbol
+signature_ZNF707o_HEPG2 <- signature_ZNF707o_HEPG2 %>% select(-Name_GeneSymbol)
+
+mat <- as.matrix(signature_ZNF707o_HEPG2)
+max(mat)
+min(mat)
+
+# Heatmap
+col_fun = colorRamp2(c(-2, 0, 2), c("#0f4259", "white", "#800020"))
+
+heatmap_sign_znf707o_HEPG2 <- Heatmap(mat, name = "LogDiffExp",
+                                row_names_side = "left",
+                                row_names_gp = gpar(fontsize = 0),
+                                row_dend_side = "right",
+                                show_row_dend = FALSE,
+                                column_names_side = "top",
+                                column_names_gp = gpar(fontsize = 11),
+                                column_names_rot = 45,
+                                column_dend_side = "bottom",
+                                row_dend_width = unit(50, "mm"),
+                                column_dend_height = unit(50, "mm"),
+                                col = col_fun,
+                                rect_gp = gpar(col = "white", lwd = 0))
+
+pdf(file = "output/analysis/lincs/znf707/heatmap_signature_KD_ZNF707_others_HEPG2_20190517.pdf", width = 14, height = 11)
+print(heatmap_sign_znf707o_HEPG2)
+dev.off()
+
+# Pearson correlation between these 7 ZNF707
+cor.pearson.znf707o_HEPG2 <- cor(mat, method = "pearson")
+max(cor.pearson.znf707o_HEPG2 - diag(nrow(cor.pearson.znf707o_HEPG2))) # -diag(n) allow to remove the identity matrix
+min(cor.pearson.znf707o_HEPG2)
+
+col_fun2 = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
+heatmap_ZNF707o_HEPG2 <- Heatmap(cor.pearson.znf707o_HEPG2, name = "Pearson correlation",
+                           row_names_side = "left",
+                           row_dend_side = "right",
+                           column_names_side = "top",
+                           column_names_rot = 45,
+                           column_dend_side = "bottom",
+                           row_dend_width = unit(30, "mm"),
+                           column_dend_height = unit(30, "mm"),
+                           column_dend_reorder = TRUE,
+                           col = col_fun2,
+                           rect_gp = gpar(col = "white", lwd = 1),
+                           cell_fun = function(j, i, x, y, width, height, fill) {
+                          grid.text(sprintf("%.2f", cor.pearson.znf707o_HEPG2[i, j]), x, y, gp = gpar(fontsize = 15))
+                           })
+pdf(file = "output/analysis/lincs/znf707/heatmap_pearson_KD_ZNF707_others_HEPG2_20190517.pdf", width = 13, height = 11)
+print(heatmap_ZNF707o_HEPG2)
+dev.off()
+
+####################
 #   ZNF707
 ####################
 
@@ -151,4 +212,3 @@ heatmap_ZNF707o <- Heatmap(cor.pearson.znf707o, name = "Pearson correlation",
 pdf(file = "output/analysis/lincs/znf707/heatmap_pearson_KD_ZNF707_others_20190517.pdf", width = 25, height = 22)
 print(heatmap_ZNF707o)
 dev.off()
-
