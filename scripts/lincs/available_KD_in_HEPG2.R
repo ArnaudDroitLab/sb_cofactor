@@ -49,12 +49,11 @@ heatmap_sign_znf707o_HEPG2 <- Heatmap(mat, name = "LogDiffExp",
                                 column_names_gp = gpar(fontsize = 11),
                                 column_names_rot = 45,
                                 column_dend_side = "bottom",
-                                row_dend_width = unit(50, "mm"),
-                                column_dend_height = unit(50, "mm"),
+                                column_dend_height = unit(10, "mm"),
                                 col = col_fun,
                                 rect_gp = gpar(col = "white", lwd = 0))
 
-pdf(file = "output/analysis/lincs/znf707/heatmap_signature_KD_ZNF707_others_HEPG2_20190517.pdf", width = 14, height = 11)
+pdf(file = "output/analysis/lincs/znf707/heatmap_signature_KD_ZNF707_others_HEPG2_20190517.pdf", width = 10, height = 10)
 print(heatmap_sign_znf707o_HEPG2)
 dev.off()
 
