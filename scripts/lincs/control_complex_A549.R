@@ -23,7 +23,8 @@ CONTROL_GENES <- c("MED1", "MED12L", "MED15","MED21", "MED26", "MED28", "MED4", 
                    "SMARCA2", "SMARCA4", "SMARCA5", "SMARCAD1", "SMARCB1", "SMARCC1", "SMARCC2", "SMARCD2", "SMARCE1",
                    "ELL3", "AFF4",
                    "POLA1", "POLA2", "POLB", "POLD4", "POLE2", "POLE3", "POLG", "POLQ", "POLR1A", "POLR1C",
-                   "POLR2A", "POLR2C", "POLR2D", "POLR2E", "POLR2F", "POLR2H", "POLR2I", "POLR2K", "POLR3B", "POLR3C", "POLR3D", "POLR3E", "POLR3F", "POLR3K")
+                   "POLR2A", "POLR2C", "POLR2D", "POLR2E", "POLR2F", "POLR2H", "POLR2I", "POLR2K",
+                   "POLR3B", "POLR3C", "POLR3D", "POLR3E", "POLR3F", "POLR3K")
 CONTROL_GENES_A549 <- CONTROL_GENES[CONTROL_GENES %in% colnames(A549_LINCs_KD_matrix)]
 
 ### New matrix
@@ -70,6 +71,5 @@ heatmap_control.abs <- Heatmap(cor.pearson.mutcof.abs, name = "Pearson correlati
                           col = col_fun2,
                           rect_gp = gpar(col = "white", lwd = 1))
 pdf(file = "output/analysis/lincs/heatmap_CONTROLA549_absolute_simplepearson_20190522.pdf", width = 25, height = 22)
-
 print(heatmap_control.abs)
 dev.off()
