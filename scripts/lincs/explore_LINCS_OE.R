@@ -7,7 +7,7 @@ source("scripts/lincs/lincs.utils.R")
 # Load mutated_cofactors gene symbol
 MUTATED_COFACTORS <- get_mutated_cofactors()
 
-# Load all available gene KD signatures from LINCS database
+# Load all available gene OE signatures from LINCS database
 all_signatures <- read.csv("input/lincs/LINCS_gene_overexpression_Signatures_all_9291.xls", sep = "\t")
 
 #### Explore LINCS OE database
