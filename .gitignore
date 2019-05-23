@@ -4,3 +4,4 @@ A549/input/ENCODE
 */output
 */*/*/*.fastq
 output
+.DS_Store
