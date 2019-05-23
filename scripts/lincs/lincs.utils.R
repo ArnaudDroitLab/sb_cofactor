@@ -2,6 +2,11 @@ library(dplyr)
 library(httr)
 library(jsonlite)
 
+##### Allo to retrieve nth element of each list from a "list of list"
+get_nth_element <- function(lst, n) {
+  sapply(lst, "[", n)
+}
+
 #####
 get_mutated_cofactors <- function() {
   # 39 mutated cofactors associated with developmental syndromes / trasncriptomopathies
@@ -46,16 +51,18 @@ downloadSignatureInBatch <- function(signIds, targets) {
   colnames(tmp1) <- c("Name_GeneSymbol", target1)
   
   signMat <- data.frame(tmp1)
-  for (i in 2:length(signIds)) {
-    message(i, " / ", length(signIds))
-    sign <- signIds[i]
-    target <- targets[i]
-    tmp <- downloadSignature(sign)
-    colnames(tmp) <- c("Name_GeneSymbol", target)
-    signMat <- merge(signMat, tmp, by = "Name_GeneSymbol")
-    # tmp_l <- list(tmp)
-    # names(tmp_l) <- target
-    # l <- append(l, tmp_l)
+  if (length(signIds) > 1) {
+    for (i in 2:length(signIds)) {
+      message(i, " / ", length(signIds))
+      sign <- signIds[i]
+      target <- targets[i]
+      tmp <- downloadSignature(sign)
+      colnames(tmp) <- c("Name_GeneSymbol", target)
+      signMat <- merge(signMat, tmp, by = "Name_GeneSymbol")
+      # tmp_l <- list(tmp)
+      # names(tmp_l) <- target
+      # l <- append(l, tmp_l)
+    }
   }
   return(signMat)
 }
@@ -76,4 +83,13 @@ downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
   output_filename <- file.path(output_path, paste0(CL, "_", time_withoutspace, "_LINCS_KD_matrix.rds"))
   saveRDS(CL_ILINCs_KD_matrix, file = output_filename)
   message(" >>> Matrix has been save in ", output_filename)
+}
+
+#### save heatmap
+saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, height_val = 22, format = "pdf") {
+  output_filepath <- file.path(output_dir, paste0(output_file, ".", format))
+  pdf(file = output_filepath, width = width_val, height = height_val)
+  print(heatmap_obj)
+  dev.off()
+  message(" > Heatmap saved in ", output_filepath)
 }

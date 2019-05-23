@@ -7,12 +7,16 @@ source("scripts/lincs/lincs.utils.R")
 
 ###
 CONTROL_GENES <- c("MED1", "MED12L", "MED21", "MED26", "MED28", "MED4", "MED6", "MED7",
-              "SMC4", "SMARCA5", "SMARCAD1", "SMARCC1", "SMARCD2")
+                   "SMC4", "SMARCA5", "SMARCAD1", "SMARCC1", "SMARCD2")
 
-###
-get_nth_element <- function(lst, n) {
-  sapply(lst, "[", n)
-}
+CONTROL_GENES <- c("MED1", "MED12L", "MED15","MED21", "MED26", "MED28", "MED4", "MED6", "MED7",
+                   "SMC4",
+                   "SMARCA2", "SMARCA4", "SMARCA5", "SMARCAD1", "SMARCB1", "SMARCC1", "SMARCC2", "SMARCD2", "SMARCE1",
+                   "ELL3", "AFF4",
+                   "POLA1", "POLA2", "POLB", "POLD4", "POLE2", "POLE3", "POLG", "POLQ", "POLR1A", "POLR1C",
+                   "POLR2A", "POLR2C", "POLR2D", "POLR2E", "POLR2F", "POLR2H", "POLR2I", "POLR2K",
+                   "POLR3B", "POLR3C", "POLR3D", "POLR3E", "POLR3F", "POLR3K")
+
 ###
 
 # Load
