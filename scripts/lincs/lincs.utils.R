@@ -85,7 +85,14 @@ downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
   message(" >>> Matrix has been save in ", output_filename)
 }
 
-#### save heatmap
+#### Save signature matrix
+saveSignMat <- function(matrix, cellLine, output_dir, output_file) {
+  output_filepath <- file.path(output_dir, paste0(output_file, ".txt"))
+  write.table(x = matrix, file = output_filepath, sep = "\t", quote = FALSE, row.names = FALSE)
+  message(" > Signature matrix saved in ", output_filepath)
+}
+
+#### Save heatmap
 saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, height_val = 22, format = "pdf") {
   output_filepath <- file.path(output_dir, paste0(output_file, ".", format))
   pdf(file = output_filepath, width = width_val, height = height_val)
@@ -93,3 +100,5 @@ saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, he
   dev.off()
   message(" > Heatmap saved in ", output_filepath)
 }
+
+

@@ -30,12 +30,16 @@ for (cLine in cellLines) {
     signIds_OE <- get_signIds(dfOE_cLine, cell_line = cLine, time = "96 h")
     targets_OE <- paste0("OE_", get_target(dfOE_cLine, cell_line = cLine, time = "96 h"))
     OE_mat <- downloadSignatureInBatch(signIds_OE, targets_OE)
-    signMat <- merge(KD_mat, OE_mat, by = "Name_GeneSymbol")
+    signMat_wGeneName <- merge(KD_mat, OE_mat, by = "Name_GeneSymbol")
   } else {
-    signMat <- KD_mat
+    signMat_wGeneName <- KD_mat
   }
   
-  signMat <- signMat %>% select(-Name_GeneSymbol)
+  saveSignMat(matrix = signMat_wGeneName, cellLine = cLine,
+              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
+              output_file = paste0("signMat", "_", cLine))
+  
+  signMat <- signMat_wGeneName %>% select(-Name_GeneSymbol)
   
   #
   mat <- as.matrix(signMat)
@@ -79,9 +83,9 @@ for (cLine in cellLines) {
                               grid.text(sprintf("%.2f", cor.pearson.mutcof[i, j]), x, y, gp = gpar(fontsize = 10))
                             })
   
-  saveHeatmap(heatmap_obj = heatmap_MUTCOF,
-              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
-              output_file = paste0("heatmap_MUTCOF_", cLine, "_simplepearson_", "20190523"),
-              format = "pdf",
-              width = 15, height = 12)
+  # saveHeatmap(heatmap_obj = heatmap_MUTCOF,
+  #             output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
+  #             output_file = paste0("heatmap_MUTCOF_", cLine, "_simplepearson_", "20190523"),
+  #             format = "pdf",
+  #             width = 15, height = 12)
 }
