@@ -2,7 +2,7 @@ library(dplyr)
 library(httr)
 library(jsonlite)
 
-##### Allo to retrieve nth element of each list from a "list of list"
+##### Allow to retrieve nth element of each list from a "list of list"
 get_nth_element <- function(lst, n) {
   sapply(lst, "[", n)
 }
@@ -68,6 +68,7 @@ downloadSignatureInBatch <- function(signIds, targets) {
 }
 
 #### Download all KD signatures from a specific cell line
+# Take too much time
 downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
   message("#####\t Cell line : ", CL)
   CL_cell_line <- all_signatures %>% filter(CellLine == CL, Time == time)
@@ -88,7 +89,7 @@ downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
 #### Save signature matrix
 saveSignMat <- function(matrix, cellLine, output_dir, output_file) {
   output_filepath <- file.path(output_dir, paste0(output_file, ".txt"))
-  write.table(x = matrix, file = output_filepath, sep = "\t", quote = FALSE, row.names = FALSE)
+  write.table(x = matrix, file = output_filepath, sep = "\t", quote = FALSE, row.names = FALSE, dec = ",")
   message(" > Signature matrix saved in ", output_filepath)
 }
 
@@ -100,5 +101,3 @@ saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, he
   dev.off()
   message(" > Heatmap saved in ", output_filepath)
 }
-
-
