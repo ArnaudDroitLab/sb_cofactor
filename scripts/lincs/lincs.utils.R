@@ -89,7 +89,7 @@ downloadSignature_KD_CellLine <- function(CellLine, time, output_path) {
 #### Save signature matrix
 saveSignMat <- function(matrix, cellLine, output_dir, output_file) {
   output_filepath <- file.path(output_dir, paste0(output_file, ".txt"))
-  write.table(x = matrix, file = output_filepath, sep = "\t", quote = FALSE, row.names = FALSE, dec = ",")
+  write.table(x = matrix, file = output_filepath, sep = "\t", quote = FALSE, row.names = FALSE, dec = ".")
   message(" > Signature matrix saved in ", output_filepath)
 }
 
