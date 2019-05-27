@@ -41,8 +41,8 @@ for (i in seq(nrow(param))) {
   signMat_wGeneName <- get_signMat_KDOE(cellLine = cLine, time = time, KD_matrix = all_signatures_KD, OE_matrix = all_signatures_OE)
   
   saveSignMat(matrix = signMat_wGeneName, cellLine = cLine,
-              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
-              output_file = paste0("signMat_allgenes", "_", cLine, "_", time_str, "_", date))
+              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine_978genes",
+              output_file = paste0("signMat_978genes", "_", cLine, "_", time_str, "_", date))
   
   signMat <- signMat_wGeneName %>% select(-Name_GeneSymbol)
   
@@ -86,7 +86,7 @@ for (i in seq(nrow(param))) {
                             })
   
   saveHeatmap(heatmap_obj = heatmap_MUTCOF,
-              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
+              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine_978genes",
               output_file = paste0("heatmap_MUTCOF_", cLine, "_", time_str, "_simplepearson_", date),
               format = "pdf",
               width = 15, height = 12)
