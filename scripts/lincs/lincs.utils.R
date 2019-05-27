@@ -48,11 +48,11 @@ downloadSignature <- function(signId, pval = FALSE) {
 }
 
 #####
-downloadSignatureInBatch <- function(signIds, targets) {
+downloadSignatureInBatch <- function(signIds, targets, pval = FALSE) {
   message(1, " / ", length(signIds))
   sign1 <- signIds[1]
   target1 <- targets[1]
-  tmp1 <- downloadSignature(sign1)
+  tmp1 <- downloadSignature(sign1, pval)
   colnames(tmp1) <- c("Name_GeneSymbol", target1)
   
   signMat <- data.frame(tmp1)
@@ -61,7 +61,7 @@ downloadSignatureInBatch <- function(signIds, targets) {
       message(i, " / ", length(signIds))
       sign <- signIds[i]
       target <- targets[i]
-      tmp <- downloadSignature(sign)
+      tmp <- downloadSignature(sign, pval)
       colnames(tmp) <- c("Name_GeneSymbol", target)
       signMat <- merge(signMat, tmp, by = "Name_GeneSymbol")
       # tmp_l <- list(tmp)
@@ -108,14 +108,14 @@ saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, he
 }
 
 #### Get signature matrix of MUTATED_COFACTORS (KD and OE), in one cell line, at one time point
-get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix) {
+get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix, pval = FALSE) {
   # download KD matrix
   dfKD_cLine <- KD_matrix %>% filter(CellLine == cellLine, Time == time, TargetGene %in% MUTATED_COFACTORS)
   if (nrow(dfKD_cLine) != 0) {
   signIds_KD <- get_signIds(dfKD_cLine, cell_line = cellLine, time = time)
   targets_KD <- paste0("KD_", get_target(dfKD_cLine, cell_line = cellLine, time = time))
   message("> Downloading KD...")
-  KD_mat <- downloadSignatureInBatch(signIds_KD, targets_KD)
+  KD_mat <- downloadSignatureInBatch(signIds_KD, targets_KD, pval)
   }
   
   # download OE matrix if available and merge with KD matrix
@@ -124,7 +124,7 @@ get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix) {
     signIds_OE <- get_signIds(dfOE_cLine, cell_line = cellLine, time = time)
     targets_OE <- paste0("OE_", get_target(dfOE_cLine, cell_line = cellLine, time = time))
     message("> Downloading OE...")
-    OE_mat <- downloadSignatureInBatch(signIds_OE, targets_OE)
+    OE_mat <- downloadSignatureInBatch(signIds_OE, targets_OE, pval)
   }
   
   if ((nrow(dfKD_cLine) != 0) && (nrow(dfOE_cLine) != 0)) {
