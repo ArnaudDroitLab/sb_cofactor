@@ -114,7 +114,11 @@ get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix, pval = FALSE)
   if (nrow(dfKD_cLine) != 0) {
   signIds_KD <- get_signIds(dfKD_cLine, cell_line = cellLine, time = time)
   targets_KD <- paste0("KD_", get_target(dfKD_cLine, cell_line = cellLine, time = time))
-  message("> Downloading KD...")
+  if (pval == TRUE) {
+    message("> Downloading KD... > Pval")
+  } else {
+    message("> Downloading KD... > DiffExp")
+  }
   KD_mat <- downloadSignatureInBatch(signIds_KD, targets_KD, pval)
   }
   
@@ -123,7 +127,11 @@ get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix, pval = FALSE)
   if (nrow(dfOE_cLine) != 0) {
     signIds_OE <- get_signIds(dfOE_cLine, cell_line = cellLine, time = time)
     targets_OE <- paste0("OE_", get_target(dfOE_cLine, cell_line = cellLine, time = time))
-    message("> Downloading OE...")
+    if (pval == TRUE) {
+      message("> Downloading OE... > Pval")
+    } else {
+      message("> Downloading OE... > DiffExp")
+    }
     OE_mat <- downloadSignatureInBatch(signIds_OE, targets_OE, pval)
   }
   
@@ -135,4 +143,13 @@ get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix, pval = FALSE)
     signMat_wGeneName <- OE_mat
   }
   return(signMat_wGeneName)
+}
+
+# NB: A gene is kept in the analysis if its expression is differentially significant in at least one sample
+###
+keep_diffGenes <- function(signMat, pvalMat, th = 0.05) {
+  pvalMat_TF <- (pvalMat <= th)
+  geneToKeep <- (rowSums(pvalMat_TF > 0) > 0)
+  res <- signMat[geneToKeep, ]
+  return(res)
 }
