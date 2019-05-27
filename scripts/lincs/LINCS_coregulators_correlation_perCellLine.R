@@ -11,33 +11,38 @@ MUTATED_COFACTORS <- get_mutated_cofactors()
 # Load all available gene KD and OE signatures from LINCS database
 all_signatures_KD <- read.csv("input/lincs/LINCS_consensus_gene_KD_Signatures_all_37275.xls", sep = "\t")
 all_signatures_OE <- read.csv("input/lincs/LINCS_gene_overexpression_Signatures_all_9291.xls", sep = "\t")
-  
+
+### Parameters
+# Heatmap: correlation color scale
+col_fun2 <- colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
+# Date
+date <- "20190527"
+
 # 
-cellLines <- c("A375", "A549", "ASC", "HA1E", "HCC515", "HEKTE", "HEPG2", "HT29", "MCF7", "NPC", "PC3", "SKL", "SW480")
+cellLines <- c("VCAP", "HEK293T")
+timeline <- c("96 h", "48 h")
+cellLines <- c(cellLines, "A375", "A549", "ASC", "HA1E", "HCC515", "HEKTE", "HEPG2", "HT29", "MCF7", "NPC", "PC3", "SKL", "SW480")
+timeline <- c(timeline, rep.int("96 h", 13))
+cellLines <- c(cellLines, "PC3", "SHSY5Y", "VCAP")
+timeline <- c(timeline, rep.int("120 h", 3))
+cellLines <- c(cellLines, "MCF7", "PC3")
+timeline <- c(timeline, rep.int("144 h", 2))
+
+param <- data.frame(cellLines, timeline)
 
 #
-for (cLine in cellLines) {
-  message("#####\t", cLine)
-  # download KD matrix
-  dfKD_cLine <- all_signatures_KD %>% filter(CellLine == cLine, TargetGene %in% MUTATED_COFACTORS)
-  signIds_KD <- get_signIds(dfKD_cLine, cell_line = cLine, time = "96 h")
-  targets_KD <- paste0("KD_", get_target(dfKD_cLine, cell_line = cLine, time = "96 h"))
-  KD_mat <- downloadSignatureInBatch(signIds_KD, targets_KD)
+for (i in seq(nrow(param))) {
+  cLine <- param[i, ] %>% pull(cellLines) %>% as.character
+  time <- param[i, ] %>% pull(timeline) %>% as.character
+  time_str <- gsub(" ", "", time, fixed = TRUE)
+    
+  message("#####\t", cLine, " | ", time)
   
-  # download OE matrix if available and merge with KD matrix
-  dfOE_cLine <- all_signatures_OE %>% filter(CellLine == cLine, TargetGene %in% MUTATED_COFACTORS)
-  if (nrow(dfOE_cLine) != 0) {
-    signIds_OE <- get_signIds(dfOE_cLine, cell_line = cLine, time = "96 h")
-    targets_OE <- paste0("OE_", get_target(dfOE_cLine, cell_line = cLine, time = "96 h"))
-    OE_mat <- downloadSignatureInBatch(signIds_OE, targets_OE)
-    signMat_wGeneName <- merge(KD_mat, OE_mat, by = "Name_GeneSymbol")
-  } else {
-    signMat_wGeneName <- KD_mat
-  }
+  signMat_wGeneName <- get_signMat_KDOE(cellLine = cLine, time = time, KD_matrix = all_signatures_KD, OE_matrix = all_signatures_OE)
   
   saveSignMat(matrix = signMat_wGeneName, cellLine = cLine,
               output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
-              output_file = paste0("signMat", "_", cLine))
+              output_file = paste0("signMat_allgenes", "_", cLine, "_", time_str, "_", date))
   
   signMat <- signMat_wGeneName %>% select(-Name_GeneSymbol)
   
@@ -51,9 +56,6 @@ for (cLine in cellLines) {
   max(cor.pearson.mutcof - diag(nrow(cor.pearson.mutcof))) # -diag(n) allow to remove the identity matrix
   min(cor.pearson.mutcof)
   
-  # correlation color scale
-  col_fun2 = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
-  
   # annotation KD/OE
   kd_oe_tmp <- strsplit(colnames(cor.pearson.mutcof), "_")
   col_kd_oe <- get_nth_element(kd_oe_tmp, 1)
@@ -66,7 +68,7 @@ for (cLine in cellLines) {
   # heatmap
   heatmap_MUTCOF <- Heatmap(cor.pearson.mutcof, name = "Pearson correlation",
                             # Title
-                            column_title = cLine, column_title_gp = gpar(fill = "black", col = "white", fontface = "bold", fontsize = "20"),
+                            column_title = paste0(cLine, " | ", time) , column_title_gp = gpar(fill = "black", col = "white", fontface = "bold", fontsize = "20"),
                             row_names_side = "left",
                             row_dend_side = "right",
                             column_names_side = "top",
@@ -83,9 +85,9 @@ for (cLine in cellLines) {
                               grid.text(sprintf("%.2f", cor.pearson.mutcof[i, j]), x, y, gp = gpar(fontsize = 10))
                             })
   
-  # saveHeatmap(heatmap_obj = heatmap_MUTCOF,
-  #             output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
-  #             output_file = paste0("heatmap_MUTCOF_", cLine, "_simplepearson_", "20190523"),
-  #             format = "pdf",
-  #             width = 15, height = 12)
+  saveHeatmap(heatmap_obj = heatmap_MUTCOF,
+              output_dir = "output/analysis/lincs/coregulators_correlation_perCellLine",
+              output_file = paste0("heatmap_MUTCOF_", cLine, "_", time_str, "_simplepearson_", date),
+              format = "pdf",
+              width = 15, height = 12)
 }

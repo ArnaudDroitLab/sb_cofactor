@@ -101,3 +101,33 @@ saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, he
   dev.off()
   message(" > Heatmap saved in ", output_filepath)
 }
+
+#### Get signature matrix of MUTATED_COFACTORS (KD and OE), in one cell line, at one time point
+get_signMat_KDOE <- function(cellLine, time, KD_matrix, OE_matrix) {
+  # download KD matrix
+  dfKD_cLine <- KD_matrix %>% filter(CellLine == cellLine, Time == time, TargetGene %in% MUTATED_COFACTORS)
+  if (nrow(dfKD_cLine) != 0) {
+  signIds_KD <- get_signIds(dfKD_cLine, cell_line = cellLine, time = time)
+  targets_KD <- paste0("KD_", get_target(dfKD_cLine, cell_line = cellLine, time = time))
+  message("> Downloading KD...")
+  KD_mat <- downloadSignatureInBatch(signIds_KD, targets_KD)
+  }
+  
+  # download OE matrix if available and merge with KD matrix
+  dfOE_cLine <- OE_matrix %>% filter(CellLine == cellLine, Time == time, TargetGene %in% MUTATED_COFACTORS)
+  if (nrow(dfOE_cLine) != 0) {
+    signIds_OE <- get_signIds(dfOE_cLine, cell_line = cellLine, time = time)
+    targets_OE <- paste0("OE_", get_target(dfOE_cLine, cell_line = cellLine, time = time))
+    message("> Downloading OE...")
+    OE_mat <- downloadSignatureInBatch(signIds_OE, targets_OE)
+  }
+  
+  if ((nrow(dfKD_cLine) != 0) && (nrow(dfOE_cLine) != 0)) {
+    signMat_wGeneName <- merge(KD_mat, OE_mat, by = "Name_GeneSymbol")
+  } else if (nrow(dfOE_cLine) == 0) {
+    signMat_wGeneName <- KD_mat
+  } else {
+    signMat_wGeneName <- OE_mat
+  }
+  return(signMat_wGeneName)
+}
