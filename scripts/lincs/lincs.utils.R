@@ -31,14 +31,19 @@ get_target <- function(df, cell_line, time) {
 }
 
 ####
-downloadSignature <- function(signId) {
+downloadSignature <- function(signId, pval = FALSE) {
   www <- "http://www.ilincs.org/api/ilincsR/downloadSignature"
   
   call <- paste(www, "?", "sigID=", signId, sep="")
   request <- GET(call)
   content <- content(request, "text")
   df <- fromJSON(txt = content)
-  res <- df$data$signature %>% select(Name_GeneSymbol, Value_LogDiffExp)
+  
+  if (pval == TRUE) {
+    res <- df$data$signature %>% select(Name_GeneSymbol, Significance_pvalue)
+  } else {
+    res <- df$data$signature %>% select(Name_GeneSymbol, Value_LogDiffExp)
+  }
   return(res)
 }
 
