@@ -17,8 +17,7 @@ all_signatures_OE <- read.csv("input/lincs/LINCS_gene_overexpression_Signatures_
 col_fun2 <- colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
 # Date
 date <- "20190527"
-
-# 
+# Map cellLines and timepoint
 cellLines <- c("VCAP", "HEK293T")
 timeline <- c("96 h", "48 h")
 cellLines <- c(cellLines, "A375", "A549", "ASC", "HA1E", "HCC515", "HEKTE", "HEPG2", "HT29", "MCF7", "NPC", "PC3", "SKL", "SW480")
@@ -27,7 +26,7 @@ cellLines <- c(cellLines, "PC3", "SHSY5Y", "VCAP")
 timeline <- c(timeline, rep.int("120 h", 3))
 cellLines <- c(cellLines, "MCF7", "PC3")
 timeline <- c(timeline, rep.int("144 h", 2))
-
+#
 param <- data.frame(cellLines, timeline)
 
 #
@@ -68,7 +67,8 @@ for (i in seq(nrow(param))) {
   # heatmap
   heatmap_MUTCOF <- Heatmap(cor.pearson.mutcof, name = "Pearson correlation",
                             # Title
-                            column_title = paste0(cLine, " | ", time) , column_title_gp = gpar(fill = "black", col = "white", fontface = "bold", fontsize = "20"),
+                            column_title = paste0(cLine, " | ", time) ,
+                            column_title_gp = gpar(fill = "black", col = "white", fontface = "bold", fontsize = "20"),
                             row_names_side = "left",
                             row_dend_side = "right",
                             column_names_side = "top",
