@@ -41,7 +41,7 @@ download_bam_in_AccessionList <- function(accession_list, report_bam) {
   }
 }
 
-download_Reddy_ChIP <- function(protein, WCE = FALSE) {
+download_Reddy_ChIP <- function(protein, WCE = FALSE, start, end) {
   report_bam <- make_report_bam(target_name = protein, all_chip_bam)
   if (WCE == TRUE) {
     report_wce_bam <- make_report_WCE_bam(report_bam, all_chip_bam)
@@ -49,7 +49,7 @@ download_Reddy_ChIP <- function(protein, WCE = FALSE) {
     download_bam_in_AccessionList(accession_list_wce, report_wce_bam)
   } else {
     accession_list <- unique(report_bam$file_accession)
-    download_bam_in_AccessionList(accession_list, report_bam)
+    download_bam_in_AccessionList(accession_list[start:end], report_bam)
   }
 }
 
