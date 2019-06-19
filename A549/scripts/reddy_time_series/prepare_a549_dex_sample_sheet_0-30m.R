@@ -1,6 +1,8 @@
 library(ENCODExplorer)
 library(tidyverse)
 
+encode_df <- get_encode_df()
+
 time_point <- c("0m", "5m", "10m",
                 "15m", "20m", "25m")
 
