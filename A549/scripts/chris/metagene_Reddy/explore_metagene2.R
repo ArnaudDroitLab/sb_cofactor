@@ -48,7 +48,6 @@ make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JU
   bigdf <- data.frame()
   for (target in chip_target) {
     bam_pattern <- paste0("(", target, ").*\\.bam$")
-    browser()
     bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
     design_meta <- make_design_from_bam_list(bam_files)
     mg <- metagene2$new(regions = peaks,
@@ -66,7 +65,7 @@ make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JU
 
 # Plot metagene from Reddy time course data
 plot_metagene_Reddy <- function(df_metagene, customColors = c("#F5A623", "#4A90E2", "#008000"), title) {
-  metagene_plot <- ggplot(mafk_df_metagene, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=replicate)) +
+  metagene_plot <- ggplot(df_metagene, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=replicate)) +
     geom_ribbon(aes(fill = replicate), alpha = 0.3) +
     scale_fill_manual(values = customColors) +
     geom_line(aes(color = replicate), size = 0.5) + 
@@ -94,19 +93,43 @@ saveMetagene <- function(metagene_plot, output_dir, output_file, width_val = 25,
 }
 
 # Define one region at first
-# angptl4_peak <- GRanges("chr19", IRanges(8355327, 8356270))
-# il11_peak <- GRanges("chr19", IRanges(55372624, 55373186))
-# gapdh_peak <- GRanges("chr12", IRanges(6532244, 6532808))
+angptl4_peak <- GRanges("chr19", IRanges(8355327, 8356270))
+il11_peak <- GRanges("chr19", IRanges(55372624, 55373186))
+gapdh_peak <- GRanges("chr12", IRanges(6532244, 6532808))
 mafk_peak <- GRanges("chr7", IRanges(1519343, 1522213))
 
 # BAM
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
 
 # mafk_metagene only
-mafk_df_metagene <-make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = mafk_peak) 
+mafk_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = mafk_peak) 
 mafk_plot <- plot_metagene_Reddy(mafk_df_metagene, title = "MAFK")
 saveMetagene(metagene_plot = mafk_plot,
-            output_dir = "output/analysis/metagene_reddyTimeCourse",
+            output_dir = "output/analyses/metagene_reddyTimeCourse",
             output_file = "metagene_MAFK",
             format = "pdf",
-            width = 15, height = 12)
+            width = 23, height = 9)
+
+angptl4_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = angptl4_peak) 
+angptl4_plot <- plot_metagene_Reddy(angptl4_df_metagene, title = "ANGPTL4")
+saveMetagene(metagene_plot = angptl4_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "metagene_ANGPTL4",
+             format = "pdf",
+             width = 23, height = 9)
+
+il11_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = il11_peak) 
+il11_plot <- plot_metagene_Reddy(il11_df_metagene, title = "IL11")
+saveMetagene(metagene_plot = il11_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "metagene_IL11",
+             format = "pdf",
+             width = 23, height = 9)
+
+gapdh_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = gapdh_peak) 
+gapdh_plot <- plot_metagene_Reddy(gapdh_df_metagene, title = "GAPDH")
+saveMetagene(metagene_plot = gapdh_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "metagene_GAPDH",
+             format = "pdf",
+             width = 23, height = 9)
