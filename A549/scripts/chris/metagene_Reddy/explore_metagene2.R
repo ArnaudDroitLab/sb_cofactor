@@ -1,7 +1,8 @@
+setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+
 library(tidyverse)
 library(knitr)
 library(metagene2)
-library(wesanderson)
 
 ##### Get the nth element each vector (from a list of vectors)
 # Return a vector
@@ -39,22 +40,58 @@ make_design_from_bam_list <- function(bam_list) {
   return(design_metadata)
 }
 
+##### Generate a data.frame containing values for plotting
+# Output for use as input in plot_metagene_Reddy()
+make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks) {
+  chip_target <- gsub("GR", "NR3C1", chip_target)
+  
+  bigdf <- data.frame()
+  for (target in chip_target) {
+    bam_pattern <- paste0("(", target, ").*\\.bam$")
+    browser()
+    bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
+    design_meta <- make_design_from_bam_list(bam_files)
+    mg <- metagene2$new(regions = peaks,
+                        bam_files = bam_files,
+                        assay = 'chipseq',
+                        cores = 4)
+    mg$add_metadata(design_metadata = design_meta)
+    df <- mg$get_data_frame()
+    
+    bigdf <- rbind(bigdf, df)
+  }
+  bigdf$target <- factor(bigdf$target, levels = c("GR", "EP300", "H3K27ac", "JUN"))
+  return(bigdf)
+}
 
-### TEST
-# regions <- get_demo_regions()
-# bam_files <- get_demo_bam_files()
-# 
-# mg <- metagene2$new(regions = get_demo_regions(), 
-#                     bam_files = get_demo_bam_files()[1:4], 
-#                     assay = 'chipseq')
-# 
-# mg$produce_metagene(title = "Demo metagene plot")
-# 
-# design_meta = data.frame(design=mg$get_design_group_names(),
-#                          Align=c("Align1", "Align1", "Align2", "Align2"),
-#                          Rep=c(1, 2, 1, 2))
-# 
-# mg$produce_metagene(design_metadata=design_meta, facet_by=Align~Rep, group_by="region")
+# Plot metagene from Reddy time course data
+plot_metagene_Reddy <- function(df_metagene, customColors = c("#F5A623", "#4A90E2", "#008000"), title) {
+  metagene_plot <- ggplot(mafk_df_metagene, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=replicate)) +
+    geom_ribbon(aes(fill = replicate), alpha = 0.3) +
+    scale_fill_manual(values = customColors) +
+    geom_line(aes(color = replicate), size = 0.5) + 
+    scale_color_manual(values = customColors) +
+    theme_classic() +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank()) +
+    theme(strip.text.y = element_text(angle = 0),
+          strip.background = element_rect(colour = NA)) +
+    ggtitle(title) +
+    xlab("Distance in bins") +
+    ylab("Mean coverage (raw)") +
+    facet_grid(target ~ timepoint)
+  return(metagene_plot)
+}
+
+####
+saveMetagene <- function(metagene_plot, output_dir, output_file, width_val = 25, height_val = 22, format = "pdf") {
+  output_filepath <- file.path(output_dir, paste0(output_file, ".", format))
+  pdf(file = output_filepath, width = width_val, height = height_val)
+  print(metagene_plot)
+  dev.off()
+  message(" > Metagene saved in ", output_filepath)
+}
 
 # Define one region at first
 # angptl4_peak <- GRanges("chr19", IRanges(8355327, 8356270))
@@ -62,76 +99,14 @@ make_design_from_bam_list <- function(bam_list) {
 # gapdh_peak <- GRanges("chr12", IRanges(6532244, 6532808))
 mafk_peak <- GRanges("chr7", IRanges(1519343, 1522213))
 
-peak <- mafk_peak
-
 # BAM
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
 
-# GR
-GR_bam_files <- list.files(path = bam_folder, pattern = "(NR3C1).*\\.bam$", full.names = TRUE)
-GR_design_meta <- make_design_from_bam_list(GR_bam_files)
-
-GR_mg <- metagene2$new(regions = peak,
-                            bam_files = GR_bam_files,
-                            assay = 'chipseq')
-
-GR_mg$add_metadata(design_metadata = GR_design_meta)
-GR_df <- GR_mg$get_data_frame()
-
-# EP300
-EP300_bam_files <- list.files(path = bam_folder, pattern = "(EP300).*\\.bam$", full.names = TRUE)
-EP300_design_meta <- make_design_from_bam_list(EP300_bam_files)
-
-EP300_mg <- metagene2$new(regions = peak,
-                       bam_files = EP300_bam_files,
-                       assay = 'chipseq')
-
-EP300_mg$add_metadata(design_metadata = EP300_design_meta)
-EP300_df <- EP300_mg$get_data_frame()
-
-# H3K27ac
-H3K27ac_bam_files <- list.files(path = bam_folder, pattern = "(H3K27ac).*\\.bam$", full.names = TRUE)
-H3K27ac_design_meta <- make_design_from_bam_list(H3K27ac_bam_files)
-
-H3K27ac_mg <- metagene2$new(regions = peak,
-                          bam_files = H3K27ac_bam_files,
-                          assay = 'chipseq')
-
-H3K27ac_mg$add_metadata(design_metadata = H3K27ac_design_meta)
-H3K27ac_df <- H3K27ac_mg$get_data_frame()
-
-# JUN
-JUN_bam_files <- list.files(path = bam_folder, pattern = "(JUN).*\\.bam$", full.names = TRUE)
-JUN_design_meta <- make_design_from_bam_list(JUN_bam_files)
-
-JUN_mg <- metagene2$new(regions = peak,
-                          bam_files = JUN_bam_files,
-                          assay = 'chipseq')
-
-JUN_mg$add_metadata(design_metadata = JUN_design_meta)
-JUN_df <- JUN_mg$get_data_frame()
-
-# bigdf
-bigdf <- rbind(GR_df, EP300_df, H3K27ac_df, JUN_df)
-bigdf$target <- factor(bigdf$target, levels = c("GR", "EP300", "H3K27ac", "JUN") )
-
-CustomColor = wes_palette(n=3, name="Cavalcanti1")
-ggplot(bigdf, aes(x=bin, y=value, ymin=qinf, ymax=qsup, group=replicate)) +
-  geom_ribbon(aes(fill = replicate), alpha = 0.3) +
-  # scale_fill_manual(values=CustomColor) +
-  geom_line(aes(color = replicate), size = 0.5) + 
-  # scale_color_manual(values=CustomColor) +
-  # theme_bw(base_size = 20) +
-  # theme(panel.grid.major = element_line(),
-  #       panel.grid.minor = element_line(),
-  #       panel.background = element_blank()) +
-  # theme(legend.position = "bottom",
-  #       legend.direction = "vertical") +
-  # scale_x_continuous(breaks = seq(0, 100, 25),
-  #                    labels = c(c(-1.5, -0.75), "TSS", c(0.75, 1.5))) +
-  # theme(axis.text.x = element_text(size=10),
-  #       axis.text.y = element_text(size=10)) +
-  # ggtitle(title) +
-  # xlab("Position from TSS (kb)") +
-  # ylab("Mean coverage (RPM)") +
-  facet_grid(target ~ timepoint)
+# mafk_metagene only
+mafk_df_metagene <-make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = mafk_peak) 
+mafk_plot <- plot_metagene_Reddy(mafk_df_metagene, title = "MAFK")
+saveMetagene(metagene_plot = mafk_plot,
+            output_dir = "output/analysis/metagene_reddyTimeCourse",
+            output_file = "metagene_MAFK",
+            format = "pdf",
+            width = 15, height = 12)
