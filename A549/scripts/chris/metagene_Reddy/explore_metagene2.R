@@ -132,4 +132,4 @@ saveMetagene(metagene_plot = gapdh_plot,
              output_dir = "output/analyses/metagene_reddyTimeCourse",
              output_file = "metagene_GAPDH",
              format = "pdf",
-             width = 23, height = 9)
+             width = 21, height = 7)
