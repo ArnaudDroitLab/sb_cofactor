@@ -49,6 +49,7 @@ download_Reddy_ChIP <- function(protein, WCE = FALSE, start, end) {
     download_bam_in_AccessionList(accession_list_wce, report_wce_bam)
   } else {
     accession_list <- unique(report_bam$file_accession)
+    message("Number of files : ", length(accession_list))
     download_bam_in_AccessionList(accession_list[start:end], report_bam)
   }
 }
@@ -57,16 +58,23 @@ download_Reddy_ChIP <- function(protein, WCE = FALSE, start, end) {
 all_chip_bam <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bam", assay="ChIP-seq")
 
 ### Download Bam
-download_Reddy_ChIP("NR3C1")
-download_Reddy_ChIP("EP300")
-download_Reddy_ChIP("NR3C1", WCE = TRUE)
-download_Reddy_ChIP("EP300", WCE = TRUE)
+#download_Reddy_ChIP("NR3C1")
+#download_Reddy_ChIP("EP300")
+#download_Reddy_ChIP("NR3C1", WCE = TRUE)
+#download_Reddy_ChIP("EP300", WCE = TRUE)
+#download_Reddy_ChIP("H3K27ac")
+#download_Reddy_ChIP("JUN")
+
+download_Reddy_ChIP("FOSL2", WCE = FALSE, start = 1, end = 33)
+
+download_Reddy_ChIP("CEPBP")
+download_Reddy_ChIP("BCL3")
+download_Reddy_ChIP("HES2")
 download_Reddy_ChIP("CTCF")
+download_Reddy_ChIP("JUNB")
 download_Reddy_ChIP("SMC3")
 download_Reddy_ChIP("RAD21")
-download_Reddy_ChIP("FOSL2")
-download_Reddy_ChIP("BCL3")
-download_Reddy_ChIP("JUN")
-download_Reddy_ChIP("JUNB")
-download_Reddy_ChIP("HES2")
-download_Reddy_ChIP("CEPBP")
+download_Reddy_ChIP("H3K4me1")
+download_Reddy_ChIP("H3K4me2")
+download_Reddy_ChIP("H3K4me3")
+download_Reddy_ChIP("H3K9me3")
