@@ -53,7 +53,7 @@ make_consensus_bed <- function(target_name) {
 # make_consensus_bed("BCL3")
 # make_consensus_bed("FOSL2")
 # make_consensus_bed("HES2")
-# make_consensus_bed("CTCF") # some timepoint have only one replicate so does not have a file
+# make_consensus_bed("CTCF") # some timepoint have only   one replicate so does not have a file
 # make_consensus_bed("JUNB")
 # make_consensus_bed("SMC3")
 # make_consensus_bed("RAD21")
