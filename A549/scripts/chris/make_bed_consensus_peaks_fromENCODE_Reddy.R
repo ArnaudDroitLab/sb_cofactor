@@ -53,11 +53,11 @@ make_consensus_bed <- function(target_name) {
 # make_consensus_bed("BCL3")
 # make_consensus_bed("FOSL2")
 # make_consensus_bed("HES2")
-# make_consensus_bed("CTCF")
+# make_consensus_bed("CTCF") # some timepoint have only one replicate so does not have a file
 # make_consensus_bed("JUNB")
 # make_consensus_bed("SMC3")
 # make_consensus_bed("RAD21")
 # make_consensus_bed("H3K4me1")
 # make_consensus_bed("H3K4me2")
 # make_consensus_bed("H3K4me3")
-make_consensus_bed("H3K9me3") # not dowloaded yet because it's a broadPeak file
+# make_consensus_bed("H3K9me3") # not dowloaded yet because it's a broadPeak file
