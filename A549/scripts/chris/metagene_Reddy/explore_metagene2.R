@@ -19,10 +19,10 @@ format_timepoint <- function(timepoint) {
   }
 }
 
-##### Make design from list of bam_files
+##### Make metadata from list of bam_files
 # As all metadata are containing at each bam filename,
 # design_metadata can be build from the list of bam_files
-make_design_from_bam_list <- function(bam_list) {
+make_metadata_from_bam_list <- function(bam_list) {
   bam_names <- basename(bam_list)
   splitted <- strsplit(bam_names, split = "_")
   
@@ -34,10 +34,10 @@ make_design_from_bam_list <- function(bam_list) {
                                             "0h", "30m", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "10h", "12h"))
   replicate <- get_nth_element(splitted, 3)
   
-  design_metadata <- data.frame(design = bam_names_without_ext, target, timepoint, replicate,
+  metadata <- data.frame(design = bam_names_without_ext, target, timepoint, replicate,
                                 stringsAsFactors = FALSE)
   
-  return(design_metadata)
+  return(metadata)
 }
 
 ##### Generate a data.frame containing values for plotting
@@ -49,17 +49,18 @@ make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JU
   for (target in chip_target) {
     bam_pattern <- paste0("(", target, ").*\\.bam$")
     bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
-    design_meta <- make_design_from_bam_list(bam_files)
+    metadata <- make_metadata_from_bam_list(bam_files)
     mg <- metagene2$new(regions = peaks,
                         bam_files = bam_files,
                         assay = 'chipseq',
                         cores = 4)
-    mg$add_metadata(design_metadata = design_meta)
+    mg$add_metadata(design_metadata = metadata)
     df <- mg$get_data_frame()
-    
+
     bigdf <- rbind(bigdf, df)
   }
-  bigdf$target <- factor(bigdf$target, levels = c("GR", "EP300", "H3K27ac", "JUN"))
+  chip_target <- gsub("NR3C1", "GR", chip_target)
+  bigdf$target <- factor(bigdf$target, levels = chip_target)
   return(bigdf)
 }
 
@@ -101,12 +102,12 @@ mafk_peak <- GRanges("chr7", IRanges(1519343, 1522213))
 # BAM
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
 
-# mafk_metagene only
+# At one peak first
 mafk_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = mafk_peak) 
 mafk_plot <- plot_metagene_Reddy(mafk_df_metagene, title = "MAFK")
 saveMetagene(metagene_plot = mafk_plot,
             output_dir = "output/analyses/metagene_reddyTimeCourse",
-            output_file = "metagene_MAFK",
+            output_file = "metagene_MAFK_with_replicates",
             format = "pdf",
             width = 23, height = 9)
 
@@ -114,7 +115,7 @@ angptl4_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3
 angptl4_plot <- plot_metagene_Reddy(angptl4_df_metagene, title = "ANGPTL4")
 saveMetagene(metagene_plot = angptl4_plot,
              output_dir = "output/analyses/metagene_reddyTimeCourse",
-             output_file = "metagene_ANGPTL4",
+             output_file = "metagene_ANGPTL4_with_replicates",
              format = "pdf",
              width = 23, height = 9)
 
@@ -122,7 +123,7 @@ il11_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27
 il11_plot <- plot_metagene_Reddy(il11_df_metagene, title = "IL11")
 saveMetagene(metagene_plot = il11_plot,
              output_dir = "output/analyses/metagene_reddyTimeCourse",
-             output_file = "metagene_IL11",
+             output_file = "metagene_IL11_with_replicates",
              format = "pdf",
              width = 23, height = 9)
 
@@ -130,6 +131,83 @@ gapdh_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K2
 gapdh_plot <- plot_metagene_Reddy(gapdh_df_metagene, title = "GAPDH")
 saveMetagene(metagene_plot = gapdh_plot,
              output_dir = "output/analyses/metagene_reddyTimeCourse",
-             output_file = "metagene_GAPDH",
+             output_file = "metagene_GAPDH_with_replicates",
              format = "pdf",
              width = 21, height = 7)
+
+# test at two regions
+peaks2 <- list("listpeak1" = c(angptl4_peak, il11_peak),
+               "listpeak1" = c(gapdh_peak, mafk_peak))
+test_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300"), peaks = peaks2)
+test_df <- plot_metagene_Reddy(test_df_metagene, title = "test_peaks2")
+saveMetagene(metagene_plot = test_df,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "test",
+             format = "pdf",
+             width = 21, height = 7)
+
+## En cours d'écriture: integrer l'option: merge replicate
+make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks, merge_replicates = FALSE) {
+  chip_target <- gsub("GR", "NR3C1", chip_target)
+  
+  bigdf <- data.frame()
+  for (target in chip_target) {
+    bam_pattern <- paste0("(", target, ").*\\.bam$")
+    bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
+    if (merge_replicates == TRUE) {
+      design <- make_design_from_bam_list(bam_files, target)
+    }
+    
+    metadata <- make_metadata_from_bam_list(bam_files)
+    
+    mg <- metagene2$new(regions = peaks,
+                        bam_files = bam_files,
+                        assay = 'chipseq',
+                        cores = 4)
+    mg$add_metadata(design_metadata = metadata)
+    
+    mg2 <- mg$group_coverage()
+    # 
+
+    # 
+    # df <- mg$get_data_frame()
+    # 
+    # bigdf <- rbind(bigdf, df)
+  }
+  bigdf$target <- factor(bigdf$target, levels = chip_target)
+  return(bigdf)
+}
+
+
+make_design_from_bam_list <- function(bam_list, target) {
+  bam_names <- basename(bam_files)
+  splitted <- strsplit(bam_names, split = "_")
+  
+  row_design_names <- paste(get_nth_element(splitted, 1),
+                            sapply(get_nth_element(splitted, 2), format_timepoint, USE.NAMES = FALSE),
+                            get_nth_element(splitted, 3),
+                            sep = "_")
+  
+  group_bam_names <- paste(get_nth_element(splitted, 1),
+                           sapply(get_nth_element(splitted, 2), format_timepoint, USE.NAMES = FALSE),
+                           sep = "_") %>% unique
+  
+  timepoint <- c("0m", "5m",  "10m",  "15m", "20m", "25m",
+                 "0h", "30m", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "10h", "12h")
+  ordered_levels <- paste(target, timepoint, sep = "_")
+  
+  group_bam_names2 <- group_bam_names[order(match(group_bam_names, ordered_levels))]
+  
+  design <- data.frame(bam_files)
+  
+  for (bam in group_bam_names2) {
+    message(bam)
+    TF <- grepl(bam, row_design_names) %>% as.numeric
+    design <- cbind(design, TF)
+  }
+  
+  rownames(design) <- row_design_names
+  colnames(design) <- c("Samples", group_bam_names2)
+  
+  return(design)
+}
