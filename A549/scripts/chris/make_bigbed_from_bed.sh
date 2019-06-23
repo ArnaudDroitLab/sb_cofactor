@@ -16,11 +16,11 @@ do
 	basename="$(cut -d'.' -f1 <<<"$bed")"
 	sorted_bed="${basename}.sorted.bed"
 	echo -e "\tsort -k1,1 -k2,2n $bed > $sorted_bed"
-	sort -k1,1 -k2,2n $bed > $sorted_bed
+	# sort -k1,1 -k2,2n $bed > $sorted_bed
 
 	echo -e "\t# Make bigbed..."
 	bigbed="${basename}.sorted.bb"
-	bedToBigBed $sorted_bed $hg38_chrom_sizes $bigbed
+	# bedToBigBed $sorted_bed $hg38_chrom_sizes $bigbed
 
 	echo -e "\t# DONE"
 done
