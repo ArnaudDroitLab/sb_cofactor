@@ -1,0 +1,5 @@
+NAME	REGIONS	BP	output/chip-pipeline-GRCm38_GSE33346/peak_call/mESC_RAD21/mESC_RAD21_peaks.narrowPeak.bed	output/chip-pipeline-GRCm38_GSE111264/peak_call/mESC_ARID1A/mESC_ARID1A_peaks.narrowPeak.bed	output/chip-pipeline-GRCm38_GSE111264/peak_call/mESC_BRD4_rep1/mESC_BRD4_rep1_peaks.narrowPeak.bed	output/chip-pipeline-GRCm38_GSE30267/peak_call/mESC_AFF4_rep1/mESC_AFF4_rep1_peaks.narrowPeak.bed
+output/chip-pipeline-GRCm38_GSE33346/peak_call/mESC_RAD21/mESC_RAD21_peaks.narrowPeak.bed	126965	23274753	1.0	0.2430449924581678	0.32009331723588896	0.22698000086246758
+output/chip-pipeline-GRCm38_GSE111264/peak_call/mESC_ARID1A/mESC_ARID1A_peaks.narrowPeak.bed	19571	7088307	0.2430449924581678	1.0	0.6817949166677709	0.24406964806279505
+output/chip-pipeline-GRCm38_GSE111264/peak_call/mESC_BRD4_rep1/mESC_BRD4_rep1_peaks.narrowPeak.bed	51656	24194544	0.32009331723588896	0.6817949166677709	1.0	0.6268982125400522
+output/chip-pipeline-GRCm38_GSE30267/peak_call/mESC_AFF4_rep1/mESC_AFF4_rep1_peaks.narrowPeak.bed	6160	3560837	0.22698000086246758	0.24406964806279505	0.6268982125400522	1.0
