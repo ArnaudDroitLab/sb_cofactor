@@ -6,8 +6,8 @@ library(circlize)
 
 ### Call python script to generate framptongram matrix
 python_script_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/generate_framptongram_matrix.py"
-input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_allData.txt"
-matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_allData.txt"
+input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_GR_EP300_JUN.txt"
+matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_GR_EP300_JUN.txt"
 
 call <- paste("python", python_script_path, input_path, matrix_path)
 message(call)

@@ -1,4 +1,0 @@
-output/chip-pipeline-GRCm38_GSE33346/peak_call/mESC_RAD21/mESC_RAD21_peaks.narrowPeak.bed
-output/chip-pipeline-GRCm38_GSE111264/peak_call/mESC_ARID1A/mESC_ARID1A_peaks.narrowPeak.bed
-output/chip-pipeline-GRCm38_GSE111264/peak_call/mESC_BRD4_rep1/mESC_BRD4_rep1_peaks.narrowPeak.bed
-output/chip-pipeline-GRCm38_GSE30267/peak_call/mESC_AFF4_rep1/mESC_AFF4_rep1_peaks.narrowPeak.bed
