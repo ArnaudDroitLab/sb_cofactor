@@ -1,26 +1,49 @@
 setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
+library(tidyverse)
 library(ComplexHeatmap)
 library(circlize)
 
 ### Call python script to generate framptongram matrix
 python_script_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/generate_framptongram_matrix.py"
 input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_allData.txt"
-output_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_allData.txt"
+matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_allData.txt"
 
-call <- paste("python", python_script_path, input_path, output_path)
+call <- paste("python", python_script_path, input_path, matrix_path)
 message(call)
 system(call)
 
 ### Generate heatmap from framptongram matrix
-data <- read.table(output_path, header = TRUE)
+#
+get_nth_element <- function(lst, n) {
+  sapply(lst, "[", n)
+}
 
-mat <- as.matrix(data[, 4:ncol(data)])
+# Make proper sample names from list of files
+make_sample_names <- function(data) {
+  tmp1 <- as.character(data$NAME) %>% basename 
+  tmp2 <- gsub("NR3C1", "GR", tmp1) %>% strsplit(split = "_")
+  sample_names <- paste(get_nth_element(tmp2, 1), get_nth_element(tmp2, 2), sep = "_")
+  return(sample_names)
+}
 
-sample_names_tmp <- as.character(data$NAME)
-basename(sample_names_tmp)
+# Open framptongram matrix file and return a formatted matrix, proper to be plot with Heatmap function from ComplexHeatmap package
+process_frampton_matrix <- function(matrix_filename) {
+  data <- read.table(matrix_filename, header = TRUE)
+  sample_names <- make_samples_name(data)
+  
+  mat <- as.matrix(data[, 4:ncol(data)])
+  colnames(mat) <- sample_names
+  rownames(mat) <- sample_names
+  
+  return(mat)
+}
 
-h2 <- Heatmap(mat,
+# Load framptomgram matrix and process it
+mat <- process_frampton_matrix(matrix_path)
+
+# Generate heatmap
+hm <- Heatmap(mat, name = "Correlation",
               row_names_side = "left",
               row_names_gp = gpar(fontsize = 11),
               row_dend_side = "right",
@@ -32,4 +55,9 @@ h2 <- Heatmap(mat,
               row_dend_width = unit(50, "mm"),
               column_dend_height = unit(50, "mm"),
               col = col_fun,
-              rect_gp = gpar(col = "white", lwd = 1))
+              rect_gp = gpar(col = "white", lwd = 1),
+              cell_fun = function(j, i, x, y, width, height, fill) {
+                grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
+              })
+
+hm
