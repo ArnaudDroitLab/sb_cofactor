@@ -44,7 +44,7 @@ mat <- process_frampton_matrix(matrix_path)
 
 # Generate heatmap
 customColors = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
-hm <- Heatmap(mat, name = "Correlation",
+hm2 <- Heatmap(mat, name = "Correlation",
               row_names_side = "left",
               row_names_gp = gpar(fontsize = 11),
               row_dend_side = "right",
@@ -61,4 +61,7 @@ hm <- Heatmap(mat, name = "Correlation",
                 grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
               })
 
-hm
+png("output/analyses/heatmap_framptongram/20190624_framptongram_GR_EP300_JUN.png",
+    width = 1500, height = 1300)
+hm2
+dev.off()
