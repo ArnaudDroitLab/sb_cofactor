@@ -30,7 +30,7 @@ make_sample_names <- function(data) {
 # Open framptongram matrix file and return a formatted matrix, proper to be plot with Heatmap function from ComplexHeatmap package
 process_frampton_matrix <- function(matrix_filename) {
   data <- read.table(matrix_filename, header = TRUE)
-  sample_names <- make_samples_name(data)
+  sample_names <- make_sample_names(data)
   
   mat <- as.matrix(data[, 4:ncol(data)])
   colnames(mat) <- sample_names
@@ -43,6 +43,7 @@ process_frampton_matrix <- function(matrix_filename) {
 mat <- process_frampton_matrix(matrix_path)
 
 # Generate heatmap
+customColors = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
 hm <- Heatmap(mat, name = "Correlation",
               row_names_side = "left",
               row_names_gp = gpar(fontsize = 11),
@@ -54,7 +55,7 @@ hm <- Heatmap(mat, name = "Correlation",
               show_column_dend = FALSE,
               row_dend_width = unit(50, "mm"),
               column_dend_height = unit(50, "mm"),
-              col = col_fun,
+              col = customColors,
               rect_gp = gpar(col = "white", lwd = 1),
               cell_fun = function(j, i, x, y, width, height, fill) {
                 grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
