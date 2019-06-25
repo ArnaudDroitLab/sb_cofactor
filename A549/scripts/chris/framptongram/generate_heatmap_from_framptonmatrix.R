@@ -6,8 +6,8 @@ library(circlize)
 
 ### Call python script to generate framptongram matrix
 python_script_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/generate_framptongram_matrix.py"
-input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_GR_EP300_JUN_CTCF_SMC3_RAD21_CEBPB_BCL3_FOSL2_HES2_JUNB_onlyH.txt"
-matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_GR_EP300_JUN_CTCF_SMC3_RAD21_CEBPB_BCL3_FOSL2_HES2_JUNB_onlyH.txt"
+input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_GR_EP300_JUN_CTCF_SMC3_RAD21onlyH.txt"
+matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_GR_EP300_JUN_CTCF_SMC3_RAD21_onlyH.txt"
 
 call <- paste("python", python_script_path, input_path, matrix_path)
 message(call)
@@ -39,10 +39,25 @@ process_frampton_matrix <- function(matrix_filename) {
   return(mat)
 }
 
-## TODO Add annotation on side of the framptongram
-
 # Load framptomgram matrix and process it
 mat <- process_frampton_matrix(matrix_path)
+
+# Add annotation
+sample_factors <- rownames(mat) %>% strsplit(split = "_") %>% get_nth_element(1)
+colors_factors <- c("GR" = "#7B241C", "EP300" = "#633974", "JUN" = "#1A5276", "JUNB" = "#117864",
+                    "FOSL2" = "#F39C12", "HES2" = "#BA4A00", "CTCF" = "#212F3D", "SMC3" = "#4E342E",
+                    "RAD21" = "#29B6F6", "BCL3" = "#E91E63", "CEBPB" = "#757575")
+colha <- HeatmapAnnotation(Factors = sample_factors,
+                           col = list(Factors = colors_factors))
+rowha <- rowAnnotation(Factors = sample_factors,
+                      col = list(Experiment = colors_factors),
+                      show_legend = FALSE)
+
+# ha <- HeatmapAnnotation(Factors = samples_factors,
+#                         col = list(Factors = c("KD" = "#16DB93", "OE" = "#EFEA5A")))
+# rowha = rowAnnotation(Experiment = col_kd_oe,
+#                       col = list(Experiment = c("KD" = "#16DB93", "OE" = "#EFEA5A")),
+#                       show_legend = FALSE)
 
 # Generate heatmap
 customColors = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
@@ -59,11 +74,15 @@ hm2 <- Heatmap(mat, name = "Correlation",
               column_dend_height = unit(50, "mm"),
               col = customColors,
               rect_gp = gpar(col = "white", lwd = 1),
-              cell_fun = function(j, i, x, y, width, height, fill) {
-                grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
-              })
+              top_annotation = colha,
+              left_annotation = rowha)
 
-png("output/analyses/heatmap_framptongram/20190624_framptongram_GR_EP300_JUN_CTCF_SMC3_RAD21_CEBPB_BCL3_FOSL2_HES2_JUNB_onlyH.png",
+hm2 <- hm2 + Heatmap(cell_fun = function(j, i, x, y, width, height, fill) {
+                      grid.text(sprintf("%.2f", cor.mutcof[i, j]), x, y, gp = gpar(fontsize = 10))
+                      })
+              
+
+png("output/analyses/heatmap_framptongram/20190625_framptongram_GR_EP300_JUN_CTCF_SMC3_RAD21_onlyH.png",
     width = 1500, height = 1300)
 hm2
 dev.off()
