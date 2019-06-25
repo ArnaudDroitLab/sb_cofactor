@@ -6,8 +6,8 @@ library(circlize)
 
 ### Call python script to generate framptongram matrix
 python_script_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/generate_framptongram_matrix.py"
-input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_GR_EP300_JUN.txt"
-matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_GR_EP300_JUN.txt"
+input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_GR_EP300.txt"
+matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_GR_EP300.txt"
 
 call <- paste("python", python_script_path, input_path, matrix_path)
 message(call)
@@ -61,7 +61,7 @@ hm2 <- Heatmap(mat, name = "Correlation",
                 grid.text(sprintf("%.2f", mat[i, j]), x, y, gp = gpar(fontsize = 7))
               })
 
-png("output/analyses/heatmap_framptongram/20190624_framptongram_GR_EP300_JUN.png",
+png("output/analyses/heatmap_framptongram/20190624_framptongram_GR_EP300.png",
     width = 1500, height = 1300)
 hm2
 dev.off()
