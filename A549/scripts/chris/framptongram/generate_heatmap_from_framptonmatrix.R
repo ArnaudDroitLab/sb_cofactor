@@ -39,6 +39,8 @@ process_frampton_matrix <- function(matrix_filename) {
   return(mat)
 }
 
+## TODO Add annotation on side of the framptongram
+
 # Load framptomgram matrix and process it
 mat <- process_frampton_matrix(matrix_path)
 
