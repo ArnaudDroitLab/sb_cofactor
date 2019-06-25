@@ -10,4 +10,7 @@ upreg <- deg_file %>% filter(padj <= 0.05, log2FoldChange <= -2) %>% arrange(log
 upreg
 downreg <- deg_file %>% filter(padj <= 0.05, log2FoldChange >= 1.5) %>% arrange(desc(log2FoldChange))
 downreg
+
+"MAFK" %in% downreg$symbol
+
     

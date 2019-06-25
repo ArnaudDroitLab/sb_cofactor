@@ -95,15 +95,59 @@ saveMetagene <- function(metagene_plot, output_dir, output_file, width_val = 25,
 }
 
 # Define one region at first
+# upreg genes
+csf3_peak <- GRanges("chr17", IRanges(40021370, 40022011))
+gpr1_peak <- GRanges("chr2", IRanges(206213349, 206213709))
+socs1_peak <- GRanges("chr16", IRanges(11224153, 11224593))
 angptl4_peak <- GRanges("chr19", IRanges(8355327, 8356270))
+
+
+
+# downreg genes
+dusp8_peak <- GRanges("chr11", IRanges(1559246, 1559846))
 il11_peak <- GRanges("chr19", IRanges(55372624, 55373186))
-gapdh_peak <- GRanges("chr12", IRanges(6532244, 6532808))
 mafk_peak <- GRanges("chr7", IRanges(1519343, 1522213))
+
+# control
+gapdh_peak <- GRanges("chr12", IRanges(6532244, 6532808))
+
+
+
+
+
+
+
 
 # BAM
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
 
 # At one peak first
+# upreg genes
+csf3_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = csf3_peak) 
+csf3_plot <- plot_metagene_Reddy(csf3_df_metagene, title = "CSF3 at chr17:40021370-40022011")
+saveMetagene(metagene_plot = csf3_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190624_metagene_CSF3_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+gpr1_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = gpr1_peak) 
+gpr1_plot <- plot_metagene_Reddy(gpr1_df_metagene, title = "GPR1 at chr2:206212349-206214709")
+saveMetagene(metagene_plot = gpr1_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190624_metagene_GPR1_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+socs1_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = socs1_peak) 
+socs1_plot <- plot_metagene_Reddy(socs1_df_metagene, title = "SOCS1 at chr2:206212349-206214709")
+saveMetagene(metagene_plot = socs1_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190624_metagene_SOCS1_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+
 mafk_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = mafk_peak) 
 mafk_plot <- plot_metagene_Reddy(mafk_df_metagene, title = "MAFK at chr7:1519343-1522213")
 saveMetagene(metagene_plot = mafk_plot,
@@ -136,6 +180,13 @@ saveMetagene(metagene_plot = gapdh_plot,
              format = "pdf",
              width = 21, height = 7)
 
+dusp8_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = dusp8_peak) 
+dusp8_plot <- plot_metagene_Reddy(dusp8_df_metagene, title = "DUSP8 at chr11:1559246-1559846")
+saveMetagene(metagene_plot = dusp8_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190624_metagene_DUSP8_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
 
 
 
