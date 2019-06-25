@@ -101,22 +101,14 @@ gpr1_peak <- GRanges("chr2", IRanges(206213349, 206213709))
 socs1_peak <- GRanges("chr16", IRanges(11224153, 11224593))
 angptl4_peak <- GRanges("chr19", IRanges(8355327, 8356270))
 
-
-
 # downreg genes
 dusp8_peak <- GRanges("chr11", IRanges(1559246, 1559846))
 il11_peak <- GRanges("chr19", IRanges(55372624, 55373186))
 mafk_peak <- GRanges("chr7", IRanges(1519343, 1522213))
+rassf10_peak <- GRanges("chr11", IRanges(13007940, 13008299))
 
 # control
 gapdh_peak <- GRanges("chr12", IRanges(6532244, 6532808))
-
-
-
-
-
-
-
 
 # BAM
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
@@ -188,6 +180,13 @@ saveMetagene(metagene_plot = dusp8_plot,
              format = "pdf",
              width = 21, height = 7)
 
+rassf10_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = rassf10_peak) 
+rassf10_plot <- plot_metagene_Reddy(rassf10_df_metagene, title = "RASSF10 at chr11:13007940-13008299")
+saveMetagene(metagene_plot = rassf10_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190624_metagene_RASSF10_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
 
 
 
