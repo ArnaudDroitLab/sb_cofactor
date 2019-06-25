@@ -50,7 +50,7 @@ colors_factors <- c("GR" = "#7B241C", "EP300" = "#633974", "JUN" = "#1A5276", "J
 colha <- HeatmapAnnotation(Factors = sample_factors,
                            col = list(Factors = colors_factors))
 rowha <- rowAnnotation(Factors = sample_factors,
-                      col = list(Experiment = colors_factors),
+                      col = list(Factors = colors_factors),
                       show_legend = FALSE)
 
 # ha <- HeatmapAnnotation(Factors = samples_factors,
@@ -83,6 +83,7 @@ hm2 <- hm2 + Heatmap(cell_fun = function(j, i, x, y, width, height, fill) {
               
 
 png("output/analyses/heatmap_framptongram/20190625_framptongram_GR_EP300_JUN_CTCF_SMC3_RAD21_onlyH.png",
-    width = 1500, height = 1300)
+    width = 2000, height = 1800)
 hm2
 dev.off()
+
