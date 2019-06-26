@@ -6,8 +6,8 @@ library(circlize)
 
 ### Call python script to generate framptongram matrix
 python_script_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/generate_framptongram_matrix.py"
-input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_Reddy_GR_EP300_JUN_CTCF_SMC3_RAD21onlyH.txt"
-matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_GR_EP300_JUN_CTCF_SMC3_RAD21_onlyH.txt"
+input_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/bedfile_list_allReddy_withChromatin_onlyH.txt"
+matrix_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/scripts/chris/framptongram/framptongram_matrix_Reddy_allReddy_withChromatin_onlyH.txt"
 
 call <- paste("python", python_script_path, input_path, matrix_path)
 message(call)
@@ -63,27 +63,28 @@ rowha <- rowAnnotation(Factors = sample_factors,
 customColors = colorRamp2(c(-1, 0, 1), c("#0f4259", "white", "#800020"))
 hm2 <- Heatmap(mat, name = "Correlation",
               row_names_side = "left",
-              row_names_gp = gpar(fontsize = 11),
+              row_names_gp = gpar(fontsize = 11), # change to 10/11 if necessary
               row_dend_side = "right",
               column_names_side = "top",
-              column_names_gp = gpar(fontsize = 11),
+              column_names_gp = gpar(fontsize = 11), # change to 10/11 if necessary
               column_names_rot = 45,
               column_dend_side = "bottom",
               show_column_dend = FALSE,
               row_dend_width = unit(50, "mm"),
               column_dend_height = unit(50, "mm"),
               col = customColors,
-              rect_gp = gpar(col = "white", lwd = 1),
+              rect_gp = gpar(col = "white", lwd = 1), # change to 0.5/1 if necessary
               top_annotation = colha,
               left_annotation = rowha)
 
-hm2 <- hm2 + Heatmap(cell_fun = function(j, i, x, y, width, height, fill) {
-                      grid.text(sprintf("%.2f", cor.mutcof[i, j]), x, y, gp = gpar(fontsize = 10))
-                      })
+# to add correlation value
+# cell_fun = function(j, i, x, y, width, height, fill) {
+# grid.text(sprintf("%.2f", cor.mutcof[i, j]), x, y, gp = gpar(fontsize = 10))
+# }
               
 
-png("output/analyses/heatmap_framptongram/20190625_framptongram_GR_EP300_JUN_CTCF_SMC3_RAD21_onlyH.png",
-    width = 2000, height = 1800)
+png("output/analyses/heatmap_framptongram/20190625_framptongram_allReddy_withChromatin_onlyH.png",
+    width = 3000, height = 2700) # change to w = 3000/2000/1500 and h = 2700/1800/1300
 hm2
 dev.off()
 
