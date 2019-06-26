@@ -75,7 +75,7 @@ hm2 <- Heatmap(mat, name = "Correlation",
               row_dend_width = unit(50, "mm"),
               column_dend_height = unit(50, "mm"),
               col = customColors,
-              rect_gp = gpar(col = "white", lwd = 1), # change to 0.5/1 if necessary
+              rect_gp = gpar(col = "white", lwd = 0.5), # change to 0.5/1 if necessary
               top_annotation = colha,
               left_annotation = rowha)
 
@@ -86,7 +86,7 @@ hm2 <- Heatmap(mat, name = "Correlation",
               
 
 png("output/analyses/heatmap_framptongram/20190625_framptongram_allReddy_withChromatin_onlyH.png",
-    width = 4000, height = 3700) # change to w = 3000/2000/1500 and h = 2700/1800/1300
+    width = 4000, height = 3700) # change to w = 4000/3000/2000/1500 and h = 3700/2700/1800/1300
 hm2
 dev.off()
 
