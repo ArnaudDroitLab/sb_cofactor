@@ -46,7 +46,9 @@ mat <- process_frampton_matrix(matrix_path)
 sample_factors <- rownames(mat) %>% strsplit(split = "_") %>% get_nth_element(1)
 colors_factors <- c("GR" = "#7B241C", "EP300" = "#633974", "JUN" = "#1A5276", "JUNB" = "#117864",
                     "FOSL2" = "#F39C12", "HES2" = "#BA4A00", "CTCF" = "#212F3D", "SMC3" = "#4E342E",
-                    "RAD21" = "#29B6F6", "BCL3" = "#E91E63", "CEBPB" = "#757575")
+                    "RAD21" = "#29B6F6", "BCL3" = "#E91E63", "CEBPB" = "#757575", "H3K27ac" = "#32CD32",
+                     "H3K4me1" = "#556B2F", "H3K4me2" = "#000000", "H3K4me3" = "#FFEB3B")
+                    #32CD32)
 colha <- HeatmapAnnotation(Factors = sample_factors,
                            col = list(Factors = colors_factors))
 rowha <- rowAnnotation(Factors = sample_factors,
@@ -84,7 +86,7 @@ hm2 <- Heatmap(mat, name = "Correlation",
               
 
 png("output/analyses/heatmap_framptongram/20190625_framptongram_allReddy_withChromatin_onlyH.png",
-    width = 3000, height = 2700) # change to w = 3000/2000/1500 and h = 2700/1800/1300
+    width = 4000, height = 3700) # change to w = 3000/2000/1500 and h = 2700/1800/1300
 hm2
 dev.off()
 
