@@ -23,6 +23,5 @@ raw_counts_I <- read_csv("results/a549_dex_time_points/raw_counts.csv")
 # Merge raw counts I and II
 raw_counts <- left_join(raw_counts_I, raw_counts_II)
 
-
 dir_results <- "results/a549_dex_time_points"
 write_csv(raw_counts, paste0(dir_results, "/raw_counts_new.csv"))

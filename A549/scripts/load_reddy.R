@@ -16,7 +16,7 @@ library(dplyr)
 make_ENCODE_Reddy_ChIP_experiments_file <- function(target_name) {
     all_chip_bed <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bed", assay="ChIP-seq")
     target_bed <- all_chip_bed %>% filter(target == target_name, assembly == "GRCh38", lab == "Tim Reddy, Duke")
-    report_target_bed <- target_bed %>% dplyr::select(accession, file_accession, submitted_by, file_format, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
+    report_target_bed <- target_bed %>% dplyr::select(accession, file_accession, submitted_by, file_format, file_type, target, treatment, treatment_duration, treatment_duration_unit, biological_replicates, controls)
     report_target_bed$treatment_duration[is.na(report_target_bed$treatment_duration)] <- 0
     report_target_bed[which(report_target_bed$submitted_by == "Alejandro Barrera"), ]$treatment_duration_unit[is.na(report_target_bed[which(report_target_bed$submitted_by == "Alejandro Barrera"), ]$treatment_duration_unit)] <- "minute"
     report_target_bed[which(report_target_bed$submitted_by == "Ian McDowell"), ]$treatment_duration_unit[is.na(report_target_bed[which(report_target_bed$submitted_by == "Ian McDowell"), ]$treatment_duration_unit)] <- "hour"
