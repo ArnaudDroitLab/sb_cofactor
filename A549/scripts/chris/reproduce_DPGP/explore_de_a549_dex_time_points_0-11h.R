@@ -1,6 +1,7 @@
 setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 library(tidyverse)
+library(knitr)
 
 deg_dir <- "results/a549_dex_time_points_1_11hr"
 time_point <- paste0(c(1, 3, 5, 7, 11), "hr")
@@ -10,8 +11,10 @@ deg_numbers <- data.frame(0)
 for (time in time_point) {
   message("##### ", time)
   deg_file <- read_csv(file.path(deg_dir, time), progress = FALSE)
-  deg[[time]]$DEG <- deg
+  deg[[time]]$DEG <- deg_file
+  
   significant <- deg_file %>% dplyr::filter(padj <= 0.1)
+  deg[[time]]$fdr0p1 <- significant
   
   upreg_0 <- significant %>% dplyr::filter(log2FoldChange >= 0) %>% arrange(desc(log2FoldChange))
   downreg_0 <- significant %>% dplyr::filter(log2FoldChange <= -0) %>% arrange(log2FoldChange)
@@ -63,5 +66,51 @@ rownames(deg_numbers) <- c("# of transcripts", "# of significant transcripts",
                            "# of upregulated (FC > 2.5)", "# of downregulated (FC < -2.5)")
 kable(deg_numbers)
 
-deg$`1hr`$upreg_2$symbol %>% unique
-deg$`1hr`$downreg_2$symbol %>% unique
+### 
+for (time in time_point) {
+  message("##### ", time)
+  deg_table <- deg[[time]]$fdr0p1
+  unique_genes <- deg_table$gene_id %>% unique
+  message(length(unique_genes), " / ", nrow(deg_table))
+  # res <- deg_table %>% dplyr::filter(symbol == "KLF6")
+  # print(kable(res))
+}
+
+### 
+transcript_list <- c()
+for (time in time_point) {
+  message("##### ", time)
+  deg_table <- deg[[time]]$fdr0p1
+  print(length(deg_table$transcript_id))
+  transcript_list <- c(transcript_list, deg_table$transcript_id)
+}
+
+length(transcript_list)
+length(unique(transcript_list))
+
+###
+per_transcript <- list()
+for (transcript in unique(transcript_list)[1:10]) {
+  FC_list <- c()
+  pval_list <- c()
+  for (time in time_point) {
+    deg_table <- deg[[time]]$fdr0p1 %>% dplyr::filter(transcript_id == transcript)
+    FC <- deg_table$log2FoldChange
+    pval <- deg_table$padj
+    
+    FC_list <- c(FC_list, FC)
+    pval_list <- c(pval_list, pval)
+  }
+  per_transcript[[transcript]]$FC_list <- FC_list
+  per_transcript[[transcript]]$pval_list <- pval_list
+}
+
+head(per_transcript)
+head(purrr::map(per_transcript, 2))
+
+###
+library(metap)
+pval_list <- per_transcript$ENST00000263707.5$pval_list
+print(pval_list)
+s <- sumlog(pval_list)
+print(s)
