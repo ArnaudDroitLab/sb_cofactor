@@ -19,7 +19,7 @@ colnames(gene2symbol) <- c("gene_id", "symbol")
 # DESeq2 analysis
 get_res <- function(x) {
     message(x)
-    current_design <- filter(design, time_point %in% c("0h", x))
+    current_design <- dplyr::filter(design, time_point %in% c("0h", x))
     current_matrix <- m[,current_design$file_accession]
     dds <- DESeqDataSetFromMatrix(current_matrix, current_design, ~ time_point)
     dds <- dds[ rowSums(counts(dds)) > 1, ]
@@ -36,14 +36,14 @@ get_df <- function(x) {
         arrange(padj)
 }
 
-comparisons <- filter(design, time_point != "0h")$time_point %>% unique
+comparisons <- dplyr::filter(design, time_point != "0h")$time_point %>% unique
 names(comparisons) <- comparisons
 comparisons <- comparisons[paste0(c(0.5,1:8,10,12), "h")]
 
 de_res <- map(comparisons, get_res)
 de_df <- map(de_res, get_df)
 
-map_int(de_res, ~ filter(as.data.frame(.x), padj <= 0.05) %>% nrow)
-map_int(de_df, ~ filter(.x, padj <= 0.05) %>% nrow)
+map_int(de_res, ~ dplyr::filter(as.data.frame(.x), padj <= 0.05) %>% nrow)
+map_int(de_df, ~ dplyr::filter(.x, padj <= 0.05) %>% nrow)
 
 walk(names(de_df), ~ write_csv(de_df[[.x]], paste0("results/a549_dex_time_points/",.x)))
