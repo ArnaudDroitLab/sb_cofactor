@@ -1,4 +1,5 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
 library(tidyverse)
 library(purrr)
@@ -53,7 +54,7 @@ get_df <- function(x) {
 # Set comparisons to do
 comparisons <- design$time_point %>% unique %>% as.vector
 names(comparisons) <- comparisons
-comparisons <- comparisons[paste0(c(1, 3, 5, 7, 11), "hr")]
+comparisons <- comparisons[paste0(c(1, 3, 5, 7, 9, 11), "hr")]
 
 # DESeq2 analysis
 de_res <- map(comparisons, get_res)

@@ -4,7 +4,7 @@ library(tidyverse)
 library(knitr)
 
 deg_dir <- "results/a549_dex_time_points_1_11hr"
-time_point <- paste0(c(1, 3, 5, 7, 11), "hr")
+time_point <- paste0(c(1, 3, 5, 7, 9, 11), "hr")
 
 deg <- list()
 deg_numbers <- data.frame(0)
@@ -78,39 +78,68 @@ for (time in time_point) {
 
 ### 
 transcript_list <- c()
+gene_list <- c()
 for (time in time_point) {
   message("##### ", time)
   deg_table <- deg[[time]]$fdr0p1
   print(length(deg_table$transcript_id))
   transcript_list <- c(transcript_list, deg_table$transcript_id)
+  gene_list <- c(gene_list, deg_table$gene_id)
 }
 
 length(transcript_list)
 length(unique(transcript_list))
+length(gene_list)
+length(unique(gene_list))
 
-###
-per_transcript <- list()
-for (transcript in unique(transcript_list)[1:10]) {
-  FC_list <- c()
-  pval_list <- c()
-  for (time in time_point) {
-    deg_table <- deg[[time]]$fdr0p1 %>% dplyr::filter(transcript_id == transcript)
-    FC <- deg_table$log2FoldChange
-    pval <- deg_table$padj
-    
-    FC_list <- c(FC_list, FC)
-    pval_list <- c(pval_list, pval)
-  }
-  per_transcript[[transcript]]$FC_list <- FC_list
-  per_transcript[[transcript]]$pval_list <- pval_list
-}
+### Intended to choose a transcript per gene, but maybe not necessary
+# per_transcript <- list()
+# for (transcript in unique(transcript_list)[1:10]) {
+#   FC_list <- c()
+#   pval_list <- c()
+#   for (time in time_point) {
+#     deg_table <- deg[[time]]$fdr0p1 %>% dplyr::filter(transcript_id == transcript)
+#     FC <- deg_table$log2FoldChange
+#     pval <- deg_table$padj
+#     
+#     FC_list <- c(FC_list, FC)
+#     pval_list <- c(pval_list, pval)
+#   }
+#   per_transcript[[transcript]]$FC_list <- FC_list
+#   per_transcript[[transcript]]$pval_list <- pval_list
+# }
+# 
+# head(per_transcript)
+# head(purrr::map(per_transcript, 2))
+# 
+# ###
+# library(metap)
+# pval_list <- per_transcript$ENST00000263707.5$pval_list
+# print(pval_list)
+# s <- sumlog(pval_list)
+# print(s)
 
-head(per_transcript)
-head(purrr::map(per_transcript, 2))
+# What are the transcripts that are differentially expressed at least at two consecutives time point
+transcript_1h <- deg[["1hr"]]$fdr0p1$transcript_id # 1450
+transcript_3h <- deg[["3hr"]]$fdr0p1$transcript_id # 3354
+inter_1h_3h <- intersect(transcript_1h, transcript_3h) # 1450 | 3354 > 976
 
-###
-library(metap)
-pval_list <- per_transcript$ENST00000263707.5$pval_list
-print(pval_list)
-s <- sumlog(pval_list)
-print(s)
+transcript_3h <- deg[["3hr"]]$fdr0p1$transcript_id # 3354
+transcript_5h <- deg[["5hr"]]$fdr0p1$transcript_id # 3104
+inter_3h_5h <- intersect(transcript_3h, transcript_5h) # 3354 | 3104 > 2297
+
+transcript_5h <- deg[["5hr"]]$fdr0p1$transcript_id # 3104
+transcript_7h <- deg[["7hr"]]$fdr0p1$transcript_id #  2258
+inter_5h_7h <- intersect(transcript_5h, transcript_7h) # 33104 | 2258 > 1589
+
+transcript_7h <- deg[["7hr"]]$fdr0p1$transcript_id # 2258
+transcript_9h <- deg[["9hr"]]$fdr0p1$transcript_id # 1496
+inter_7h_9h <- intersect(transcript_7h, transcript_9h) # 2258 | 1496 > 
+
+transcript_9h <- deg[["9hr"]]$fdr0p1$transcript_id # 1496
+transcript_11h <- deg[["11hr"]]$fdr0p1$transcript_id # 125
+inter_9h_11h <- intersect(transcript_9h, transcript_11h) # 1496 | 125 > 
+
+allTranscripts <- c(inter_1h_3h, inter_3h_5h, inter_5h_7h, inter_7h_9h, inter_9h_11h)
+uniqueTranscripts <- unique(AllTranscripts)
+length(uniqueTranscripts)
