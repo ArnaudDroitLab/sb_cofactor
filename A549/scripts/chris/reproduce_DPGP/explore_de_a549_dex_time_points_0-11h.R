@@ -200,20 +200,25 @@ cor_spearman_heatmap
 matdex <- matfiltered %>% dplyr::select(transcript, starts_with("DEX"))
 matdex <- lapply(matdex, as.character) %>% as.data.frame
 
+transcript_name <- gsub("\\.", "_", matdex$transcript)
+
 matrep1 <- matdex %>% dplyr::select(contains("Rep1"))
 matrep1_final <- lapply(matrep1, paste0, ".0") %>% as.data.frame
-rownames(matrep1_final) <- matdex$transcript
+rownames(matrep1_final) <- transcript_name
 colnames(matrep1_final)
 colnames(matrep1_final) <- c("1", "3", "5", "7", "9", "11")
 head(matrep1_final)
 
 matrep2 <- matdex %>% dplyr::select(contains("Rep2"))
 matrep2_final <- lapply(matrep2, paste0, ".0") %>% as.data.frame
-rownames(matrep2_final) <- matdex$transcript
+rownames(matrep2_final) <- transcript_name
 colnames(matrep2_final)
-colnames(matrep2_final) <- c(1, 3, 5, 7, 9, 11)
+colnames(matrep2_final) <- c("1", "3", "5", "7", "9", "11")
 head(matrep2_final)
 
 output_dir <- "output/analyses/DPGP_on_a549_dex_1_11hr"
 write.table(matrep1_final, file = file.path(output_dir, "de_transcripts_A549_1_11h_rep1.txt"),
             quote = FALSE, sep = "\t")
+write.table(matrep2_final, file = file.path(output_dir, "de_transcripts_A549_1_11h_rep2.txt"),
+            quote = FALSE, sep = "\t")
+
