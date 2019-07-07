@@ -134,12 +134,86 @@ inter_5h_7h <- intersect(transcript_5h, transcript_7h) # 33104 | 2258 > 1589
 
 transcript_7h <- deg[["7hr"]]$fdr0p1$transcript_id # 2258
 transcript_9h <- deg[["9hr"]]$fdr0p1$transcript_id # 1496
-inter_7h_9h <- intersect(transcript_7h, transcript_9h) # 2258 | 1496 > 
+inter_7h_9h <- intersect(transcript_7h, transcript_9h) # 2258 | 1496 > 1095
 
 transcript_9h <- deg[["9hr"]]$fdr0p1$transcript_id # 1496
 transcript_11h <- deg[["11hr"]]$fdr0p1$transcript_id # 125
-inter_9h_11h <- intersect(transcript_9h, transcript_11h) # 1496 | 125 > 
+inter_9h_11h <- intersect(transcript_9h, transcript_11h) # 1496 | 125 > 97
 
 allTranscripts <- c(inter_1h_3h, inter_3h_5h, inter_5h_7h, inter_7h_9h, inter_9h_11h)
-uniqueTranscripts <- unique(AllTranscripts)
+uniqueTranscripts <- unique(allTranscripts)
 length(uniqueTranscripts)
+
+# Make matrix for DPGP
+raw <- read_tsv("input/GSE104714/GSE104714_DEX_EtOH_expression.tsv") %>% dplyr::select(-X2)
+matfiltered <- raw %>% dplyr::filter(transcript %in% uniqueTranscripts)
+
+mat <- matfiltered %>% dplyr::select(-transcript) %>% as.matrix
+rownames(mat) <- matfiltered$transcript
+
+##### Perform correlation matrix
+# mat <- mat[rowSums(mat) > 100,]
+
+# Annotation for heatmap > condition: EtOH or DEX
+annot_condition <- strsplit(colnames(mat), split = "_") %>% purrr::map(1) %>% unlist
+ha <- HeatmapAnnotation(Condition = annot_condition,
+                        col = list(Condition = c("EtOH" = "#16DB93", "DEX" = "#EFEA5A")))
+rowha = rowAnnotation(Condition = annot_condition,
+                      col = list(Condition = c("EtOH" = "#16DB93", "DEX" = "#EFEA5A")),
+                      show_legend = FALSE)
+
+# Correlation analysis : Pearson method
+cor_pearson <- cor(mat, method = "pearson")
+min(cor_pearson)
+col_pearson <- colorRamp2(c(0.8, 0.9, 1), c("#0f4259", "white", "#800020"))
+
+cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
+                               row_names_side = "right",
+                               row_dend_side = "right",
+                               row_dend_width = unit(25, "mm"),
+                               column_names_side = "top", column_names_rot = 45,
+                               show_column_dend = FALSE,
+                               top_annotation = ha,
+                               right_annotation = rowha,
+                               rect_gp = gpar(col = "white", lwd = 0.5),
+                               col = col_pearson)
+cor_pearson_heatmap
+
+# Correlation analysis : Spearman method
+cor_spearman <- cor(mat, method = "spearman")
+min(cor_spearman)
+col_spearman <- colorRamp2(c(0.8, 0.9, 1), c("#0f4259", "white", "#800020"))
+
+cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
+                                row_names_side = "right",
+                                row_dend_side = "right",
+                                row_dend_width = unit(25, "mm"),
+                                column_names_side = "top", column_names_rot = 45,
+                                show_column_dend = FALSE,
+                                top_annotation = ha,
+                                right_annotation = rowha,
+                                rect_gp = gpar(col = "white", lwd = 0.5),
+                                col = col_spearman)
+cor_spearman_heatmap
+
+# Continue to format matrix for DPGP
+matdex <- matfiltered %>% dplyr::select(transcript, starts_with("DEX"))
+matdex <- lapply(matdex, as.character) %>% as.data.frame
+
+matrep1 <- matdex %>% dplyr::select(contains("Rep1"))
+matrep1_final <- lapply(matrep1, paste0, ".0") %>% as.data.frame
+rownames(matrep1_final) <- matdex$transcript
+colnames(matrep1_final)
+colnames(matrep1_final) <- c("1", "3", "5", "7", "9", "11")
+head(matrep1_final)
+
+matrep2 <- matdex %>% dplyr::select(contains("Rep2"))
+matrep2_final <- lapply(matrep2, paste0, ".0") %>% as.data.frame
+rownames(matrep2_final) <- matdex$transcript
+colnames(matrep2_final)
+colnames(matrep2_final) <- c(1, 3, 5, 7, 9, 11)
+head(matrep2_final)
+
+output_dir <- "output/analyses/DPGP_on_a549_dex_1_11hr"
+write.table(matrep1_final, file = file.path(output_dir, "de_transcripts_A549_1_11h_rep1.txt"),
+            quote = FALSE, sep = "\t")
