@@ -182,7 +182,7 @@ cor_pearson_heatmap
 # Correlation analysis : Spearman method
 cor_spearman <- cor(mat, method = "spearman")
 min(cor_spearman)
-col_spearman <- colorRamp2(c(0.8, 0.9, 1), c("#0f4259", "white", "#800020"))
+col_spearman <- colorRamp2(c(0.9, 0.95, 1), c("#0f4259", "white", "#800020"))
 
 cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
                                 row_names_side = "right",

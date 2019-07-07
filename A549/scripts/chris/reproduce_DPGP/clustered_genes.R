@@ -1,5 +1,5 @@
-# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
+setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+# setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
 library(tidyverse)
 library(knitr)
@@ -20,10 +20,13 @@ colnames(transcript2symbol) <- c("tx_id", "gene_id", "symbol")
 
 # Mapping
 clusters_symbol <- left_join(clusters, transcript2symbol, by = c("gene" = "tx_id"))
+colnames(clusters_symbol) <- c("cluster", "transcript", "gene_id", "symbol")
+write.table(clusters_symbol, file = "output/analyses/DPGP_on_a549_dex_1_11hr/alabama_clusters_gene_symbols.txt",
+            quote = FALSE, row.names = FALSE, sep = "\t")
 
 # How many genes per clusters?
 clusters_genes <- clusters_symbol %>% group_by(cluster)%>%
-  summarise(nb_elements = n(), nb_genes = length(unique(symbol)))
+  summarise(nb_transcripts = n(), nb_genes = length(unique(symbol)))
 
 # clusters_only_symbol
 clusters_only_symbol <- clusters_symbol %>% distinct(cluster, gene_id, .keep_all = TRUE)

@@ -1,5 +1,5 @@
-# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
+setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+# setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
 library(tidyverse)
 library(ComplexHeatmap)
@@ -15,7 +15,7 @@ names(raw)
 mat <- raw %>% dplyr::select(-transcript) %>% as.matrix
 rownames(mat) <- raw$transcript
 
-mat <- mat[rowSums(mat) > 100,]
+mat <- mat[rowSums(mat) > 50,]
 
 # Annotation for heatmap > condition: EtOH or DEX
 annot_condition <- strsplit(colnames(mat), split = "_") %>% purrr::map(1) %>% unlist
