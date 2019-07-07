@@ -59,3 +59,6 @@ for (i in 1:10) {
 }
 clusters_symbol %>% dplyr::filter(is.na(symbol), cluster == 10)
 
+# what are the genes that are in several groups?
+clusters_symbol %>% group_by(symbol, cluster) %>%
+  summarise(n = n()) %>% dplyr::filter(n > 1) %>% distinct(symbol, cluster, .keep_all = TRUE)
