@@ -115,13 +115,13 @@ min(cor_pearson)
 col_pearson <- colorRamp2(c(0.8, 0.9, 1), c("#0f4259", "white", "#800020"))
 
 cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
-                               row_names_side = "right",
-                               row_dend_side = "right",
-                               row_dend_width = unit(25, "mm"),
+                               row_names_side = "left",
+                               row_dend_side = "left",
+                               row_dend_width = unit(30, "mm"),
                                column_names_side = "top", column_names_rot = 45,
                                show_column_dend = FALSE,
                                top_annotation = ha,
-                               right_annotation = rowha,
+                               left_annotation = rowha,
                                rect_gp = gpar(col = "white", lwd = 0.5),
                                col = col_pearson)
 cor_pearson_heatmap
@@ -132,13 +132,13 @@ min(cor_spearman)
 col_spearman <- colorRamp2(c(0.9, 0.95, 1), c("#0f4259", "white", "#800020"))
 
 cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
-                                row_names_side = "right",
-                                row_dend_side = "right",
-                                row_dend_width = unit(25, "mm"),
+                                row_names_side = "left",
+                                row_dend_side = "left",
+                                row_dend_width = unit(30, "mm"),
                                 column_names_side = "top", column_names_rot = 45,
                                 show_column_dend = FALSE,
                                 top_annotation = ha,
-                                right_annotation = rowha,
+                                left_annotation = rowha,
                                 rect_gp = gpar(col = "white", lwd = 0.5),
                                 col = col_spearman)
 cor_spearman_heatmap
