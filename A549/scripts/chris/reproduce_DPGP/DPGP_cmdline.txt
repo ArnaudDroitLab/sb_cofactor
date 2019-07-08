@@ -1,4 +1,7 @@
 module load python/2.7.8
+
 python DP_GP_cluster.py -i ../DPGP_on_a549_dex_1_11hr/de_transcripts_A549_1_11h_rep1.txt ../DPGP_on_a549_dex_1_11hr/de_transcripts_A549_1_11h_rep2.txt -o ../DPGP_on_a549_dex_1_11hr/alabama -p png --fast --plot
 
 python DP_GP_cluster.py -i ../DPGP_on_a549_dex_1_11hr/de_transcripts_A549_1_11h_rep1.txt ../DPGP_on_a549_dex_1_11hr/de_transcripts_A549_1_11h_rep2.txt -o ../DPGP_on_a549_dex_1_11hr/bruxelles -p png --plot
+
+python DP_GP_cluster.py -i ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_rep2.txt ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_rep3.txt ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_rep4.txt -o ../DPGP_on_a549_dex_0_12hr/bruxelles -p png --plot
