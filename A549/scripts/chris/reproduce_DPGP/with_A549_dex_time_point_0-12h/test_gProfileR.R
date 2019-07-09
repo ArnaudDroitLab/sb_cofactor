@@ -7,9 +7,12 @@ library(tidyverse)
 raw <- read_tsv("results/a549_dex_time_points/raw_counts_with_colnames.txt")
 gene_id <- raw$gene_id
 
+#
+q <- gconvert(query = gene_id[1:100], organism = "hsapiens", filter_na = FALSE)
+names(q)
 
-
-
+#
+gostres <- gprofiler(query = gene_id[1:100], organism = "hsapiens", png_fn = t)
 
 # Get mapping ENSG to SYMBOL
 edb <- EnsDb.Hsapiens.v86
@@ -18,7 +21,7 @@ gene2symbol <- gene2symbol[, 2:1]
 colnames(gene2symbol) <- c("gene_id", "symbol")
 
 # Left_join
-left_join(gene_id, gene2symbol, by = "gene_id")
+left_join(gene_id, gene2symbol, by = "gene_id", )
 
 
 library(knitr)
