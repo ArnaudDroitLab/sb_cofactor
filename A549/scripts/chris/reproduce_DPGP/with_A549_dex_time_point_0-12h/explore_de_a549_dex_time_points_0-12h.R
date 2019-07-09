@@ -74,8 +74,8 @@ for (i in 1:(length(time_point)-1)) {
   t1 <- time_point[i]
   t2 <- time_point[i+1]
   message("### ", t1, " vs ", t2)
-  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 1) %>% pull(gene_id)
-  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 1) %>% pull(gene_id)
+  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
+  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
   inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
   
   message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -164,9 +164,9 @@ matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3")
 matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4")
 
 output_dir <- "output/analyses/DPGP_on_a549_dex_0_12hr"
-write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_rep2.txt"),
+write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC0p5_rep2.txt"),
             quote = FALSE, sep = "\t")
-write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_rep3.txt"),
+write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC0p5_rep3.txt"),
             quote = FALSE, sep = "\t")
-write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_rep4.txt"),
+write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC0p5_rep4.txt"),
             quote = FALSE, sep = "\t")
