@@ -4,6 +4,7 @@ library(tidyverse)
 library(knitr)
 library(ComplexHeatmap)
 library(circlize)
+library(EnsDb.Hsapiens.v86)
 
 deg_dir <- "results/a549_dex_time_points"
 time_point <- paste0(c(0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), "h")
@@ -74,8 +75,8 @@ for (i in 1:(length(time_point)-1)) {
   t1 <- time_point[i]
   t2 <- time_point[i+1]
   message("### ", t1, " vs ", t2)
-  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
-  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
+  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
+  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
   inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
   
   message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -87,6 +88,27 @@ for (i in 1:(length(time_point)-1)) {
 length(de_at_two_consecutive_timepoint)
 unique_DEGs <- unique(de_at_two_consecutive_timepoint)
 length(unique_DEGs) # >>> 3840 genes
+
+# Get mapping ENSG to SYMBOL
+edb <- EnsDb.Hsapiens.v86
+gene2symbol <- genes(edb, columns = "gene_name", return.type = "DataFrame") %>% as.data.frame
+gene2symbol <- gene2symbol[, 2:1]
+colnames(gene2symbol) <- c("gene_id", "symbol")
+
+# Left_join
+unique_DEGS_wSymbol <- dplyr::left_join(data.frame(gene_id = unique_DEGs), gene2symbol, by = "gene_id")
+
+unique_DEGS_wSymbol %>% dplyr::filter(is.na(symbol))
+sum(is.na(unique_DEGS_wSymbol$symbol))
+
+# without SYMBOL
+# ENSG00000278309 _ RP11-102K13.5 _ lincRNA
+# ENSG00000255414 _ not in the current EnsEMBL _ LINC01059 _ long intergenic non-protein coding RNA
+# ENSG00000207770 _ hsa-mir-568 _ miRNA
+# ENSG00000263470 _ RP11-160O5.1 _ lincRNA
+# ENSG00000254667 _ not in the current EnsEMBL _ LOC100128242 _ uncharacterized
+# ENSG00000188206 _ HNRNPU-AS1 _ HNRNPU antisense RNA 1
+# ENSG00000259264 _ RP11-60L3.1 _ antisense
 
 # Make matrix for DPGP
 raw <- read_tsv("results/a549_dex_time_points/raw_counts_with_colnames.txt")
