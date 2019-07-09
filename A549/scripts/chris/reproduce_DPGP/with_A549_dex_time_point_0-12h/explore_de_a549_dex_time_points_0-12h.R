@@ -74,8 +74,8 @@ for (i in 1:(length(time_point)-1)) {
   t1 <- time_point[i]
   t2 <- time_point[i+1]
   message("### ", t1, " vs ", t2)
-  de_gene_t1 <- deg[[t1]]$fdr0p1$gene_id
-  de_gene_t2 <- deg[[t2]]$fdr0p1$gene_id
+  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 1) %>% pull(gene_id)
+  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% filter(abs(log2FoldChange) >= 1) %>% pull(gene_id)
   inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
   
   message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -129,7 +129,7 @@ cor_pearson_heatmap
 # Correlation analysis : Spearman method
 cor_spearman <- cor(mat, method = "spearman")
 min(cor_spearman)
-col_spearman <- colorRamp2(c(0.9, 0.95, 1), c("#0f4259", "white", "#800020"))
+col_spearman <- colorRamp2(c(0.7, 0.85, 1), c("#0f4259", "white", "#800020"))
 
 cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
                                 row_names_side = "left",
@@ -170,4 +170,3 @@ write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_rep
             quote = FALSE, sep = "\t")
 write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_rep4.txt"),
             quote = FALSE, sep = "\t")
-
