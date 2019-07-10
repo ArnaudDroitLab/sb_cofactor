@@ -258,7 +258,7 @@ load_annotated_most_expressed_promoters <- function(fix_chr=FALSE, upstream=1000
     ensembl = biomaRt::useDataset("hsapiens_gene_ensembl",mart=ensembl)
     biomart_attr = c("ensembl_transcript_id", "external_gene_name",
                      "description", "hgnc_symbol", "gene_biotype",
-                     "transcript_biotype")
+                     "transcript_biotype", "ensembl_gene_id")
     annotations = biomaRt::getBM(attributes=biomart_attr,
                                  filters="ensembl_transcript_id",
                                  values=names(promoter_regions),
