@@ -31,7 +31,7 @@ myGenes_activated <- c("PER1", "ZFP36",
                        "TFCP2L1", "IGFBP1", "ANGPTL4", "BIRC3", "ENTPD2", "CIDEC", "TIPARP", "BCL6", "SLC19A2",
                        "NFKBIA", "CEBPD", "SDPR", "PAMCI", "C9orf150", "KLF9", "KLF6")
              
-myGenes_repressed <- c("MAFK", "IL11","EDN1", "ED3", "FZD2", "BDKRB2", "MIDN", "GDF15")
+myGenes_repressed <- c("MAFK", "IL11", "EDN1", "ED3", "FZD2", "BDKRB2", "MIDN", "GDF15")
   
 # "SOCS1", "GPR1", "CSF3", "SNORD41", "SNORD99", "DRD1", "RASSF10", "IER2" ,"CXCL8", "GDF15", "MAFK", "AREG")
 where_are_myGenes_activated <- clusters_symbol %>% dplyr::filter(symbol %in% myGenes_activated) %>% arrange(cluster, symbol)
