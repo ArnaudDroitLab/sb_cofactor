@@ -75,8 +75,8 @@ for (i in 1:(length(time_point)-1)) {
   t1 <- time_point[i]
   t2 <- time_point[i+1]
   message("### ", t1, " vs ", t2)
-  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
-  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 0.5) %>% pull(gene_id)
+  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
+  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
   inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
   
   message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -134,7 +134,7 @@ rowha = rowAnnotation(Timepoint = annot_timepoint,
 # Correlation analysis : Pearson method
 cor_pearson <- cor(mat, method = "pearson")
 min(cor_pearson)
-col_pearson <- colorRamp2(c(0.8, 0.9, 1), c("#0f4259", "white", "#800020"))
+col_pearson <- colorRamp2(c(0.3, 0.65, 1), c("#0f4259", "white", "#800020"))
 
 cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
                                row_names_side = "left",
@@ -151,7 +151,7 @@ cor_pearson_heatmap
 # Correlation analysis : Spearman method
 cor_spearman <- cor(mat, method = "spearman")
 min(cor_spearman)
-col_spearman <- colorRamp2(c(0.7, 0.85, 1), c("#0f4259", "white", "#800020"))
+col_spearman <- colorRamp2(c(0.5, 0.75, 1), c("#0f4259", "white", "#800020"))
 
 cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
                                 row_names_side = "left",
@@ -186,9 +186,9 @@ matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3")
 matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4")
 
 output_dir <- "output/analyses/DPGP_on_a549_dex_0_12hr"
-write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC0p5_rep2.txt"),
+write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep2.txt"),
             quote = FALSE, sep = "\t")
-write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC0p5_rep3.txt"),
+write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep3.txt"),
             quote = FALSE, sep = "\t")
-write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC0p5_rep4.txt"),
+write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep4.txt"),
             quote = FALSE, sep = "\t")
