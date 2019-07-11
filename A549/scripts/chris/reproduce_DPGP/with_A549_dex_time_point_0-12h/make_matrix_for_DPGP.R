@@ -1,93 +1,106 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-
-library(tidyverse)
-library(knitr)
-library(ComplexHeatmap)
-library(circlize)
-library(EnsDb.Hsapiens.v86)
-
-deg_dir <- "results/a549_dex_time_points"
-time_point <- paste0(c(0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), "h")
-
-deg <- list()
-deg_numbers <- data.frame(0)
-for (time in time_point) {
-  message("##### ", time)
-  deg_file <- read_csv(file.path(deg_dir, time), progress = FALSE)
-  deg[[time]]$DEG <- deg_file
+  setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
   
-  significant <- deg_file %>% dplyr::filter(padj <= 0.1)
-  deg[[time]]$fdr0p1 <- significant
+  library(tidyverse)
+  library(knitr)
+  library(ComplexHeatmap)
+  library(circlize)
+  library(EnsDb.Hsapiens.v86)
   
-  upreg_0 <- significant %>% dplyr::filter(log2FoldChange >= 0) %>% arrange(desc(log2FoldChange))
-  downreg_0 <- significant %>% dplyr::filter(log2FoldChange <= -0) %>% arrange(log2FoldChange)
-  deg[[time]]$upreg_0 <- upreg_0
-  deg[[time]]$downreg_0 <- downreg_0
+  #### Save heatmap
+  saveHeatmap <- function(heatmap_obj, output_dir, output_file, width_val = 25, height_val = 22, format = "pdf") {
+    output_filepath <- file.path(output_dir, paste0(output_file, ".", format))
+    pdf(file = output_filepath, width = width_val, height = height_val)
+    print(heatmap_obj)
+    dev.off()
+    message(" > Heatmap saved in ", output_filepath)
+  }
   
-  upreg_0p5 <- significant %>% dplyr::filter(log2FoldChange >= 0.5) %>% arrange(desc(log2FoldChange))
-  downreg_0p5 <- significant %>% dplyr::filter(log2FoldChange <= -0.5) %>% arrange(log2FoldChange)
-  deg[[time]]$upreg_0p5 <- upreg_0p5
-  deg[[time]]$downreg_0p5 <- downreg_0p5
+  ####
+  output_dir <- "output/analyses/DPGP_on_a549_dex_0_12hr"
   
-  upreg_1 <- significant %>% dplyr::filter(log2FoldChange >= 1) %>% arrange(desc(log2FoldChange))
-  downreg_1 <- significant %>% dplyr::filter(log2FoldChange <= -1) %>% arrange(log2FoldChange)
-  deg[[time]]$upreg_1 <- upreg_1
-  deg[[time]]$downreg_1 <- downreg_1
+  ####
+  deg_dir <- "results/a549_dex_time_points"
+  time_point <- paste0(c(0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), "h")
   
-  upreg_1p5 <- significant %>% dplyr::filter(log2FoldChange >= 1.5) %>% arrange(desc(log2FoldChange))
-  downreg_1p5 <- significant %>% dplyr::filter(log2FoldChange <= -1.5) %>% arrange(log2FoldChange)
-  deg[[time]]$upreg_1p5 <- upreg_1p5
-  deg[[time]]$downreg_1p5 <- downreg_1p5
+  deg <- list()
+  deg_numbers <- data.frame(0)
+  for (time in time_point) {
+    message("##### ", time)
+    deg_file <- read_csv(file.path(deg_dir, time), progress = FALSE)
+    deg[[time]]$DEG <- deg_file
+    
+    significant <- deg_file %>% dplyr::filter(padj <= 0.1)
+    deg[[time]]$fdr0p1 <- significant
+    
+    upreg_0 <- significant %>% dplyr::filter(log2FoldChange >= 0) %>% arrange(desc(log2FoldChange))
+    downreg_0 <- significant %>% dplyr::filter(log2FoldChange <= -0) %>% arrange(log2FoldChange)
+    deg[[time]]$upreg_0 <- upreg_0
+    deg[[time]]$downreg_0 <- downreg_0
+    
+    upreg_0p5 <- significant %>% dplyr::filter(log2FoldChange >= 0.5) %>% arrange(desc(log2FoldChange))
+    downreg_0p5 <- significant %>% dplyr::filter(log2FoldChange <= -0.5) %>% arrange(log2FoldChange)
+    deg[[time]]$upreg_0p5 <- upreg_0p5
+    deg[[time]]$downreg_0p5 <- downreg_0p5
+    
+    upreg_1 <- significant %>% dplyr::filter(log2FoldChange >= 1) %>% arrange(desc(log2FoldChange))
+    downreg_1 <- significant %>% dplyr::filter(log2FoldChange <= -1) %>% arrange(log2FoldChange)
+    deg[[time]]$upreg_1 <- upreg_1
+    deg[[time]]$downreg_1 <- downreg_1
+    
+    upreg_1p5 <- significant %>% dplyr::filter(log2FoldChange >= 1.5) %>% arrange(desc(log2FoldChange))
+    downreg_1p5 <- significant %>% dplyr::filter(log2FoldChange <= -1.5) %>% arrange(log2FoldChange)
+    deg[[time]]$upreg_1p5 <- upreg_1p5
+    deg[[time]]$downreg_1p5 <- downreg_1p5
+    
+    upreg_2 <- significant %>% dplyr::filter(log2FoldChange >= 2) %>% arrange(desc(log2FoldChange))
+    downreg_2 <- significant %>% dplyr::filter(log2FoldChange <= -2) %>% arrange(log2FoldChange)
+    deg[[time]]$upreg_2 <- upreg_2
+    deg[[time]]$downreg_2 <- downreg_2
+    
+    upreg_2p5 <- significant %>% dplyr::filter(log2FoldChange >= 2.5) %>% arrange(desc(log2FoldChange))
+    downreg_2p5 <- significant %>% dplyr::filter(log2FoldChange <= -2.5) %>% arrange(log2FoldChange)
+    deg[[time]]$upreg_2p5 <- upreg_2p5
+    deg[[time]]$downreg_2p5 <- downreg_2p5
+    
+    deg_numbers <- cbind(deg_numbers, c(nrow(deg_file), nrow(significant),
+                                        nrow(upreg_0), nrow(downreg_0),
+                                        nrow(upreg_0p5), nrow(downreg_0p5),
+                                        nrow(upreg_1), nrow(downreg_1),
+                                        nrow(upreg_1p5), nrow(downreg_1p5),
+                                        nrow(upreg_2), nrow(downreg_2),
+                                        nrow(upreg_2p5), nrow(downreg_2p5)))
+  }
   
-  upreg_2 <- significant %>% dplyr::filter(log2FoldChange >= 2) %>% arrange(desc(log2FoldChange))
-  downreg_2 <- significant %>% dplyr::filter(log2FoldChange <= -2) %>% arrange(log2FoldChange)
-  deg[[time]]$upreg_2 <- upreg_2
-  deg[[time]]$downreg_2 <- downreg_2
+  deg_numbers <- deg_numbers[, 2:ncol(deg_numbers)]
+  colnames(deg_numbers) <- time_point
+  rownames(deg_numbers) <- c("# of genes", "# of significant genes",
+                             "# of upregulated (FC > 0)", "# of downregulated (FC < 0)",
+                             "# of upregulated (FC > 0.5)", "# of downregulated (FC < -0.5)",
+                             "# of upregulated (FC > 1)", "# of downregulated (FC < -1)",
+                             "# of upregulated (FC > 1.5)", "# of downregulated (FC < -1.5)",
+                             "# of upregulated (FC > 2)", "# of downregulated (FC < -2)",
+                             "# of upregulated (FC > 2.5)", "# of downregulated (FC < -2.5)")
+  kable(deg_numbers)
   
-  upreg_2p5 <- significant %>% dplyr::filter(log2FoldChange >= 2.5) %>% arrange(desc(log2FoldChange))
-  downreg_2p5 <- significant %>% dplyr::filter(log2FoldChange <= -2.5) %>% arrange(log2FoldChange)
-  deg[[time]]$upreg_2p5 <- upreg_2p5
-  deg[[time]]$downreg_2p5 <- downreg_2p5
+  # Keep only genes that are differentially expressed at txo consevutive timepoints
+  de_at_two_consecutive_timepoint <- c()
+  for (i in 1:(length(time_point)-1)) {
+    t1 <- time_point[i]
+    t2 <- time_point[i+1]
+    message("### ", t1, " vs ", t2)
+    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
+    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
+    inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
+    
+    message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
+    message(" # at ", t2, " : ", length(de_gene_t2), " DEGs")
+    message(" # at ", t1, " and ", t2, " : ", length(inter_t1_t2), " DEGs")
+    de_at_two_consecutive_timepoint <- c(de_at_two_consecutive_timepoint, inter_t1_t2)
+  }
   
-  deg_numbers <- cbind(deg_numbers, c(nrow(deg_file), nrow(significant),
-                                      nrow(upreg_0), nrow(downreg_0),
-                                      nrow(upreg_0p5), nrow(downreg_0p5),
-                                      nrow(upreg_1), nrow(downreg_1),
-                                      nrow(upreg_1p5), nrow(downreg_1p5),
-                                      nrow(upreg_2), nrow(downreg_2),
-                                      nrow(upreg_2p5), nrow(downreg_2p5)))
-}
-
-deg_numbers <- deg_numbers[, 2:ncol(deg_numbers)]
-colnames(deg_numbers) <- time_point
-rownames(deg_numbers) <- c("# of transcripts", "# of significant transcripts",
-                           "# of upregulated (FC > 0)", "# of downregulated (FC < 0)",
-                           "# of upregulated (FC > 0.5)", "# of downregulated (FC < -0.5)",
-                           "# of upregulated (FC > 1)", "# of downregulated (FC < -1)",
-                           "# of upregulated (FC > 1.5)", "# of downregulated (FC < -1.5)",
-                           "# of upregulated (FC > 2)", "# of downregulated (FC < -2)",
-                           "# of upregulated (FC > 2.5)", "# of downregulated (FC < -2.5)")
-kable(deg_numbers)
-
-# Keep only genes that are differentially expressed at txo consevutive timepoints
-de_at_two_consecutive_timepoint <- c()
-for (i in 1:(length(time_point)-1)) {
-  t1 <- time_point[i]
-  t2 <- time_point[i+1]
-  message("### ", t1, " vs ", t2)
-  de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
-  de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
-  inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
-  
-  message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
-  message(" # at ", t2, " : ", length(de_gene_t2), " DEGs")
-  message(" # at ", t1, " and ", t2, " : ", length(inter_t1_t2), " DEGs")
-  de_at_two_consecutive_timepoint <- c(de_at_two_consecutive_timepoint, inter_t1_t2)
-}
-
-length(de_at_two_consecutive_timepoint)
-unique_DEGs <- unique(de_at_two_consecutive_timepoint)
-length(unique_DEGs) # >>> 3840 genes
+  length(de_at_two_consecutive_timepoint)
+  unique_DEGs <- unique(de_at_two_consecutive_timepoint)
+  length(unique_DEGs)
 
 # Get mapping ENSG to SYMBOL
 edb <- EnsDb.Hsapiens.v86
@@ -134,7 +147,7 @@ rowha = rowAnnotation(Timepoint = annot_timepoint,
 # Correlation analysis : Pearson method
 cor_pearson <- cor(mat, method = "pearson")
 min(cor_pearson)
-col_pearson <- colorRamp2(c(0.3, 0.65, 1), c("#0f4259", "white", "#800020"))
+col_pearson <- colorRamp2(c(0.7, 0.85, 1), c("#0f4259", "white", "#800020"))
 
 cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
                                row_names_side = "left",
@@ -148,10 +161,16 @@ cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
                                col = col_pearson)
 cor_pearson_heatmap
 
+# saveHeatmap(heatmap_obj = cor_pearson_heatmap,
+#             output_dir = output_dir,
+#             output_file = "20190711_corRNA0_12_DEG_FC1_pearson.pdf",
+#             format = "pdf",
+#             width = 17, height = 12)
+
 # Correlation analysis : Spearman method
 cor_spearman <- cor(mat, method = "spearman")
 min(cor_spearman)
-col_spearman <- colorRamp2(c(0.5, 0.75, 1), c("#0f4259", "white", "#800020"))
+col_spearman <- colorRamp2(c(0.7, 0.85, 1), c("#0f4259", "white", "#800020"))
 
 cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
                                 row_names_side = "left",
@@ -164,6 +183,12 @@ cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
                                 rect_gp = gpar(col = "white", lwd = 0.5),
                                 col = col_spearman)
 cor_spearman_heatmap
+
+# saveHeatmap(heatmap_obj = cor_spearman_heatmap,
+#             output_dir = output_dir,
+#             output_file = "20190711_corRNA0_12_DEG_FC1_spearman.pdf",
+#             format = "pdf",
+#             width = 17, height = 12)
 
 # Continue to format matrix for DPGP
 matrix_for_DPGP <- function(matrix, rep) {
@@ -185,7 +210,6 @@ matrep2 <- matrix_for_DPGP(matfiltered, rep = "rep2")
 matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3")
 matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4")
 
-output_dir <- "output/analyses/DPGP_on_a549_dex_0_12hr"
 write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep2.txt"),
             quote = FALSE, sep = "\t")
 write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep3.txt"),
