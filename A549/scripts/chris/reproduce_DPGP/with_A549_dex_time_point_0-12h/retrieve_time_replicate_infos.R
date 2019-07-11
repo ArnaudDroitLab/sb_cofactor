@@ -5,6 +5,7 @@ library(tidyverse)
 library(knitr)
 
 # Aim: Being able to identify sample (time point + replicate) with the column name in the raw count table
+# How? From ENCODE_ID with ENCODExplorer, retrieve time points and replicate number. Name each column with these info
 
 # Retrieve information for RNA samples with ENCODExplorer
 all_rnaseq <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_type="tsv", assay="polyA RNA-seq")
