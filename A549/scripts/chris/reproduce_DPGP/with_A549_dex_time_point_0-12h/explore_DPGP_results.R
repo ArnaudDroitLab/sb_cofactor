@@ -7,7 +7,7 @@ library(purrr)
 library(EnsDb.Hsapiens.v86)
 
 # load clusters
-clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_12hr/bruxelles/bruxelles_FC1_optimal_clustering.txt")
+clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_12hr/bruxelles_timeNotScaled/bruxelles_FC1_optimal_clustering.txt")
 
 # Get map transcript_id EST to SYMBOL
 edb <- EnsDb.Hsapiens.v86
@@ -26,7 +26,16 @@ clusters_genes <- clusters_symbol %>% group_by(cluster) %>% summarise(nb_genes =
 kable(clusters_genes)
 
 # where is my gene?
-myGenes <- c("ANGPTL4", "IL11", "PER1", "SOCS1", "GPR1", "CSF3", "KLF6",
-             "SNORD41", "SNORD99", "DRD1", "RASSF10", "IER2" ,"CXCL8", "GDF15", "MAFK", "AREG")
-where_are_myGenes <- clusters_symbol %>% dplyr::filter(symbol %in% myGenes) %>% arrange(cluster, symbol)
-kable(where_are_myGenes)
+# TODO
+myGenes_activated <- c("PER1", "ZFP36",
+                       "TFCP2L1", "IGFBP1", "ANGPTL4", "BIRC3", "ENTPD2", "CIDEC", "TIPARP", "BCL6", "SLC19A2",
+                       "NFKBIA", "CEBPD", "SDPR", "PAMCI", "C9orf150", "KLF9", "KLF6")
+             
+myGenes_repressed <- c("MAFK", "IL11","EDN1", "ED3", "FZD2", "BDKRB2", "MIDN", "GDF15")
+  
+# "SOCS1", "GPR1", "CSF3", "SNORD41", "SNORD99", "DRD1", "RASSF10", "IER2" ,"CXCL8", "GDF15", "MAFK", "AREG")
+where_are_myGenes_activated <- clusters_symbol %>% dplyr::filter(symbol %in% myGenes_activated) %>% arrange(cluster, symbol)
+kable(where_are_myGenes_activated)
+
+where_are_myGenes_repressed <- clusters_symbol %>% dplyr::filter(symbol %in% myGenes_repressed) %>% arrange(cluster, symbol)
+kable(where_are_myGenes_repressed)

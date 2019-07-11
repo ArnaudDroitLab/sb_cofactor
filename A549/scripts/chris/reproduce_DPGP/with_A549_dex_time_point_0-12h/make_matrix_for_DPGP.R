@@ -88,8 +88,8 @@
     t1 <- time_point[i]
     t2 <- time_point[i+1]
     message("### ", t1, " vs ", t2)
-    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
-    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
+    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 1.5) %>% pull(gene_id)
+    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 1.5) %>% pull(gene_id)
     inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
     
     message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -147,7 +147,7 @@ rowha = rowAnnotation(Timepoint = annot_timepoint,
 # Correlation analysis : Pearson method
 cor_pearson <- cor(mat, method = "pearson")
 min(cor_pearson)
-col_pearson <- colorRamp2(c(0.7, 0.85, 1), c("#0f4259", "white", "#800020"))
+col_pearson <- colorRamp2(c(0.4, 0.7, 1), c("#0f4259", "white", "#800020"))
 
 cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
                                row_names_side = "left",
@@ -163,14 +163,14 @@ cor_pearson_heatmap
 
 # saveHeatmap(heatmap_obj = cor_pearson_heatmap,
 #             output_dir = output_dir,
-#             output_file = "20190711_corRNA0_12_DEG_FC1_pearson.pdf",
+#             output_file = "20190711_corRNA0_12_DEG_FC1p5_pearson.pdf",
 #             format = "pdf",
 #             width = 17, height = 12)
 
 # Correlation analysis : Spearman method
 cor_spearman <- cor(mat, method = "spearman")
 min(cor_spearman)
-col_spearman <- colorRamp2(c(0.7, 0.85, 1), c("#0f4259", "white", "#800020"))
+col_spearman <- colorRamp2(c(0.6, 0.8, 1), c("#0f4259", "white", "#800020"))
 
 cor_spearman_heatmap <- Heatmap(cor_spearman, name = "Spearman correlation",
                                 row_names_side = "left",
@@ -186,7 +186,7 @@ cor_spearman_heatmap
 
 # saveHeatmap(heatmap_obj = cor_spearman_heatmap,
 #             output_dir = output_dir,
-#             output_file = "20190711_corRNA0_12_DEG_FC1_spearman.pdf",
+#             output_file = "20190711_corRNA0_12_DEG_FC1p5_spearman.pdf",
 #             format = "pdf",
 #             width = 17, height = 12)
 
@@ -210,9 +210,9 @@ matrep2 <- matrix_for_DPGP(matfiltered, rep = "rep2")
 matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3")
 matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4")
 
-write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep2.txt"),
-            quote = FALSE, sep = "\t")
-write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep3.txt"),
-            quote = FALSE, sep = "\t")
-write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC2_rep4.txt"),
-            quote = FALSE, sep = "\t")
+# write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC1p5_rep2.txt"),
+#             quote = FALSE, sep = "\t")
+# write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC1p5_rep3.txt"),
+#             quote = FALSE, sep = "\t")
+# write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC1p5_rep4.txt"),
+#             quote = FALSE, sep = "\t")
