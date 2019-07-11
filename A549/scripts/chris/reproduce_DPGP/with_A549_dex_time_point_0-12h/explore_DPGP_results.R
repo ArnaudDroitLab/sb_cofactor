@@ -24,6 +24,8 @@ write.table(clusters_symbol, file = "output/analyses/DPGP_on_a549_dex_0_12hr/bru
 # How many genes per clusters?
 clusters_genes <- clusters_symbol %>% group_by(cluster) %>% summarise(nb_genes = length(unique(symbol)))
 kable(clusters_genes)
+mean(clusters_genes$nb_genes)
+sd(clusters_genes$nb_genes)
 
 # where is my gene?
 # TODO
