@@ -126,6 +126,58 @@ tad_df = data.frame(f=rep(NA, length(f_a)), s=rep(NA, length(s_a)))
 tad_df$f[queryHits(f_tad)] = subjectHits(f_tad)
 tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
 
+# Identify per-gene GR sites.
+
+# Build list of GR sites which are "consensual" in first 30 minutes 
+early_gr = GRangesList(gr_regions[grepl("minutes", names(gr_regions))])
+gr_intersect = build_intersect(early_gr)
+consensual_binding = apply(gr_intersect$Matrix > 0, 1, sum) >= 4
+consensual_gr_regions = gr_intersect$Regions[consensual_binding]
+
+# Define a function to go from promoter/enhancer indices to a GRangesList
+# of GR sites.
+build_list_of_gr_sites = function(promoter_ids, enhancer_ids) {
+    unique_query = unique(promoter_ids)
+    gr_by_gene = lapply(unique_query, function(x) {
+        consensual_gr_regions[enhancer_ids[promoter_ids==x] ]
+    })
+    names(gr_by_gene) = promoter_regions$ensembl_gene_id[unique_query]
+    gr_by_gene = GRangesList(gr_by_gene)
+
+    gr_by_gene
+}
+
+# Direct binding
+promoter_gr_overlap = findOverlaps(promoter_regions, consensual_gr_regions)
+gr_by_gene_direct = build_list_of_gr_sites(queryHits(promoter_gr_overlap),
+                                           subjectHits(promoter_gr_overlap))
+
+# In-window binding
+window_gr_overlap = findOverlaps(regions(hic_0h), consensual_gr_regions)
+overlap_df = inner_join(as.data.frame(gene_overlaps), 
+                        as.data.frame(window_gr_overlap),
+                        c(subjectHits="queryHits"))
+gr_by_gene_window = build_list_of_gr_sites(overlap_df$queryHits,
+                                           overlap_df$subjectHits.y)
+
+# Distant binding
+promoter_gr_distant = linkOverlaps(hic_0h, promoter_regions, consensual_gr_regions)
+gr_by_gene_indirect = build_list_of_gr_sites(promoter_gr_distant$subject1,
+                                             promoter_gr_distant$subject2)
+
+unique_genes = unique(c(names(gr_by_gene_direct), 
+                        names(gr_by_gene_window), 
+                        names(gr_by_gene_indirect)))
+
+# All binding
+gr_by_gene_any = list()
+for(gene in unique_genes) {
+    gr_by_gene_any[[gene]] = c(gr_by_gene_direct[[gene]],
+                               gr_by_gene_window[[gene]],
+                               gr_by_gene_indirect[[gene]])
+}
+
+
 # Test plot
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(ggbio)
