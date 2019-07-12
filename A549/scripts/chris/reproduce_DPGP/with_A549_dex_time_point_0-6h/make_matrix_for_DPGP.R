@@ -18,7 +18,7 @@
   
   #### Parameters
   output_dir <- "output/analyses/DPGP_on_a549_dex_0_6hr"
-  FC_val <- 1.5
+  FC_val <- 1
   
   ####
   deg_dir <- "results/a549_dex_time_points"
@@ -84,7 +84,7 @@
                              "# of upregulated (FC > 2.5)", "# of downregulated (FC < -2.5)")
   kable(deg_numbers)
   
-  # Keep only genes that are differentially expressed at txo consevutive timepoints
+  # Keep only genes that are differentially expressed at two consecutive timepoints
   de_at_two_consecutive_timepoint <- c()
   for (i in 1:(length(time_point)-1)) {
     t1 <- time_point[i]

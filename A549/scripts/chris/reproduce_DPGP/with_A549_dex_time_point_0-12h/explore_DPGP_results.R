@@ -6,8 +6,14 @@ library(knitr)
 library(purrr)
 library(EnsDb.Hsapiens.v86)
 
+print_cluster_n <- function(clusters_symbol, n) {
+  cluster_members <- clusters_symbol %>% dplyr::filter(cluster == n) %>% pull(symbol)
+  message("Cluster ", n, " has ", length(cluster_members), " members")
+  print(cluster_members)
+}
+
 # load clusters
-clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_12hr/bruxelles_timeNotScaled/bruxelles_FC1_optimal_clustering.txt")
+clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/evry/evry_FC2_optimal_clustering.txt")
 
 # Get map transcript_id EST to SYMBOL
 edb <- EnsDb.Hsapiens.v86
@@ -18,7 +24,7 @@ colnames(gene2symbol) <- c("gene_id", "symbol")
 # Mapping
 clusters_symbol <- left_join(clusters, gene2symbol, by = c("gene" = "gene_id"))
 colnames(clusters_symbol) <- c("cluster", "gene_id", "symbol")
-write.table(clusters_symbol, file = "output/analyses/DPGP_on_a549_dex_0_12hr/bruxelles/bruxelles_FC1_clusters_gene_symbols.txt",
+write.table(clusters_symbol, file = "output/analyses/DPGP_on_a549_dex_0_6hr/evry/evry_FC2_clusters_gene_symbols.txt",
             quote = FALSE, row.names = FALSE, sep = "\t")
 
 # How many genes per clusters?
@@ -41,3 +47,6 @@ kable(where_are_myGenes_activated)
 
 where_are_myGenes_repressed <- clusters_symbol %>% dplyr::filter(symbol %in% myGenes_repressed) %>% arrange(cluster, symbol)
 kable(where_are_myGenes_repressed)
+
+#
+print_cluster_n(clusters_symbol, 3)
