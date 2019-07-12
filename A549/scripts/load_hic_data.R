@@ -177,6 +177,19 @@ for(gene in unique_genes) {
                                gr_by_gene_indirect[[gene]])
 }
 
+down_genes = promoter_regions$ensembl_gene_id[promoter_regions$"2h"=="Down"]
+down_gr = gr_by_gene_any[names(gr_by_gene_any) %in% down_genes]
+down_gr_gr = unlist(GRangesList(unlist(down_gr)))
+
+library(ef.utils)
+hg38_annot = select_annotations("hg38")
+res = motif_enrichment(down_gr_gr, hg38_annot)
+
+up_genes = promoter_regions$ensembl_gene_id[promoter_regions$"2h"=="Up"]
+up_gr = gr_by_gene_any[names(gr_by_gene_any) %in% up_genes]
+up_gr_gr = unlist(GRangesList(unlist(up_gr)))
+
+res_up = motif_enrichment(up_gr_gr, hg38_annot)
 
 # Test plot
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)

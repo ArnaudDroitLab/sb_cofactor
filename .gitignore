@@ -1,7 +1,8 @@
 A549/raw/rna-seq/*tsv
 .*swp
-A549/input/ENCODE
+*A549/input/ENCODE*
 */output
 */*/*/*.fastq
 output
 .DS_Store
+*input/ENCODE/A549*

@@ -1,0 +1,67 @@
+---
+title: "HiC summary"
+author: "Eric Fournier"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Perform analysis
+
+```{r source_file, echo=FALSE}
+#source("scripts/load_hic_data.R")
+```
+
+# Summary of promoters
+
+Number of assessed genes: `r length(promoter_regions)`
+
+Differential expression at 2h:
+```{r 2h_DE_summary, echo=FALSE}
+table(promoter_regions$"2h")
+```
+
+```{r define_venn_plot_function, echo=FALSE}
+    library(VennDiagram)
+
+    venn_plot <- function(de_value, main) {
+        is_de = promoter_regions$"2h" %in% de_value
+        
+        direct_indices = is_de & promoter_regions$EarlyBinding>4
+        window_indices = is_de & promoter_regions$WindowBound
+        contact_indices = is_de & promoter_regions$ContactBound
+        
+        gene_list = list(Direct=promoter_regions$ensembl_gene_id[direct_indices],
+                         Window=promoter_regions$ensembl_gene_id[window_indices],
+                         Contact=promoter_regions$ensembl_gene_id[contact_indices])
+        
+        unrepresented = sum(is_de & !direct_indices & !window_indices & !contact_indices)
+        precent_unrepresented = sprintf(" (%2.0f%%) ", (unrepresented / sum(is_de)) * 100)
+        main_title = paste0("Venn for genes in (", paste0(de_value, collapse=", "), ")")
+        sub_title = paste0(unrepresented, precent_unrepresented, "have no binding at all.")
+        
+        grid.draw(venn.diagram(gene_list, filename=NULL,
+                       fill=c("red", "yellow", "green"),
+                       main=main_title,
+                       sub=sub_title))    
+    }
+```
+
+GR-binding status for all genes:
+```{r gr_binding_summary_all, echo=FALSE}
+venn_plot(c("Stable", "Up", "Down"))
+```
+
+GR-binding status for DE genes:
+```{r gr_binding_summary_DE, echo=FALSE}
+venn_plot(c("Up", "Down"))
+```
+
+GR-binding status for Up genes:
+```{r gr_binding_summary_Up, echo=FALSE}
+venn_plot(c("Up"))
+```
+
+GR-binding status for Down genes:
+```{r gr_binding_summary_Down, echo=FALSE}
+venn_plot(c("Down"))
+```
