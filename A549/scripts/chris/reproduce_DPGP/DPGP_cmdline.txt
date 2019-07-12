@@ -8,5 +8,7 @@ python DP_GP_cluster.py -i ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_
 
 python DP_GP_cluster.py -i ../DPGP_on_a549_dex_0_6hr/de_transcripts_A549_0_6h_FC2_rep2.txt ../DPGP_on_a549_dex_0_6hr/de_transcripts_A549_0_6h_FC2_rep3.txt ../DPGP_on_a549_dex_0_6hr/de_transcripts_A549_0_6h_FC2_rep4.txt -o ../DPGP_on_a549_dex_0_6hr/evry_FC2 --true_times -p png --plot
 
+python DP_GP_cluster.py -i ../DPGP_on_a549_dex_0_6hr/de_transcripts_A549_0_6h_FC1p5_rep2.txt ../DPGP_on_a549_dex_0_6hr/de_transcripts_A549_0_6h_FC1p5_rep3.txt ../DPGP_on_a549_dex_0_6hr/de_transcripts_A549_0_6h_FC1p5_rep4.txt -o ../DPGP_on_a549_dex_0_6hr/finland_FC1p5 --true_times -p png --plot
+
 ### not yet
 python DP_GP_cluster.py -i ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_FC1p5_rep2.txt ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_FC1p5_rep3.txt ../DPGP_on_a549_dex_0_12hr/de_transcripts_A549_0_12h_FC1p5_rep4.txt -o ../DPGP_on_a549_dex_0_12hr/evry_FC1p5 --true_times -p png --plot
