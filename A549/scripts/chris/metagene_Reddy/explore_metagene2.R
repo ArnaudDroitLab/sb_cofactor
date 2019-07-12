@@ -320,6 +320,15 @@ saveMetagene(metagene_plot = DRD1_plot,
              format = "pdf",
              width = 21, height = 7)
 
+IFFO2_peak <- GRanges("chr1", IRanges(18944650, 18945300))
+IFFO2_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = IFFO2_peak) 
+IFFO2_plot <- plot_metagene_Reddy(IFFO2_df_metagene, title = "IFFO2 at chr1:18944650-18945300")
+saveMetagene(metagene_plot = IFFO2_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_IFFO2_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
 
 
 
