@@ -1,4 +1,5 @@
-  setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+  # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+  setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
   
   library(tidyverse)
   library(knitr)
@@ -16,11 +17,11 @@
   }
   
   ####
-  output_dir <- "output/analyses/DPGP_on_a549_dex_0_12hr"
+  output_dir <- "output/analyses/DPGP_on_a549_dex_0_6h"
   
   ####
   deg_dir <- "results/a549_dex_time_points"
-  time_point <- paste0(c(0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12), "h")
+  time_point <- paste0(c(0.5, 1, 2, 3, 4, 5, 6), "h")
   
   deg <- list()
   deg_numbers <- data.frame(0)
@@ -88,8 +89,8 @@
     t1 <- time_point[i]
     t2 <- time_point[i+1]
     message("### ", t1, " vs ", t2)
-    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 1.5) %>% pull(gene_id)
-    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 1.5) %>% pull(gene_id)
+    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
+    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
     inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
     
     message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -125,7 +126,11 @@ sum(is.na(unique_DEGS_wSymbol$symbol))
 
 # Make matrix for DPGP
 raw <- read_tsv("results/a549_dex_time_points/raw_counts_with_colnames.txt")
-matfiltered <- raw %>% dplyr::filter(gene_id %in% unique_DEGs)
+
+#
+matfiltered <- raw %>% dplyr::select(matches("gene_id|^0h|^0.5h|^1h|^2h|^3h|^4h|^5h|^6h")) %>%
+  dplyr::filter(gene_id %in% unique_DEGs)
+names(matfiltered)
 
 mat <- matfiltered %>% dplyr::select(-gene_id) %>% as.matrix
 rownames(mat) <- matfiltered$gene_id
@@ -147,7 +152,7 @@ rowha = rowAnnotation(Timepoint = annot_timepoint,
 # Correlation analysis : Pearson method
 cor_pearson <- cor(mat, method = "pearson")
 min(cor_pearson)
-col_pearson <- colorRamp2(c(0.4, 0.7, 1), c("#0f4259", "white", "#800020"))
+col_pearson <- colorRamp2(c(0.3, 0.65, 1), c("#0f4259", "white", "#800020"))
 
 cor_pearson_heatmap <- Heatmap(cor_pearson, name = "Pearson correlation",
                                row_names_side = "left",
@@ -191,8 +196,7 @@ cor_spearman_heatmap
 #             width = 17, height = 12)
 
 # Continue to format matrix for DPGP
-matrix_for_DPGP <- function(matrix, rep) {
-  time_point <- c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)
+matrix_for_DPGP <- function(matrix, rep, time_point = c(0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12)) {
   column_order <- paste0(time_point, "h_", rep)
   gene_id_tmp <- matrix$gene_id
   matrep <- matrix %>% dplyr::select(column_order)
@@ -206,13 +210,13 @@ matrix_for_DPGP <- function(matrix, rep) {
   return(matrep_final)
 }
 
-matrep2 <- matrix_for_DPGP(matfiltered, rep = "rep2")
-matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3")
-matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4")
+matrep2 <- matrix_for_DPGP(matfiltered, rep = "rep2", time_point = c(0, 0.5, 1, 2, 3, 4, 5, 6))
+matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3", time_point = c(0, 0.5, 1, 2, 3, 4, 5, 6))
+matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4", time_point = c(0, 0.5, 1, 2, 3, 4, 5, 6))
 
-# write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC1p5_rep2.txt"),
-#             quote = FALSE, sep = "\t")
-# write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC1p5_rep3.txt"),
-#             quote = FALSE, sep = "\t")
-# write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_12h_FC1p5_rep4.txt"),
-#             quote = FALSE, sep = "\t")
+write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC2_rep2.txt"),
+            quote = FALSE, sep = "\t")
+write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC2_rep3.txt"),
+            quote = FALSE, sep = "\t")
+write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC2_rep4.txt"),
+            quote = FALSE, sep = "\t")
