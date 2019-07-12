@@ -15,8 +15,9 @@
     message(" > Heatmap saved in ", output_filepath)
   }
   
-  ####
+  #### Parameters
   output_dir <- "output/analyses/DPGP_on_a549_dex_0_12hr"
+  FC_val <- 2
   
   ####
   deg_dir <- "results/a549_dex_time_points"
@@ -88,8 +89,8 @@
     t1 <- time_point[i]
     t2 <- time_point[i+1]
     message("### ", t1, " vs ", t2)
-    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 1.5) %>% pull(gene_id)
-    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 1.5) %>% pull(gene_id)
+    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= FC_val) %>% pull(gene_id)
+    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= FC_val) %>% pull(gene_id)
     inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
     
     message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")

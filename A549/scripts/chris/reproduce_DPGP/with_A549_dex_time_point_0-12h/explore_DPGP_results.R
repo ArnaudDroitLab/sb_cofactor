@@ -13,7 +13,7 @@ print_cluster_n <- function(clusters_symbol, n) {
 }
 
 # load clusters
-clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/evry/evry_FC2_optimal_clustering.txt")
+clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_12hr/caracas_FC2/caracas_FC2_optimal_clustering.txt")
 
 # Get map transcript_id EST to SYMBOL
 edb <- EnsDb.Hsapiens.v86
@@ -24,7 +24,7 @@ colnames(gene2symbol) <- c("gene_id", "symbol")
 # Mapping
 clusters_symbol <- left_join(clusters, gene2symbol, by = c("gene" = "gene_id"))
 colnames(clusters_symbol) <- c("cluster", "gene_id", "symbol")
-write.table(clusters_symbol, file = "output/analyses/DPGP_on_a549_dex_0_6hr/evry/evry_FC2_clusters_gene_symbols.txt",
+write.table(clusters_symbol, file = "output/analyses/DPGP_on_a549_dex_0_12hr/caracas_FC2/caracas_FC2_clusters_gene_symbols.txt",
             quote = FALSE, row.names = FALSE, sep = "\t")
 
 # How many genes per clusters?
@@ -50,3 +50,4 @@ kable(where_are_myGenes_repressed)
 
 #
 print_cluster_n(clusters_symbol, 3)
+
