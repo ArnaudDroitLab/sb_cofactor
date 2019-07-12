@@ -1,5 +1,5 @@
-  # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-  setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
+  setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+  # setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
   
   library(tidyverse)
   library(knitr)
@@ -16,8 +16,9 @@
     message(" > Heatmap saved in ", output_filepath)
   }
   
-  ####
-  output_dir <- "output/analyses/DPGP_on_a549_dex_0_6h"
+  #### Parameters
+  output_dir <- "output/analyses/DPGP_on_a549_dex_0_6hr"
+  FC_val <- 1.5
   
   ####
   deg_dir <- "results/a549_dex_time_points"
@@ -89,8 +90,8 @@
     t1 <- time_point[i]
     t2 <- time_point[i+1]
     message("### ", t1, " vs ", t2)
-    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
-    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= 2) %>% pull(gene_id)
+    de_gene_t1 <- deg[[t1]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= FC_val) %>% pull(gene_id)
+    de_gene_t2 <- deg[[t2]]$fdr0p1 %>% dplyr::filter(abs(log2FoldChange) >= FC_val) %>% pull(gene_id)
     inter_t1_t2 <- intersect(de_gene_t1, de_gene_t2)
     
     message(" # at ", t1, " : ", length(de_gene_t1), " DEGs")
@@ -214,9 +215,9 @@ matrep2 <- matrix_for_DPGP(matfiltered, rep = "rep2", time_point = c(0, 0.5, 1, 
 matrep3 <- matrix_for_DPGP(matfiltered, rep = "rep3", time_point = c(0, 0.5, 1, 2, 3, 4, 5, 6))
 matrep4 <- matrix_for_DPGP(matfiltered, rep = "rep4", time_point = c(0, 0.5, 1, 2, 3, 4, 5, 6))
 
-write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC2_rep2.txt"),
+write.table(matrep2, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC1p5_rep2.txt"),
             quote = FALSE, sep = "\t")
-write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC2_rep3.txt"),
+write.table(matrep3, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC1p5_rep3.txt"),
             quote = FALSE, sep = "\t")
-write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC2_rep4.txt"),
+write.table(matrep4, file = file.path(output_dir, "de_transcripts_A549_0_6h_FC1p5_rep4.txt"),
             quote = FALSE, sep = "\t")
