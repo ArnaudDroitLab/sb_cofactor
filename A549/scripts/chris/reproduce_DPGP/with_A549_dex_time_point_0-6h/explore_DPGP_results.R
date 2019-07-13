@@ -1,5 +1,5 @@
-setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-# setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
 library(tidyverse)
 library(knitr)
@@ -13,7 +13,7 @@ print_cluster_n <- function(clusters_symbol, n) {
 }
 
 # load clusters
-clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/finland_FC1p5/finland_FC1p5_optimal_clustering.txt")
+clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/groenland_FC1/groenland_FC1_optimal_clustering.txt")
 
 # Get map transcript_id EST to SYMBOL
 edb <- EnsDb.Hsapiens.v86
