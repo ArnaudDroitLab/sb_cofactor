@@ -35,11 +35,11 @@ load_encode_file_internal = function(filetype, load_fun, dir=".") {
     # Download the long-range interaction files.                                                  
     dir.create(dir, recursive=TRUE, showWarnings=FALSE)
     encode_files = ENCODExplorer::downloadEncode(hic_df$file_accession,
-                                                  dir=dir)
+                                                 dir=dir, force=FALSE)
     loaded_files = lapply(encode_files, load_fun)
-    names(loaded_files) = paste(loaded_files$treatment_duration,
-                                loaded_files$treatment_unit)
-    names(loaded_files)[is.na(names(loaded_files))] = "Ctrl"
+    names(loaded_files) = paste(hic_df$treatment_duration,
+                                hic_df$treatment_duration_unit)
+    names(loaded_files)[is.na(hic_df$treatment_duration)] = "Ctrl"
     
     return(loaded_files)
 }
@@ -258,14 +258,6 @@ promoter_regions = annotate_distant_gr_binding(promoter_regions,
                                                hic_0h,
                                                all_hic$Ctrl$TAD)
                                                
-# Assess intra-TAD vs inter-TAD contacts.
-f_tad = findOverlaps(f_a, tad_gr)
-s_tad = findOverlaps(s_a, tad_gr)
-
-tad_df = data.frame(f=rep(NA, length(f_a)), s=rep(NA, length(s_a)))
-tad_df$f[queryHits(f_tad)] = subjectHits(f_tad)
-tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
-
 # Identify per-gene GR sites.
 gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_0h)
 
