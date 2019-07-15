@@ -9,7 +9,8 @@ library(GenomicFeatures)
 library(org.Hs.eg.db)
 library(knitr)
 library(dplyr)
-
+library("biomaRt")
+    
 ###############################################################################
 # Function to make ENCODE_Reddy_ChIP_experiments.txt file
 ###############################################################################
@@ -235,6 +236,43 @@ load_most_expressed_TxDb <- function() {
     }
     
     return(most_expressed_TxDb)
+}
+
+load_most_expressed_promoters <- function(fix_chr=FALSE, upstream=1000, downstream=1000) {
+    # Load most expressed TxDb and generate a promoter GRanges object.
+    most_expressed_TxDb = load_most_expressed_TxDb()
+    promoter_regions = promoters(most_expressed_TxDb, upstream=upstream, downstream=downstream)
+    if(fix_chr) {
+        promoter_regions = promoter_regions[grepl("^(\\d+|XY)$", seqnames(promoter_regions))]
+        seqlevels(promoter_regions) = gsub("^", "chr", seqlevels(promoter_regions))
+    }
+    
+    return(promoter_regions)
+}
+
+load_annotated_most_expressed_promoters <- function(fix_chr=FALSE, upstream=1000, downstream=1000) {
+    promoter_regions = load_most_expressed_promoters(fix_chr, upstream, downstream)
+    
+    # Get annotations through biomart.
+    ensembl = biomaRt::useMart("ensembl", host="uswest.ensembl.org")
+    ensembl = biomaRt::useDataset("hsapiens_gene_ensembl",mart=ensembl)
+    biomart_attr = c("ensembl_transcript_id", "external_gene_name",
+                     "description", "hgnc_symbol", "gene_biotype",
+                     "transcript_biotype", "ensembl_gene_id")
+    annotations = biomaRt::getBM(attributes=biomart_attr,
+                                 filters="ensembl_transcript_id",
+                                 values=names(promoter_regions),
+                                 mart=ensembl)
+    
+    # Some transcript ids may appear more than once due to changing annotations
+    annotations = annotations[!duplicated(annotations$ensembl_transcript_id),]
+                        
+    concat_annot = dplyr::left_join(as.data.frame(mcols(promoter_regions)),
+                                    annotations,
+                                    c("tx_name"="ensembl_transcript_id"))                    
+    mcols(promoter_regions) = concat_annot
+
+    return(promoter_regions)
 }
 
 get_gene_bodies <- function(all_genes, ..., gene_id="entrezgene") {
