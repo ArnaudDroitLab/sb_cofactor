@@ -123,7 +123,7 @@ annotate_genes_with_reddy_de = function(query_tss) {
     
     de_df = as.data.frame(lapply(de_list, '[[', "DE"))
     de_df[is.na(de_df)] <- "Stable"
-    names(de_df) = gsub("X", "", names(de_df))
+    names(de_df) = gsub("X", "DE-", names(de_df))
     
     mcols(query_tss) = cbind(mcols(query_tss), de_df)
     
@@ -261,19 +261,18 @@ promoter_regions = annotate_distant_gr_binding(promoter_regions,
 # Identify per-gene GR sites.
 gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_0h)
 
-down_genes = promoter_regions$ensembl_gene_id[promoter_regions$"2h"=="Down"]
-down_gr = gr_by_gene_any[names(gr_by_gene_any) %in% down_genes]
-down_gr_gr = unlist(GRangesList(unlist(down_gr)))
+motif_by_de = function(de_time, de_class) {
+    de_genes = promoter_regions$ensembl_gene_id[promoter_regions[[de_time]] %in% de_class]
+    de_gr = gr_by_gene_any[names(gr_by_gene_any) %in% de_genes]
+    de_gr_gr = unlist(GRangesList(unlist(de_gr)))
 
-library(ef.utils)
-hg38_annot = select_annotations("hg38")
-res = motif_enrichment(down_gr_gr, hg38_annot)
+    res = motif_enrichment(de_gr_gr, select_annotations("hg38"))
 
-up_genes = promoter_regions$ensembl_gene_id[promoter_regions$"2h"=="Up"]
-up_gr = gr_by_gene_any[names(gr_by_gene_any) %in% up_genes]
-up_gr_gr = unlist(GRangesList(unlist(up_gr)))
+    return(res)
+}
 
-res_up = motif_enrichment(up_gr_gr, hg38_annot)
+res_down = motif_by_de("2h", "Down")
+res_up = motif_by_de("2h", "Up")
 
 # Test plot
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)

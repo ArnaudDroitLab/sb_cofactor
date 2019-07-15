@@ -65,3 +65,54 @@ GR-binding status for Down genes:
 ```{r gr_binding_summary_Down, echo=FALSE}
 venn_plot(c("Down"))
 ```
+
+```{r TAD_intra_vs_inter}
+# Assess intra-TAD vs inter-TAD contacts.
+f_a = anchors(input_hic, type="first")
+s_a = anchors(input_hic, type="second")
+
+f_tad = findOverlaps(f_a, all_hic$Ctrl$TAD)
+s_tad = findOverlaps(s_a, all_hic$Ctrl$TAD)
+
+tad_df = data.frame(f=rep(NA, length(f_a)), s=rep(NA, length(s_a)))
+tad_df$f[queryHits(f_tad)] = subjectHits(f_tad)
+tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
+```
+
+```{r decrease_in_gr_binding_over_time}
+time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h", 
+               "DE-1h", "DE-2h", "DE-3h", "DE-4h", "DE-5h", "DE-6h", "DE-7h",
+               "DE-8h", "DE-10h", "DE-12h")
+direction_list = list(DE=c("Up", "Down"), Up="Up", Down="Down")
+
+metrics_fun = function(y, time_point) {
+    de_genes = mcols(promoter_regions)[[time_point]] %in% direction_list[[y]]
+    direct_binding = promoter_regions$EarlyBinding > 0
+    indirect_binding = promoter_regions$WindowBound |
+                       promoter_regions$ContactBound 
+    
+    data.frame(DE=rep(sum(de_genes), 3),
+               Bound=c(sum(de_genes & direct_binding),
+                       sum(de_genes & !direct_binding & indirect_binding),
+                       sum(de_genes & (direct_binding | indirect_binding))),
+               BindingType=c("Direct", "Indirect", "Any"),
+               Direction=y)
+}
+
+time_metrics = lapply(time_order, function(x) {
+    metrics = lapply(names(direction_list), metrics_fun, time_point=x)
+               
+    res = do.call(rbind, metrics)
+    res$Time = x
+    
+    res
+})
+
+data_df = do.call(rbind, time_metrics)
+data_df$Time = factor(data_df$Time, levels=time_order)
+
+ggplot(data_df, aes(x=Time, y=Bound/DE, color=Direction, group=Direction)) +
+    geom_line() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_wrap(BindingType~.)
+```
