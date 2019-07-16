@@ -1,3 +1,5 @@
+setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
+
 library(tidyverse)
 library(DESeq2)
 library(EnsDb.Hsapiens.v86)
@@ -25,7 +27,7 @@ get_res <- function(x) {
     dds <- dds[ rowSums(counts(dds)) > 1, ]
     dds <- DESeq(dds)
 
-    res <- results(dds, c("time_point", "0h", x))
+    res <- results(dds, c("time_point", x, "0h"))
 }
 
 get_df <- function(x) {
@@ -46,4 +48,4 @@ de_df <- map(de_res, get_df)
 map_int(de_res, ~ dplyr::filter(as.data.frame(.x), padj <= 0.05) %>% nrow)
 map_int(de_df, ~ dplyr::filter(.x, padj <= 0.05) %>% nrow)
 
-walk(names(de_df), ~ write_csv(de_df[[.x]], paste0("results/a549_dex_time_points/",.x)))
+walk(names(de_df), ~ write_csv(de_df[[.x]], paste0("results/a549_dex_time_points/", .x)))
