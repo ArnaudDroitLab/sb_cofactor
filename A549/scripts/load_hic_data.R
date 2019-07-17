@@ -94,7 +94,10 @@ load_hg38_fantom_enhancers = function() {
 annotate_regions_with_enh_gr = function(query_regions, 
                             ehn_regions=load_hg38_fantom_enhancers(),
                             gr_regions=load_reddy_gr_binding_consensus()) {
-    enh_overlap = countOverlaps(query_regions, ehn_regions)
+    if(!is.null(ehn_regions)) {
+        enh_overlap = countOverlaps(query_regions, ehn_regions)
+        query_regions$Enh = enh_overlap
+    }
     query_regions$EarlyBinding = identify_early_binding(gr_regions, query_regions)
     query_regions = overlap_early_binding(gr_regions, query_regions) 
 
@@ -131,7 +134,7 @@ annotate_genes_with_reddy_de = function(query_tss) {
     return(query_tss)
 }
              
-annotate_distant_gr_binding = function(promoter_regions, input_hic, input_TAD) {
+annotate_distant_gr_binding = function(promoter_regions, input_hic, input_TAD, gr_regions) {
     # 3a. Identify genes with GR binding in their 5/10K window.
     gene_overlaps = findOverlaps(promoter_regions, regions(input_hic))
     
@@ -234,33 +237,38 @@ find_per_gene_gr_sites = function(promoter_regions, gr_regions, input_hic) {
     return(gr_by_gene_any)
 }
 
-load_connection_data = function(hic_timepoint) {
-     all_hic = load_reddy_hic()
-     hic_res = all_hic[[hic_timepoint]]$LRI
-     
-     # Add enhancer annotation to HiC interactions.
-     hg38_enhancers = load_hg38_fantom_enhancers()
-     gr_regions = load_reddy_gr_binding_consensus()
-     
-     regions(hic_res) = annotate_regions_with_enh_gr(regions(hic_res),
-                                                    hg38_enhancers,
-                                                    gr_regions)
-     
-     # Load promoter regions and annotate with GR binding, DE status.
-     promoter_regions = load_annotated_most_expressed_promoters(fix_chr=TRUE)
-     
-     promoter_regions = annotate_regions_with_enh_gr(promoter_regions,
-                                                    hg38_enhancers,
-                                                    gr_regions)
-     promoter_regions = annotate_genes_with_reddy_de(promoter_regions)
-     
-     # Identify gene categories based on interactions.
-     promoter_regions = annotate_distant_gr_binding(promoter_regions, 
-                                                    hic_res,
-                                                    all_hic[[hic_timepoint]]$TAD)
-
-     # Identify per-gene GR sites.
-     gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_res)
+load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
+    all_hic = load_reddy_hic()
+    hic_res = all_hic[[hic_timepoint]]$LRI
+    
+    # Add enhancer annotation to HiC interactions.
+    if(!skip_enhancer) {
+        hg38_enhancers = NULL
+    } else {
+        hg38_enhancers = load_hg38_fantom_enhancers()
+    }
+    gr_regions = load_reddy_gr_binding_consensus()
+    
+    regions(hic_res) = annotate_regions_with_enh_gr(regions(hic_res),
+                                                   hg38_enhancers,
+                                                   gr_regions)
+    
+    # Load promoter regions and annotate with GR binding, DE status.
+    promoter_regions = load_annotated_most_expressed_promoters(fix_chr=TRUE)
+    
+    promoter_regions = annotate_regions_with_enh_gr(promoter_regions,
+                                                   hg38_enhancers,
+                                                   gr_regions)
+    promoter_regions = annotate_genes_with_reddy_de(promoter_regions)
+    
+    # Identify gene categories based on interactions.
+    promoter_regions = annotate_distant_gr_binding(promoter_regions, 
+                                                   hic_res,
+                                                   all_hic[[hic_timepoint]]$TAD,
+                                                   gr_regions)
+    
+    # Identify per-gene GR sites.
+    gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_res)
  
     return(list(HiC=all_hic,
                 Promoters=promoter_regions,

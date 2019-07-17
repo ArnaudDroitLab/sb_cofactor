@@ -6,49 +6,50 @@ output: html_document
 ---
 
 ```{r load_data, echo=FALSE}
-source("scripts/load_hic_data.R")
-hic_results = load_connection_data()
+#source("scripts/load_hic_data.R")
+#hic_results = load_connection_data()
 ```
 
 # Summary of analyzed promoters
 
-Number of assessed genes: `r length(promoter_regions)`
+Number of assessed genes: `r length(hic_results$Promoters)`
 
 ## Differential expression across time:
+Genes are considered DE if they have an FDR < 0.05 and a abs(logFC) > log(1.5)
 ```{r 2h_DE_summary, echo=FALSE}
 time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h", 
                "DE-1h", "DE-2h", "DE-3h", "DE-4h", "DE-5h", "DE-6h", "DE-7h",
                "DE-8h", "DE-10h", "DE-12h")
                
 metrics_fun = function(time_point) {
-    data.frame(Genes=c(sum(mcols(promoter_regions)[[time_point]] == "Up"),
-                       sum(mcols(promoter_regions)[[time_point]] == "Down"),
-                       sum(mcols(promoter_regions)[[time_point]] == "Stable")),
+    data.frame(Genes=c(sum(mcols(hic_results$Promoters)[[time_point]] == "Up"),
+                       sum(mcols(hic_results$Promoters)[[time_point]] == "Down"),
+                       sum(mcols(hic_results$Promoters)[[time_point]] == "Stable")),
                Direction=c("Up", "Down", "Stable"),
-               Time=time_point) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+               Time=time_point)
 }
 
 de_df = do.call(rbind, lapply(time_order, metrics_fun))
 de_df$Time = factor(de_df$Time, levels=time_order)
 ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)) +
-    geom_bar(stat="identity") +
-    scale_fill_manual(values=c(Up="#0ecc57", Down="red"))
+    geom_bar(stat="identity", color="black") +
+    scale_fill_manual(values=c(Up="#0ecc57", Down="red")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 ```{r define_venn_plot_function, echo=FALSE}
     library(VennDiagram)
 
     venn_plot <- function(de_value, main) {
-        is_de = promoter_regions$"2h" %in% de_value
+        is_de = hic_results$Promoters$"DE-2h" %in% de_value
         
-        direct_indices = is_de & promoter_regions$EarlyBinding>4
-        window_indices = is_de & promoter_regions$WindowBound
-        contact_indices = is_de & promoter_regions$ContactBound
+        direct_indices = is_de & hic_results$Promoters$EarlyBinding>4
+        window_indices = is_de & hic_results$Promoters$WindowBound
+        contact_indices = is_de & hic_results$Promoters$ContactBound
         
-        gene_list = list(Direct=promoter_regions$ensembl_gene_id[direct_indices],
-                         Window=promoter_regions$ensembl_gene_id[window_indices],
-                         Contact=promoter_regions$ensembl_gene_id[contact_indices])
+        gene_list = list(Direct=hic_results$Promoters$ensembl_gene_id[direct_indices],
+                         Window=hic_results$Promoters$ensembl_gene_id[window_indices],
+                         Contact=hic_results$Promoters$ensembl_gene_id[contact_indices])
         
         unrepresented = sum(is_de & !direct_indices & !window_indices & !contact_indices)
         precent_unrepresented = sprintf(" (%2.0f%%) ", (unrepresented / sum(is_de)) * 100)
@@ -65,48 +66,36 @@ ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)
 ## GR-binding statuses
 ### GR-binding status for all genes:
 ```{r gr_binding_summary_all, echo=FALSE}
-venn_plot(c("Stable", "Up", "Down"))
+venn_plot(c("Stable", "Up", "Down"), "all genes")
 ```
 
 ### GR-binding status for DE genes:
 ```{r gr_binding_summary_DE, echo=FALSE}
-venn_plot(c("Up", "Down"))
+venn_plot(c("Up", "Down"), "DE genes")
 ```
 
 ### GR-binding status for Up genes:
 ```{r gr_binding_summary_Up, echo=FALSE}
-venn_plot(c("Up"))
+venn_plot(c("Up"), "upregulated genes")
 ```
 
 ### GR-binding status for Down genes:
 ```{r gr_binding_summary_Down, echo=FALSE}
-venn_plot(c("Down"))
+venn_plot(c("Down"), "downregulated genes")
 ```
 
-```{r TAD_intra_vs_inter}
-# Assess intra-TAD vs inter-TAD contacts.
-f_a = anchors(input_hic, type="first")
-s_a = anchors(input_hic, type="second")
-
-f_tad = findOverlaps(f_a, all_hic$Ctrl$TAD)
-s_tad = findOverlaps(s_a, all_hic$Ctrl$TAD)
-
-tad_df = data.frame(f=rep(NA, length(f_a)), s=rep(NA, length(s_a)))
-tad_df$f[queryHits(f_tad)] = subjectHits(f_tad)
-tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
-```
-
-```{r decrease_in_gr_binding_over_time}
+## Proportion of GR-bound DE genes across time
+```{r decrease_in_gr_binding_over_time, echo=FALSE}
 time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h", 
                "DE-1h", "DE-2h", "DE-3h", "DE-4h", "DE-5h", "DE-6h", "DE-7h",
                "DE-8h", "DE-10h", "DE-12h")
 direction_list = list(DE=c("Up", "Down"), Up="Up", Down="Down")
 
 metrics_fun = function(y, time_point) {
-    de_genes = mcols(promoter_regions)[[time_point]] %in% direction_list[[y]]
-    direct_binding = promoter_regions$EarlyBinding > 0
-    indirect_binding = promoter_regions$WindowBound |
-                       promoter_regions$ContactBound 
+    de_genes = mcols(hic_results$Promoters)[[time_point]] %in% direction_list[[y]]
+    direct_binding = hic_results$Promoters$EarlyBinding > 0
+    indirect_binding = hic_results$Promoters$WindowBound |
+                       hic_results$Promoters$ContactBound 
     
     data.frame(DE=rep(sum(de_genes), 3),
                Bound=c(sum(de_genes & direct_binding),
@@ -134,7 +123,34 @@ ggplot(data_df, aes(x=Time, y=Bound/DE, color=Direction, group=Direction)) +
     facet_wrap(BindingType~.)
 ```
 
+# Summary of HiC data
 
+```{r TAD_intra_vs_inter, echo=FALSE}
+# Assess intra-TAD vs inter-TAD contacts.
+f_a = anchors(hic_results$HiC$Ctrl$LRI, type="first")
+s_a = anchors(hic_results$HiC$Ctrl$LRI, type="second")
+
+f_tad = findOverlaps(f_a, hic_results$HiC$Ctrl$TAD)
+s_tad = findOverlaps(s_a, hic_results$HiC$Ctrl$TAD)
+
+tad_df = data.frame(f=rep(NA, length(f_a)), s=rep(NA, length(s_a)))
+tad_df$f[queryHits(f_tad)] = subjectHits(f_tad)
+tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
+
+n_interactions = length(hic_results$HiC$Ctrl$LRI)
+n_regions = length(regions(hic_results$HiC$Ctrl$LRI))
+prop_intra_tad = sprintf("%0.2f%%", sum(tad_df$f==tad_df$s, na.rm=TRUE) / nrow(tad_df))
 ```
 
-```
++------------------------------:+:-------------------+
+|        Number of interactions | `r n_interactions` |
++-------------------------------+--------------------+
+| Number of interacting regions | `r n_regions`      |
++-------------------------------+--------------------+
+|        Intra-TAD interactions | `r prop_intra_tad` |
++-------------------------------+--------------------+
+
+|------------------------------:|:-------------------|
+| Number of interactions | `r n_interactions` |
+| Number of interacting regions | `r n_regions` |
+| Intra-TAD interactions | `r prop_intra_tad` |
