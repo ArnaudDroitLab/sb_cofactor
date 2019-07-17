@@ -103,7 +103,6 @@ angptl4_peak <- GRanges("chr19", IRanges(8355327, 8356270))
 
 # downreg genes
 dusp8_peak <- GRanges("chr11", IRanges(1559246, 1559846))
-il11_peak <- GRanges("chr19", IRanges(55372624, 55373186))
 mafk_peak <- GRanges("chr7", IRanges(1519343, 1522213))
 rassf10_peak <- GRanges("chr11", IRanges(13007940, 13008299))
 
@@ -156,14 +155,6 @@ saveMetagene(metagene_plot = angptl4_plot,
              format = "pdf",
              width = 23, height = 9)
 
-il11_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = il11_peak) 
-il11_plot <- plot_metagene_Reddy(il11_df_metagene, title = "IL11 at chr19:55372624-55373186")
-saveMetagene(metagene_plot = il11_plot,
-             output_dir = "output/analyses/metagene_reddyTimeCourse",
-             output_file = "20190624_metagene_IL11_with_replicates",
-             format = "pdf",
-             width = 23, height = 9)
-
 gapdh_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks = gapdh_peak) 
 gapdh_plot <- plot_metagene_Reddy(gapdh_df_metagene, title = "GAPDH at chr12:6532244-6532808")
 saveMetagene(metagene_plot = gapdh_plot,
@@ -185,6 +176,156 @@ rassf10_plot <- plot_metagene_Reddy(rassf10_df_metagene, title = "RASSF10 at chr
 saveMetagene(metagene_plot = rassf10_plot,
              output_dir = "output/analyses/metagene_reddyTimeCourse",
              output_file = "20190624_metagene_RASSF10_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+
+# Cluster 3 from evryFC2 test
+# Cluster 3 has 20 members
+# OK "CYP24A1"  "IL11" "NR4A3" "EREG" "GDF15" "IL6" "PLK2" "NR4A2" "CXCL1" "BDKRB2" "CXCL8" "TNFSF15" "RND1" "DRD1"
+# "IFFO2"  "SOX2"       "DUSP8"         "RASSF10" 
+# [19] "C6orf141" "Y_RNA"
+IL11_peak <- GRanges("chr19", IRanges(55372624, 55373186))
+IL11_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = IL11_peak) 
+IL11_plot <- plot_metagene_Reddy(IL11_df_metagene, title = "IL11 at chr19:55372624-55373186")
+saveMetagene(metagene_plot = IL11_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190711_metagene_IL11_with_replicates",
+             format = "pdf",
+             width = 23, height = 9)
+
+CYP24A1_peak <- GRanges("chr20", IRanges(54123000, 54124300))
+CYP24A1_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = CYP24A1_peak) 
+CYP24A1_plot <- plot_metagene_Reddy(CYP24A1_df_metagene, title = "CYP24A1 at chr20:5412300-54124300")
+saveMetagene(metagene_plot = CYP24A1_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190711_metagene_CYP24A1_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+NR4A3_peak <- GRanges("chr9", IRanges(99820007, 99820371))
+NR4A3_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = NR4A3_peak) 
+NR4A3_plot <- plot_metagene_Reddy(NR4A3_df_metagene, title = "NR4A3 at chr9:99820007-99820371")
+saveMetagene(metagene_plot = NR4A3_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190711_metagene_NR4A3_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+EREG_peak <- GRanges("chr4", IRanges(74374377, 74375439))
+EREG_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = EREG_peak) 
+EREG_plot <- plot_metagene_Reddy(EREG_df_metagene, title = "EREG at chr4:74374377-74375439")
+saveMetagene(metagene_plot = EREG_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190711_metagene_EREG_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+GDF15_peak <- GRanges("chr19", IRanges(18379758, 18381032))
+GDF15_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = GDF15_peak) 
+GDF15_plot <- plot_metagene_Reddy(GDF15_df_metagene, title = "GDF15 at chr19:18379758-18381032")
+saveMetagene(metagene_plot = GDF15_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_GDF15_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+IL6_peak <- GRanges("chr7", IRanges(22717856, 22718619))
+IL6_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = IL6_peak) 
+IL6_plot <- plot_metagene_Reddy(IL6_df_metagene, title = "IL6 at chr19:18379758-18381032")
+saveMetagene(metagene_plot = IL6_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_IL6_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+IL6_peak <- GRanges("chr7", IRanges(22717856, 22718619))
+IL6_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = IL6_peak) 
+IL6_plot <- plot_metagene_Reddy(IL6_df_metagene, title = "IL6 at chr19:18379758-18381032")
+saveMetagene(metagene_plot = IL6_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_IL6_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+PLK2_peak <- GRanges("chr5", IRanges(58407200, 58407500))
+PLK2_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = PLK2_peak) 
+PLK2_plot <- plot_metagene_Reddy(PLK2_df_metagene, title = "PLK2 at chr5:58407200-58407500")
+saveMetagene(metagene_plot = PLK2_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_PLK2_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+NR4A2_peak <- GRanges("chr2", IRanges(156334400, 156334900))
+NR4A2_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = NR4A2_peak) 
+NR4A2_plot <- plot_metagene_Reddy(NR4A2_df_metagene, title = "NR4A2 at chr2:156334400-156334900")
+saveMetagene(metagene_plot = NR4A2_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_NR4A2_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+CXCL1_peak <- GRanges("chr4", IRanges(73891700, 73892300))
+CXCL1_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = CXCL1_peak) 
+CXCL1_plot <- plot_metagene_Reddy(CXCL1_df_metagene, title = "CXCL1 at chr4:73891700-73892300")
+saveMetagene(metagene_plot = CXCL1_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_CXCL1_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+BDKRB2_peak <- GRanges("chr14", IRanges(96204500, 96205111))
+BDKRB2_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = BDKRB2_peak) 
+BDKRB2_plot <- plot_metagene_Reddy(BDKRB2_df_metagene, title = "BDKRB2 at chr14:96204500-96205111")
+saveMetagene(metagene_plot = BDKRB2_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_BDKRB2_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+CXCL8_peak <- GRanges("chr4", IRanges(73740200, 73740900))
+CXCL8_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = CXCL8_peak) 
+CXCL8_plot <- plot_metagene_Reddy(CXCL8_df_metagene, title = "CXCL8 at chr4:73740200-73740900")
+saveMetagene(metagene_plot = CXCL8_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_CXCL8_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+TNFSF15_peak <- GRanges("chr9", IRanges(114779200, 114779900))
+TNFSF15_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = TNFSF15_peak) 
+TNFSF15_plot <- plot_metagene_Reddy(TNFSF15_df_metagene, title = "TNFSF15 at chr9:114779200-114779900")
+saveMetagene(metagene_plot = TNFSF15_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_TNFSF15_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+RND1_peak <- GRanges("chr12", IRanges(48866900, 48867400))
+RND1_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = RND1_peak) 
+RND1_plot <- plot_metagene_Reddy(RND1_df_metagene, title = "RND1 at chr12:48866900-48867400")
+saveMetagene(metagene_plot = RND1_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_RND1_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+DRD1_peak <- GRanges("chr5", IRanges(175378000, 175379200))
+DRD1_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = DRD1_peak) 
+DRD1_plot <- plot_metagene_Reddy(DRD1_df_metagene, title = "DRD1 at chr5:175378000-175379200")
+saveMetagene(metagene_plot = DRD1_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_DRD1_with_replicates",
+             format = "pdf",
+             width = 21, height = 7)
+
+IFFO2_peak <- GRanges("chr1", IRanges(18944650, 18945300))
+IFFO2_df_metagene <- make_df_metagene_Reddy(chip_target = c("GR", "EP300", "JUN"), peaks = IFFO2_peak) 
+IFFO2_plot <- plot_metagene_Reddy(IFFO2_df_metagene, title = "IFFO2 at chr1:18944650-18945300")
+saveMetagene(metagene_plot = IFFO2_plot,
+             output_dir = "output/analyses/metagene_reddyTimeCourse",
+             output_file = "20190712_metagene_IFFO2_with_replicates",
              format = "pdf",
              width = 21, height = 7)
 

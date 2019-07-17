@@ -111,8 +111,8 @@ annotate_genes_with_reddy_de = function(query_tss) {
     de_list = lapply(time_points, function(x) { 
         raw_data = read.table(x, sep=",", header=TRUE)
         de_cat = ifelse(raw_data$padj > 0.05 | is.na(raw_data$padj), "Stable", 
-                    ifelse(raw_data$log2FoldChange >= log2(1.5), "Down",
-                        ifelse(raw_data$log2FoldChange <= -log2(1.5), "Up", "Stable")))
+                    ifelse(raw_data$log2FoldChange <= -log2(1.5), "Down",
+                        ifelse(raw_data$log2FoldChange >= log2(1.5), "Up", "Stable")))
         raw_data$DE = de_cat
         
         raw_data
