@@ -266,7 +266,7 @@ load_connection_data = function(hic_timepoint) {
                 Promoters=promoter_regions,
                 Enhancers=hg38_enhancers,
                 GR_all=gr_regions,
-                GR_by_gene))
+                GR_by_gene=gr_by_gene_any))
 }
      
 motif_by_de = function(promoter_regions, gr_by_gene, de_time, de_class) {
