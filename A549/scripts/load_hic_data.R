@@ -104,7 +104,8 @@ annotate_regions_with_enh_gr = function(query_regions,
 annotate_genes_with_reddy_de = function(query_tss) {
     # Add DE-status annotation
     time_points = Sys.glob("results/a549_dex_time_points/*")
-    time_points = time_points[!grepl("\\.csv$", time_points)]
+    regex_match = grepl("^[0-9\\.]+[hm]$", basename(time_points))
+    time_points = time_points[regex_match]
     names(time_points) = basename(time_points)
     
     de_list = lapply(time_points, function(x) { 
@@ -224,46 +225,53 @@ find_per_gene_gr_sites = function(promoter_regions, gr_regions, input_hic) {
     # All binding
     gr_by_gene_any = list()
     for(gene in unique_genes) {
-        gr_by_gene_any[[gene]] = c(gr_by_gene_direct[[gene]],
+        grl = unlist(GRangesList(c(gr_by_gene_direct[[gene]],
                                    gr_by_gene_window[[gene]],
-                                   gr_by_gene_indirect[[gene]])
+                                   gr_by_gene_indirect[[gene]])))
+        gr_by_gene_any[[gene]] = grl
     }
 
     return(gr_by_gene_any)
 }
 
-all_hic = load_reddy_hic()
-hic_0h = all_hic$Ctrl$LRI
+load_connection_data = function(hic_timepoint) {
+     all_hic = load_reddy_hic()
+     hic_res = all_hic[[hic_timepoint]]$LRI
+     
+     # Add enhancer annotation to HiC interactions.
+     hg38_enhancers = load_hg38_fantom_enhancers()
+     gr_regions = load_reddy_gr_binding_consensus()
+     
+     regions(hic_res) = annotate_regions_with_enh_gr(regions(hic_res),
+                                                    hg38_enhancers,
+                                                    gr_regions)
+     
+     # Load promoter regions and annotate with GR binding, DE status.
+     promoter_regions = load_annotated_most_expressed_promoters(fix_chr=TRUE)
+     
+     promoter_regions = annotate_regions_with_enh_gr(promoter_regions,
+                                                    hg38_enhancers,
+                                                    gr_regions)
+     promoter_regions = annotate_genes_with_reddy_de(promoter_regions)
+     
+     # Identify gene categories based on interactions.
+     promoter_regions = annotate_distant_gr_binding(promoter_regions, 
+                                                    hic_res,
+                                                    all_hic[[hic_timepoint]]$TAD)
 
-# Add enhancer annotation to HiC interactions.
-hg38_enhancers = load_hg38_fantom_enhancers()
-gr_regions = load_reddy_gr_binding_consensus()
-
-regions(hic_0h) = annotate_regions_with_enh_gr(regions(hic_0h),
-                                               hg38_enhancers,
-                                               gr_regions)
-
-####### Step 2: Load and annotate promoter regions. 
-
-# Load promoter regions and annotate with GR binding.
-promoter_regions = load_annotated_most_expressed_promoters(fix_chr=TRUE)
-
-promoter_regions = annotate_regions_with_enh_gr(promoter_regions,
-                                               hg38_enhancers,
-                                               gr_regions)
-promoter_regions = annotate_genes_with_reddy_de(promoter_regions)
-
-####### Step 3: Identify gene categories based on interactions.
-promoter_regions = annotate_distant_gr_binding(promoter_regions, 
-                                               hic_0h,
-                                               all_hic$Ctrl$TAD)
-                                               
-# Identify per-gene GR sites.
-gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_0h)
-
-motif_by_de = function(de_time, de_class) {
+     # Identify per-gene GR sites.
+     gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_res)
+ 
+    return(list(HiC=all_hic,
+                Promoters=promoter_regions,
+                Enhancers=hg38_enhancers,
+                GR_all=gr_regions,
+                GR_by_gene))
+}
+     
+motif_by_de = function(promoter_regions, gr_by_gene, de_time, de_class) {
     de_genes = promoter_regions$ensembl_gene_id[promoter_regions[[de_time]] %in% de_class]
-    de_gr = gr_by_gene_any[names(gr_by_gene_any) %in% de_genes]
+    de_gr = gr_by_gene[names(gr_by_gene) %in% de_genes]
     de_gr_gr = unlist(GRangesList(unlist(de_gr)))
 
     res = motif_enrichment(de_gr_gr, select_annotations("hg38"))
@@ -271,72 +279,71 @@ motif_by_de = function(de_time, de_class) {
     return(res)
 }
 
-res_down = motif_by_de("2h", "Down")
-res_up = motif_by_de("2h", "Up")
+# rmarkdown::render("scripts/hic_analysis.Rmd", knit_root_dir=getwd(), output_format="html_document", output_file="output/hic_analysis.html", output_dir=getwd())
+
+# res_down = motif_by_de("2h", "Down")
+# res_up = motif_by_de("2h", "Up")
 
 # Test plot
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(ggbio)
 
-KLF6_region = promoter_regions[promoter_regions$external_gene_name=="KLF6"]
-#start(KLF6_region) = start(KLF6_region) - 200000
-#end(KLF6_region) = end(KLF6_region) + 200000
+visualize_region <- function(input_region, promoter_regions, gr_regions, tad_gr,
+                             hic_interactions, output_file) {
+    input_region = promoter_regions[promoter_regions$external_gene_name=="KLF6"]
+    #start(input_region) = start(input_region) - 200000
+    #end(input_region) = end(input_region) + 200000
 
-start(KLF6_region) = 3725000
-end(KLF6_region) = 4780000
+    start(input_region) = 3725000
+    end(input_region) = 4780000
 
 
-gene_models = autoplot(TxDb.Hsapiens.UCSC.hg38.knownGene, which=KLF6_region)
-TAD_track = autoplot(subsetByOverlaps(tad_gr, KLF6_region), which=KLF6_region)
-gr_subset = lapply(gr_regions, subsetByOverlaps, ranges=KLF6_region)
-gr_tracks = lapply(gr_subset, function(x) { autoplot(x, geom="rect", which=KLF6_region)})
-names(gr_tracks) = paste0("GR-", names(gr_tracks))
-names(gr_tracks) = gsub(" minutes", "m", names(gr_tracks))
-names(gr_tracks) = gsub(" hours*", "h", names(gr_tracks))
+    gene_models = autoplot(TxDb.Hsapiens.UCSC.hg38.knownGene, which=input_region)
+    TAD_track = autoplot(subsetByOverlaps(tad_gr, input_region), which=input_region)
+    gr_subset = lapply(gr_regions, subsetByOverlaps, ranges=input_region)
+    gr_tracks = lapply(gr_subset, function(x) { autoplot(x, geom="rect", which=input_region)})
+    names(gr_tracks) = paste0("GR-", names(gr_tracks))
+    names(gr_tracks) = gsub(" minutes", "m", names(gr_tracks))
+    names(gr_tracks) = gsub(" hours*", "h", names(gr_tracks))
 
-GR_track = autoplot(GRangesList(gr_subset), geom="rect", which=KLF6_region)
-relevant_interactions = subsetByOverlaps(hic_0h, KLF6_region)
-relevant_interactions = relevant_interactions[countOverlaps(anchors(relevant_interactions, type='first'), KLF6_region) > 0 &
-                                              countOverlaps(anchors(relevant_interactions, type='second'), KLF6_region) > 0]
-rf_a = anchors(relevant_interactions, type='first')
-rs_a = anchors(relevant_interactions, type='second')
-interaction_gr = data.frame(seqnames=as.character(seqnames(rf_a)),
-                         start=start(rf_a) + floor(width(rf_a) / 2),
-                         end=start(rs_a) + floor(width(rs_a) / 2),
-                         strand='+')
+    GR_track = autoplot(GRangesList(gr_subset), geom="rect", which=input_region)
+    relevant_interactions = subsetByOverlaps(hic_interactions, input_region)
+    relevant_interactions = relevant_interactions[countOverlaps(anchors(relevant_interactions, type='first'), input_region) > 0 &
+                                                  countOverlaps(anchors(relevant_interactions, type='second'), input_region) > 0]
+    rf_a = anchors(relevant_interactions, type='first')
+    rs_a = anchors(relevant_interactions, type='second')
+    interaction_gr = data.frame(seqnames=as.character(seqnames(rf_a)),
+                             start=start(rf_a) + floor(width(rf_a) / 2),
+                             end=start(rs_a) + floor(width(rs_a) / 2),
+                             strand='+')
 
-interaction_plot = autoplot(GRanges(interaction_gr), geom="arch")
+    interaction_plot = autoplot(GRanges(interaction_gr), geom="arch")
 
-relevant_ids = unlist(anchorIds(relevant_interactions))
-relevant_regions = unique(regions(relevant_interactions)[relevant_ids])
-interaction_regions_plot = autoplot(relevant_regions, which=KLF6_region)
+    relevant_ids = unlist(anchorIds(relevant_interactions))
+    relevant_regions = unique(regions(relevant_interactions)[relevant_ids])
+    interaction_regions_plot = autoplot(relevant_regions, which=input_region)
 
-relevant_promoters = subsetByOverlaps(promoter_regions, KLF6_region)
-promoter_track = autoplot(relevant_promoters, which=KLF6_region)
+    relevant_promoters = subsetByOverlaps(promoter_regions, input_region)
+    promoter_track = autoplot(relevant_promoters, which=input_region)
 
-track_list = list(HiC=interaction_plot,
-                  HiCR=interaction_regions_plot,
-                  Genes=gene_models, 
-                  Prom=promoter_track,
-                  TADs=TAD_track)
-track_list = c(track_list, gr_tracks)
-track_args = c(track_list, 
-               list(heights=c(1, 1, 3, 1, 1, rep(0.5, length(gr_tracks))),
-                    xlim=KLF6_region),
-                    label.text.angle = 0)
-pdf("KLF6.pdf", height=14, width=7)
-do.call(tracks, track_args)
-dev.off()
+    track_list = list(HiC=interaction_plot,
+                      HiCR=interaction_regions_plot,
+                      Genes=gene_models, 
+                      Prom=promoter_track,
+                      TADs=TAD_track)
+    track_list = c(track_list, gr_tracks)
+    track_args = c(track_list, 
+                   list(heights=c(1, 1, 3, 1, 1, rep(0.5, length(gr_tracks))),
+                        xlim=input_region),
+                        label.text.angle = 0)
+    pdf(output_file, height=14, width=7)
+    do.call(tracks, track_args)
+    dev.off()
+}
 
-#tracks(HiC=interaction_plot,
-#       Genes=gene_models, 
-#       TADs=TAD_track, 
-#       GR=GR_track, 
-#       heights=c(1, 3, 1, 3),
-#       xlim=KLF6_region)
-
-unlisted_gr = unlist(GRangesList(gr_regions))
-names(unlisted_gr) = paste(names(unlisted_gr), seq_along(unlisted_gr))
-klf6_promoter = promoter_regions[promoter_regions$external_gene_name=="KLF6"]
-linked_overlaps = linkOverlaps(hic_0h, klf6_promoter, unlisted_gr)
-as.data.frame(unlisted_gr[linked_overlaps$subject2])       
+# KLF6_region = promoter_regions[promoter_regions$external_gene_name=="KLF6"]
+# #start(KLF6_region) = start(KLF6_region) - 200000
+# #end(KLF6_region) = end(KLF6_region) + 200000
+# 
+# start(KLF6_region) = 3725000
+# end(KLF6_region) = 4780000

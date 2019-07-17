@@ -5,19 +5,35 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Perform analysis
-
-```{r source_file, echo=FALSE}
-#source("scripts/load_hic_data.R")
+```{r load_data, echo=FALSE}
+source("scripts/load_hic_data.R")
+hic_results = load_connection_data()
 ```
 
-# Summary of promoters
+# Summary of analyzed promoters
 
 Number of assessed genes: `r length(promoter_regions)`
 
-Differential expression at 2h:
+## Differential expression across time:
 ```{r 2h_DE_summary, echo=FALSE}
-table(promoter_regions$"2h")
+time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h", 
+               "DE-1h", "DE-2h", "DE-3h", "DE-4h", "DE-5h", "DE-6h", "DE-7h",
+               "DE-8h", "DE-10h", "DE-12h")
+               
+metrics_fun = function(time_point) {
+    data.frame(Genes=c(sum(mcols(promoter_regions)[[time_point]] == "Up"),
+                       sum(mcols(promoter_regions)[[time_point]] == "Down"),
+                       sum(mcols(promoter_regions)[[time_point]] == "Stable")),
+               Direction=c("Up", "Down", "Stable"),
+               Time=time_point) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+}
+
+de_df = do.call(rbind, lapply(time_order, metrics_fun))
+de_df$Time = factor(de_df$Time, levels=time_order)
+ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)) +
+    geom_bar(stat="identity") +
+    scale_fill_manual(values=c(Up="#0ecc57", Down="red"))
 ```
 
 ```{r define_venn_plot_function, echo=FALSE}
@@ -46,22 +62,23 @@ table(promoter_regions$"2h")
     }
 ```
 
-GR-binding status for all genes:
+## GR-binding statuses
+### GR-binding status for all genes:
 ```{r gr_binding_summary_all, echo=FALSE}
 venn_plot(c("Stable", "Up", "Down"))
 ```
 
-GR-binding status for DE genes:
+### GR-binding status for DE genes:
 ```{r gr_binding_summary_DE, echo=FALSE}
 venn_plot(c("Up", "Down"))
 ```
 
-GR-binding status for Up genes:
+### GR-binding status for Up genes:
 ```{r gr_binding_summary_Up, echo=FALSE}
 venn_plot(c("Up"))
 ```
 
-GR-binding status for Down genes:
+### GR-binding status for Down genes:
 ```{r gr_binding_summary_Down, echo=FALSE}
 venn_plot(c("Down"))
 ```
@@ -115,4 +132,9 @@ ggplot(data_df, aes(x=Time, y=Bound/DE, color=Direction, group=Direction)) +
     geom_line() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     facet_wrap(BindingType~.)
+```
+
+
+```
+
 ```
