@@ -85,7 +85,7 @@ identify_early_binding = function(gr_regions, target_regions) {
 
 load_hg38_fantom_enhancers = function() {
     hg19_enhancers = get_fantom_enhancers_tpm(cell_lines = "A549")
-    chain = rtracklayer::import.chain("input/hg19ToHg38.over.chain(2)")
+    chain = rtracklayer::import.chain("input/hg19ToHg38.over.chain")
     hg38_enhancers = rtracklayer::liftOver(hg19_enhancers, chain)
     
     return(hg38_enhancers)
