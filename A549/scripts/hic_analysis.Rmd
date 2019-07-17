@@ -142,15 +142,8 @@ n_regions = length(regions(hic_results$HiC$Ctrl$LRI))
 prop_intra_tad = sprintf("%0.2f%%", sum(tad_df$f==tad_df$s, na.rm=TRUE) / nrow(tad_df))
 ```
 
-+------------------------------:+:-------------------+
-|        Number of interactions | `r n_interactions` |
-+-------------------------------+--------------------+
-| Number of interacting regions | `r n_regions`      |
-+-------------------------------+--------------------+
-|        Intra-TAD interactions | `r prop_intra_tad` |
-+-------------------------------+--------------------+
-
-|------------------------------:|:-------------------|
+| metric | value |
+|---:|:-----|
 | Number of interactions | `r n_interactions` |
 | Number of interacting regions | `r n_regions` |
 | Intra-TAD interactions | `r prop_intra_tad` |
