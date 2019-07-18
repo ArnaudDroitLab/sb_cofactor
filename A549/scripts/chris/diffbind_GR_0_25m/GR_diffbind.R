@@ -33,7 +33,7 @@ sSheet <- data.frame(SampleID, Tissue, Antibody, Treatment,
 # Peaks
 # PeakCaller
 
-perform_diffbind <- function(sSheet, tp1, tp2, pval = FALSE) {
+perform_diffbind <- function(sSheet, tp1, tp2) {
   message("### ", tp2, "VS", tp1)
   contrast_name <- paste0(tp2, "VS", tp1)
   sSheet_filtered <- sSheet %>% dplyr::filter(Timepoint %in% c(tp1, tp2))
@@ -49,21 +49,48 @@ perform_diffbind <- function(sSheet, tp1, tp2, pval = FALSE) {
   
   analyze <- dba.analyze(contrast)
   
-  if (pval) {
-    report <- dba.report(analyze, bCounts = T, bUsePval = pval)
-  } else {
-    report <- dba.report(analyze, bCounts = T)
-  }
+  report_pval <- dba.report(analyze, bCounts = T, bUsePval = pval)
+  df_filename_pval <- paste0("diffbind_", contrast_name, "_pval.txt")
+  output_path <- file.path("output/analyses/GR_diffbind", df_filename_pval)
+  write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
+  message(" > Differential binding saved in", output_path)
+  
+  report <- dba.report(analyze, bCounts = T)
+  df_filename <- paste0("diffbind_", contrast_name, "_fdr.txt")
+  output_path <- file.path("output/analyses/GR_diffbind", df_filename)
+  write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
+  message(" > Differential binding saved in", output_path)
+}
+
+timepoint <- c("10m", "15m", "20m", "25m")
+for (tp in timepoint) {
+    perform_diffbind(sSheet_GR, tp, "5m")
+}
+
+stats_diffBind <- function(tp1, tp2, pval = FALSE) {
+  message("### ", tp2, "VS", tp1)
+  contrast_name <- paste0(tp2, "VS", tp1)
+  filename <- paste0("diffbind_", contrast_name)
   
   if (pval) {
-    df_filename <- paste0("diffbind_", contrast_name, "_pval.txt")
+    df_filename <- paste(filename, "pval.txt", sep = "_")
   } else {
-    df_filename <- paste0("diffbind_", contrast_name, "_fdr.txt")
+    df_filename <- paste(filename, "fdr.txt", sep = "_")
   }
   
   output_path <- file.path("output/analyses/GR_diffbind", df_filename)
-  write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
-  message(" > Diffenrential binding saved in", output_path)
+  #   message("   # >>> ", output_path)
+  #   
+  #   annodf <- read.delim(output_path, sep = "\t" , header = TRUE)
+  #   annodf$geneId <- as.character(annodf$geneId)
+  #   annodf$SYMBOL <- as.character(annodf$SYMBOL)
+  #   
+  #   annodf_up <- annodf %>% filter(Fold > 0)
+  #   annodf_down <- annodf %>% filter(Fold < 0)
+  #   
+  #   message("    Number of differential regions : ", nrow(annodf))
+  #   message("       Increased signal : ", nrow(annodf_up), " (including ", nrow(annodf_up %>% filter(Annot == "Promoter")), " regions at promoters)")
+  #   message("       Decreased signal : ", nrow(annodf_down), " (including ", nrow(annodf_down %>% filter(Annot == "Promoter")), " regions at promoters)")  
 }
 
 # perform_diffbind <- function(pol, cst, effect, peak, pval) {
