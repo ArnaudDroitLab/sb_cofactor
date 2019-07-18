@@ -1,13 +1,20 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
+library(tidyverse)
+library(knitr)
+
 target <- "NR3C1"
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
 bam_pattern <- paste0("(", target, ").*\\.bam$")
 bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
 nb_bam <- length(bam_files)
-SampleID <- basename(bam_files)
 Tissue <- rep("A549", nb_bam)
 Antibody <- rep(target, nb_bam)
+
+
+SampleID <- basename(bam_files) %>% strsplit(split = "\\.") %>% purrr::map(1) %>% unlist
+
+
 Treatment <- # if 0, EtOH, else DEX
 Timepoint <- strsplit(SampleID) %>% purrr::map(X) %>% unlist
 Replicate <- strsplit(SampleID) %>% purrr::map(X) %>% unlist
