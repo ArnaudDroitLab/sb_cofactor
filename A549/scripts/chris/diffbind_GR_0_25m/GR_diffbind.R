@@ -3,22 +3,31 @@
 library(tidyverse)
 library(knitr)
 
-target <- "NR3C1"
+build_sSheet <- function(target, bam_folder) {
+  # BAM
+  bam_pattern <- paste0("^", target, "_([0-9]+minute)_rep(.)_(.*\\.bam$)")
+  bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
+  nb_bam <- length(bam_files)
+  
+  SampleID <- basename(bam_files) %>% gsub(pattern = bam_pattern, replacement = paste0(target, "_", "\\1", "_rep\\2")) %>%
+    gsub(pattern = "minute", replacement = "m")
+  Timepoint <- SampleID %>% gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\1")
+  Replicate <- SampleID %>% gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\2")
+  Treatment <- ifelse(Timepoint == "0m", "EtOH", "DEX")
+  Tissue <- rep("A549", nb_bam)
+  Antibody <- rep(target, nb_bam)
+  bamReads <- bam_files
+  
+  # BED
+  bed_pattern <- paste0("^", target, "_([0-9]+minute)_rep(.)_(.*\\.bed$)")
+  bed_files <- list.files(path = bed_folder, pattern = bed_pattern, full.names = TRUE)
+  
+}
+
 bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
-bam_pattern <- paste0("(", target, ").*\\.bam$")
-bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
-nb_bam <- length(bam_files)
-Tissue <- rep("A549", nb_bam)
-Antibody <- rep(target, nb_bam)
+bed_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/narrow"
+sSheet_GR <- build_sSheet("NR3C1")
 
-
-SampleID <- basename(bam_files) %>% strsplit(split = "\\.") %>% purrr::map(1) %>% unlist
-
-
-Treatment <- # if 0, EtOH, else DEX
-Timepoint <- strsplit(SampleID) %>% purrr::map(X) %>% unlist
-Replicate <- strsplit(SampleID) %>% purrr::map(X) %>% unlist
-bamReads <- bam_files
 ControlID <- # check with ENCODEExplorer
 bamControl <- # check with ENCODEExplorer
 Peaks <- # use bed_pattern <- paste0("(", target, ").*\\.bed$")
@@ -99,7 +108,6 @@ stats_diffBind <- function(tp1, tp2, pval = FALSE) {
   #   message("       Increased signal : ", nrow(annodf_up), " (including ", nrow(annodf_up %>% filter(Annot == "Promoter")), " regions at promoters)")
   #   message("       Decreased signal : ", nrow(annodf_down), " (including ", nrow(annodf_down %>% filter(Annot == "Promoter")), " regions at promoters)")  
 }
-
 # perform_diffbind <- function(pol, cst, effect, peak, pval) {
 #   message("######\t", pol, " | ", cst, " | ", effect, " effect | ", peak, "Peak")
 #   
