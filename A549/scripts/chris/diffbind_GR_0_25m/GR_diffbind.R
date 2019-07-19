@@ -13,12 +13,12 @@ build_sSheet <- function(target, bam_folder, bed_folder) {
   
   SampleID <- basename(bam_files) %>% gsub(pattern = bam_pattern, replacement = paste0(target, "_", "\\1", "_rep\\2")) %>%
     gsub(pattern = "minute", replacement = "m")
-  Timepoint <- SampleID %>% gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\1")
-  Replicate <- SampleID %>% gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\2")
+  Timepoint <- gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\1", SampleID)
+  Replicate <- gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\2", SampleID)
   Treatment <- Timepoint
   Treatment_bis <- ifelse(Timepoint == "0m", "EtOH", "DEX")
-  Tissue <- rep("A549", nb_bam)
-  Antibody <- rep(target, nb_bam)
+  Tissue <- "A549"
+  Antibody <- target
   bamReads <- bam_files
   
   # BED
@@ -36,7 +36,7 @@ build_sSheet <- function(target, bam_folder, bed_folder) {
 }
 
 #####
-perform_diffbind <- function(sSheet, tp1, tp2) {
+perform_diffbind <- function(target, sSheet, tp1, tp2, output_dir) {
   message("### ", tp2, " vs ", tp1)
   contrast_name <- paste0(tp2, "VS", tp1)
   sSheet_filtered <- sSheet %>% dplyr::filter(Timepoint %in% c(tp1, tp2))
@@ -65,23 +65,23 @@ perform_diffbind <- function(sSheet, tp1, tp2) {
   
   message("  > Reporting...")
   report_pval <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
-  df_filename_pval <- paste0("diffbind_", contrast_name, "_pval.txt")
-  output_path <- file.path("output/analyses/GR_diffbind", df_filename_pval)
+  df_filename_pval <- paste0("diffbind_", target, "_", contrast_name, "_pval.txt")
+  output_path <- file.path(output_dir, df_filename_pval)
   write.table(report_pval, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
   message("     > Differential binding saved in", output_path)
 
   report <- dba.report(analyze, bCounts = T)
-  df_filename <- paste0("diffbind_", contrast_name, "_fdr.txt")
-  output_path <- file.path("output/analyses/GR_diffbind", df_filename)
+  df_filename <- paste0("diffbind_", target, "_", contrast_name, "_fdr.txt")
+  output_path <- file.path(output_dir, df_filename)
   write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
   message("     > Differential binding saved in", output_path)
 }
 
 #####
-open_diffBind <- function(tp1, tp2, pval = FALSE) {
+open_diffBind <- function(target, tp1, tp2, pval = FALSE, output_dir) {
   message("### ", tp2, " VS ", tp1)
   contrast_name <- paste0(tp2, "VS", tp1)
-  filename <- paste0("diffbind_", contrast_name)
+  filename <- paste0("diffbind_", target, "_", contrast_name)
   
   if (pval) {
     df_filename <- paste(filename, "pval.txt", sep = "_")
@@ -89,7 +89,7 @@ open_diffBind <- function(tp1, tp2, pval = FALSE) {
     df_filename <- paste(filename, "fdr.txt", sep = "_")
   }
   
-  output_path <- file.path("output/analyses/GR_diffbind", df_filename)
+  output_path <- file.path(output_dir, df_filename)
   message("  # >>> ", output_path)
   
   report <- try(read.delim(output_path, sep = "\t" , header = TRUE))
@@ -114,9 +114,10 @@ open_diffBind <- function(tp1, tp2, pval = FALSE) {
 }
 
 #####
-bam_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/bam"
-bed_folder <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/chip-seq/narrow"
+bam_folder <- "input/ENCODE/A549/GRCh38/chip-seq/bam"
+bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
 sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder)
+sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder)
 
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
@@ -124,7 +125,7 @@ ltp <- length(timepoint)
 #   for (j in (i+1):ltp) {
 #     tp1 <- timepoint[i]
 #     tp2 <- timepoint[j]
-#     perform_diffbind(sSheet_GR, tp1, tp2)
+#     perform_diffbind(NR3C1, sSheet_GR, tp1, tp2, output_dir = "output/analyses/GR_diffbind")
 #   }
 # }
   
@@ -133,7 +134,7 @@ for (i in 1:(ltp-1)) {
     for (TF in c(TRUE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
-      report <- open_diffBind(tp1, tp2, pval = TF)
+      report <- open_diffBind(tp1, tp2, pval = TF, output_dir = "output/analyses/GR_diffbind")
     }
   }
 }
