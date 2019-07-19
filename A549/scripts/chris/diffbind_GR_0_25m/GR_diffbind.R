@@ -54,7 +54,9 @@ perform_diffbind <- function(sSheet, tp1, tp2) {
   print(category)
   
   message("  > Define contrast...")
-  contrast <- dba.contrast(count, categories = category, minMembers = 2)
+  contrast <- dba.contrast(count, categories = category, minMembers = 2,
+                           group1 = count$mask[[tp2]], group2 = count$mask[[tp1]],
+                           name1 = tp2, name2 = tp1)
   print(contrast)
   
   message("  > Analyzing...")
@@ -67,7 +69,7 @@ perform_diffbind <- function(sSheet, tp1, tp2) {
   output_path <- file.path("output/analyses/GR_diffbind", df_filename_pval)
   write.table(report_pval, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
   message("     > Differential binding saved in", output_path)
-  
+
   report <- dba.report(analyze, bCounts = T)
   df_filename <- paste0("diffbind_", contrast_name, "_fdr.txt")
   output_path <- file.path("output/analyses/GR_diffbind", df_filename)
@@ -77,7 +79,7 @@ perform_diffbind <- function(sSheet, tp1, tp2) {
 
 #####
 open_diffBind <- function(tp1, tp2, pval = FALSE) {
-  message("### ", tp2, "VS", tp1)
+  message("### ", tp2, " VS ", tp1)
   contrast_name <- paste0(tp2, "VS", tp1)
   filename <- paste0("diffbind_", contrast_name)
   
@@ -88,17 +90,27 @@ open_diffBind <- function(tp1, tp2, pval = FALSE) {
   }
   
   output_path <- file.path("output/analyses/GR_diffbind", df_filename)
-  message("   # >>> ", output_path)
+  message("  # >>> ", output_path)
   
-  report <- read.delim(output_path, sep = "\t" , header = TRUE)
-  report$Coord <- paste0(report$seqnames, ":", report$start, "-", report$end)
-  report_up <- report %>% filter(Fold > 0)
-  report_down <- report %>% filter(Fold < 0)
-  
-  message("    Number of differential regions : ", nrow(report))
-  message("       Increased signal : ", nrow(report_up))
-  message("       Decreased signal : ", nrow(report_down))  
-  return(report)
+  report <- try(read.delim(output_path, sep = "\t" , header = TRUE))
+  if (!inherits(report, 'try-error')) {
+    report$Coord <- paste0(report$seqnames, ":", report$start, "-", report$end)
+    report_up <- report %>% filter(Fold > 0)
+    report_down <- report %>% filter(Fold < 0)
+    
+    if (pval) {
+      message("  ### PVAL")
+    } else {
+      message("  ### FDR")
+    }
+    
+    message("      Number of differential regions : ", nrow(report))
+    message("         Increased signals : ", nrow(report_up))
+    message("         Decreased signals : ", nrow(report_down))  
+    return(report)
+  } else {
+    print("Empty file")
+  }
 }
 
 #####
@@ -118,14 +130,15 @@ for (i in 1:(ltp-1)) {
   
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
-    for (TP in c(FALSE, TRUE)) {
+    for (TF in c(TRUE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
-      open_diffBind(tp1, tp2, pval = TF)
+      report <- open_diffBind(tp1, tp2, pval = TF)
     }
   }
 }
 
 #####
-open_diffBind("5m", "25m", pval = FALSE) %>% filter(Fold < 0)
-open_diffBind("5m", "25m", pval = TRUE)
+perform_diffBind(sSheet_GR, "0m", "5m")
+p <- open_diffBind("0m", "5m", pval = TRUE)
+p <- open_diffBind("0m", "5m", pval = FALSE)
