@@ -120,13 +120,13 @@ sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder)
 
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
-for (i in 1:(ltp-1)) {
-  for (j in (i+1):ltp) {
-    tp1 <- timepoint[i]
-    tp2 <- timepoint[j]
-    perform_diffbind(sSheet_GR, tp1, tp2)
-  }
-}
+# for (i in 1:(ltp-1)) {
+#   for (j in (i+1):ltp) {
+#     tp1 <- timepoint[i]
+#     tp2 <- timepoint[j]
+#     perform_diffbind(sSheet_GR, tp1, tp2)
+#   }
+# }
   
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
@@ -137,8 +137,3 @@ for (i in 1:(ltp-1)) {
     }
   }
 }
-
-#####
-perform_diffBind(sSheet_GR, "0m", "5m")
-p <- open_diffBind("0m", "5m", pval = TRUE)
-p <- open_diffBind("0m", "5m", pval = FALSE)
