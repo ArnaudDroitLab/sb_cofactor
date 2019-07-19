@@ -109,7 +109,7 @@ open_diffBind <- function(tp1, tp2, pval = FALSE) {
     message("         Decreased signals : ", nrow(report_down))  
     return(report)
   } else {
-    print("Empty file")
+    message("  ### Empty file")
   }
 }
 
