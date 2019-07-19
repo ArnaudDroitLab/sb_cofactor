@@ -41,33 +41,38 @@ perform_diffbind <- function(sSheet, tp1, tp2) {
   contrast_name <- paste0(tp2, "VS", tp1)
   sSheet_filtered <- sSheet %>% dplyr::filter(Timepoint %in% c(tp1, tp2))
   
+  message("  > Reading...")
   dba <- dba(sampleSheet = sSheet_filtered)
+  print(dba)
   
-  message("Counting...")
+  message("  > Counting...")
   count <- dba.count(dba)
   print(count)
   
+  message("  > Define category...")
   category = DBA_TREATMENT
   print(category)
   
+  message("  > Define contrast...")
   contrast <- dba.contrast(count, categories = category, minMembers = 2)
   print(contrast)
   
-  message("Analyzing...")
+  message("  > Analyzing...")
   analyze <- dba.analyze(contrast)
-  print(analyse)
+  print(analyze)
   
+  message("  > Reporting...")
   report_pval <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
   df_filename_pval <- paste0("diffbind_", contrast_name, "_pval.txt")
   output_path <- file.path("output/analyses/GR_diffbind", df_filename_pval)
   write.table(report_pval, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
-  message(" > Differential binding saved in", output_path)
+  message("     > Differential binding saved in", output_path)
   
   report <- dba.report(analyze, bCounts = T)
   df_filename <- paste0("diffbind_", contrast_name, "_fdr.txt")
   output_path <- file.path("output/analyses/GR_diffbind", df_filename)
   write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
-  message(" > Differential binding saved in", output_path)
+  message("     > Differential binding saved in", output_path)
 }
 
 #####
