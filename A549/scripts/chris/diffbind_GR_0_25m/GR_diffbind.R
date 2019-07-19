@@ -55,7 +55,7 @@ perform_diffbind <- function(sSheet, tp1, tp2) {
   
   message("Analyzing...")
   analyze <- dba.analyze(contrast)
-  pritn(analyse)
+  print(analyse)
   
   report_pval <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
   df_filename_pval <- paste0("diffbind_", contrast_name, "_pval.txt")
