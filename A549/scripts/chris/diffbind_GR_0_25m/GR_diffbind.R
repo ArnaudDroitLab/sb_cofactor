@@ -68,13 +68,13 @@ perform_diffbind <- function(target, sSheet, tp1, tp2, output_dir) {
   df_filename_pval <- paste0("diffbind_", target, "_", contrast_name, "_pval.txt")
   output_path <- file.path(output_dir, df_filename_pval)
   write.table(report_pval, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
-  message("     > Differential binding saved in", output_path)
+  message("     > Differential binding saved in ", output_path)
 
   report <- dba.report(analyze, bCounts = T)
   df_filename <- paste0("diffbind_", target, "_", contrast_name, "_fdr.txt")
   output_path <- file.path(output_dir, df_filename)
   write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
-  message("     > Differential binding saved in", output_path)
+  message("     > Differential binding saved in ", output_path)
 }
 
 #####
@@ -126,17 +126,17 @@ for (i in 1:(ltp-1)) {
     tp1 <- timepoint[i]
     tp2 <- timepoint[j]
     perform_diffbind("EP300", sSheet_EP300, tp1, tp2,
-                     output_dir = "output/analyses/GR_diffbind")
+                     output_dir = "output/analyses/EP300_diffbind")
   }
 }
   
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
-    for (TF in c(TRUE)) {
+    for (TF in c(FALSE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
       report <- open_diffBind("EP300", tp1, tp2, pval = TF,
-                              output_dir = "output/analyses/GR_diffbind")
+                              output_dir = "output/analyses/EP300_diffbind")
     }
   }
 }
