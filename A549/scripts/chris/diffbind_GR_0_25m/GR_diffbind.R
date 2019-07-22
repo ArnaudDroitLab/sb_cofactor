@@ -37,7 +37,9 @@ build_sSheet <- function(target, bam_folder, bed_folder) {
 
 #####
 perform_diffbind <- function(target, sSheet, tp1, tp2, output_dir) {
+  message("#######################")
   message("### ", tp2, " vs ", tp1)
+  message("#######################")
   contrast_name <- paste0(tp2, "VS", tp1)
   sSheet_filtered <- sSheet %>% dplyr::filter(Timepoint %in% c(tp1, tp2))
   
@@ -79,7 +81,9 @@ perform_diffbind <- function(target, sSheet, tp1, tp2, output_dir) {
 
 #####
 open_diffBind <- function(target, tp1, tp2, pval = FALSE, output_dir) {
+  message("#######################")
   message("### ", tp2, " VS ", tp1)
+  message("#######################")
   contrast_name <- paste0(tp2, "VS", tp1)
   filename <- paste0("diffbind_", target, "_", contrast_name)
   
@@ -125,18 +129,16 @@ for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
     tp1 <- timepoint[i]
     tp2 <- timepoint[j]
-    perform_diffbind("EP300", sSheet_EP300, tp1, tp2,
-                     output_dir = "output/analyses/EP300_diffbind")
+    # perform_diffbind("GR", sSheet_GR, tp1, tp2, output_dir = "output/analyses/GR_diffbind")
   }
 }
   
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
-    for (TF in c(FALSE)) {
+    for (TF in c(TRUE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
-      report <- open_diffBind("EP300", tp1, tp2, pval = TF,
-                              output_dir = "output/analyses/EP300_diffbind")
+      report <- open_diffBind("GR", tp1, tp2, pval = TF, output_dir = "output/analyses/GR_diffbind")
     }
   }
 }
