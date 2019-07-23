@@ -280,8 +280,38 @@ for (i in c(1, 2, 3, 6, 7, 9, 11, 12, 14)) {
                width = 20, height = 9)
 }
 
-## Overlaps with cofactors
+## Overlaps with diffbind cofactors
 source("scripts/ckn_utils.R")
+# diffbind_cofactors <- load_diffbind_cofactors_peaks(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A"))
 
+cofactors <- load_cofactor_peaks(cofactors = c("NIPBL"))
+set_GR_list_with_cofactors <- c(cofactors, set_GR_list)
+names(set_GR_list_with_cofactors)
+sapply(set_GR_list_with_cofactors, length)
+
+inter_cofactors <- build_intersect(set_GR_list_with_cofactors)
+matrix_cofactors <- inter_cofactors$Matrix
+sum(matrix_cofactors > 1)
+matrix_cofactors[matrix_cofactors > 1] <- 1
+sum(matrix_cofactors > 1)
+colnames(matrix_cofactors)
+
+m3 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
+m3 <- m3[comb_size(m3) >= 10]
+UpSet(m3)
+comb_size(m3)
+
+annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m3), 
+                                                                   border = FALSE, gp = gpar(fill = "black"), height = unit(3, "cm")), 
+                               annotation_name_side = "left", annotation_name_rot = 0,
+                               "Size" = anno_text(comb_size(m3), rot = 0, just = "center", location = 0.25))
+annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(m3), 
+                                                       border = FALSE, 
+                                                       gp = gpar(fill = "black"), 
+                                                       width = unit(2, "cm")),
+                             "Size" = anno_text(set_size(m3))
+)
+
+UpSet(m3, top_annotation = annot_top, right_annotation = annot_right)
 
 

@@ -12,7 +12,7 @@ seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
 txdb.hg38 <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
 #####
-load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1","SMC1A")) {
+load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
   peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
   cofactors_peaks <- GRangesList()
   name_cofactors_peaks <- c()
@@ -69,6 +69,31 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
   return(cofactors_peaks)
 }
 
+#####
+load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
+  peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
+  diffbind_cofactors_peaks <- GRangesList()
+  name_diffbind_cofactors_peaks <- c()
+  for (cofactor in cofactors) {
+    # for (condition in c("CTRL", "DEX")) {
+    #   message("####\t", cofactor, " | ", condition)
+    #   basename <- paste0("A549_", condition, "_", cofactor, "_rep1")
+    #   peaks_path <- file.path(peaks_dir, basename, paste0(basename, "_peaks.narrowPeak.bed"))
+    #   message(peaks_path)
+    #   peaks <- rtracklayer::import(peaks_path)
+    #   message("Number of regions : ", length(peaks))
+    #   diffbind_cofactors_peaks <- append(cofactors_peaks, GRangesList(peaks))
+    #   name_diffbind_cofactors_peaks <- c(name_cofactors_peaks, paste0(cofactor, "_", condition))
+    # }
+  }
+  names(diffbind_cofactors_peaks) <- name_diffbind_cofactors_peaks
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(diffbind_cofactors_peaks))
+  return(diffbind_cofactors_peaks)
+}
+
+#####
 annotatePeaks <- function(gr, output = "df", tss = 3000) {
   # difference between txdb and most expressed txdb???
   gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
@@ -87,6 +112,7 @@ annotatePeaks <- function(gr, output = "df", tss = 3000) {
   }
 }
 
+#####
 annotatePeaks2 <- function(gr, output = "df", tss = 3000) {
   # difference between txdb and most expressed txdb???
   gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
