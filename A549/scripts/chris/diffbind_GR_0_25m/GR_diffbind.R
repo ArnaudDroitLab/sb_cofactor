@@ -3,6 +3,8 @@
 library(tidyverse)
 library(knitr)
 library(DiffBind)
+library(ComplexHeatmap)
+source("scripts/chris/metagene2_Reddy.utils.R")
 
 #####
 build_sSheet <- function(target, bam_folder, bed_folder) {
@@ -119,9 +121,9 @@ open_diffBind <- function(target, tp1, tp2, pval = FALSE, output_dir) {
 
 #####
 bam_folder <- "input/ENCODE/A549/GRCh38/chip-seq/bam"
-bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
-sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder)
-sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder)
+# bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
+# sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder)
+# sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder)
 
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
@@ -132,13 +134,137 @@ for (i in 1:(ltp-1)) {
     # perform_diffbind("GR", sSheet_GR, tp1, tp2, output_dir = "output/analyses/GR_diffbind")
   }
 }
-  
+
+# explore GR diffbind 
+GR_diffbind_downreg <- list()
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
     for (TF in c(TRUE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
+      contrast_name <- paste0(tp2, "VS", tp1)
       report <- open_diffBind("GR", tp1, tp2, pval = TF, output_dir = "output/analyses/GR_diffbind")
+      
+      if (!is.null(report)) {
+        upreg <- report %>% dplyr::filter(Fold > 0)
+        downreg <- report %>% dplyr::filter(Fold < 0)
+        if (nrow(downreg) != 0) {
+          GR_diffbind_downreg[[paste0(contrast_name, "_downreg")]] <- makeGRangesFromDataFrame(downreg)
+        }
+      }
     }
   }
 }
+
+names(GR_diffbind_downreg)
+sapply(GR_diffbind_downreg, length)
+# Attempt to do UpSet plot
+# m <- make_comb_mat(GR_diffbind_downreg, mode = "distinct")
+# saveRDS(m, file = "output/analyses/GR_diffbind/combination_matrix_GR_diffbind_downreg_distinct.rds")
+# 
+# UpSet(m,
+#       top_annotation = upset_top_annotation(m,
+#                                             axis_param = list(at = c(),
+#                                                               labels = c())
+#                                             )
+#       )
+
+# for (i in c(1, 2, 4, 5, 9)) {
+for (i in c(1, 2, 4, 5, 9)) {
+  contrast <- names(GR_diffbind_downreg)[i]
+  message("##### ", contrast)
+  # df_GR_diffbind_downreg <- make_df_metagene_Reddy(chip_target = c("GR", "EP300"), peaks = GR_diffbind_downreg[[i]], merge_replicates = TRUE)
+  title_group <- paste(contrast, paste(length(GR_diffbind_downreg[[i]]), "regions"), sep = " | ")
+  p <- plot_metagene_Reddy(df_GR_diffbind_downreg, title = title_group)
+  saveMetagene(metagene_plot = p,
+               output_dir = "output/analyses/GR_diffbind_downreg",
+               output_file = paste("GR_diffbind_downreg_GR_EP300", contrast, sep = "_"),
+               width = 20, height = 9)
+}
+
+# Which GR regions have decreased signals at several time points?
+build_intersect <- function(grl) {
+  all.regions = GenomicRanges::reduce(unlist(grl))
+  overlap.matrix <- matrix(0, nrow=length(all.regions), ncol=length(grl))
+  overlap.list = list()
+  
+  for(i in 1:length(grl)) {
+    overlap.matrix[,i] <- GenomicRanges::countOverlaps(all.regions, grl[[i]], type="any")
+    overlap.list[[ names(grl)[i] ]] <- which(overlap.matrix[,i] != 0)
+  }
+  colnames(overlap.matrix) <-  names(grl)
+  return(list(Regions = all.regions, Matrix=overlap.matrix, List=overlap.list, Names=colnames(overlap.matrix), Length=ncol(overlap.matrix)))
+}
+
+inter <- build_intersect(GRangesList(GR_diffbind_downreg))
+matrix <- inter$Matrix
+
+# all comb size
+m <- make_comb_mat(matrix, remove_empty_comb_set = TRUE)
+UpSet(m)
+comb_size(m)
+
+annot <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m), 
+                                                               border = FALSE, gp = gpar(fill = "black"), height = unit(3, "cm")), 
+                           annotation_name_side = "left", annotation_name_rot = 0,
+                           "Size" = anno_text(comb_size(m), rot = 0, just = "center", location = 0.25))
+
+UpSet(m, top_annotation = annot)
+
+# comb_size > 10
+m2 <- m[comb_size(m) >= 10]
+UpSet(m2)
+comb_size(m2)
+comb_degree(m2)
+
+annot <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m2), 
+                                                      border = FALSE, gp = gpar(fill = "black"), height = unit(3, "cm")), 
+                  annotation_name_side = "left", annotation_name_rot = 0,
+                  "Size" = anno_text(comb_size(m2), rot = 0, just = "center", location = 0.25))
+
+UpSet(m2, top_annotation = annot)
+
+#
+idToName <- function(id, set_names) {
+  name <- c()
+  for (i in 1:nchar(id)) {
+    if (substring(id, i, i) == "1") {
+      good_set <- strsplit(set_names[i], "_")[[1]][1]
+      name <- paste(name, good_set, sep = "+")
+    }
+  }
+  return(substring(name, 2))
+}
+
+idToName(id = "001001010", colnames(matrix))
+
+
+cs <- comb_size(m2)
+de <- comb_degree(m2)
+set_GR_list <- list()
+for (id in names(cs)){
+  i <- extract_comb(m2, id)
+  setname <- idToName(id, colnames(matrix))
+  message("##### ", id, " | degree ", de[id], " | ", setname)
+  regions <- inter$Regions[i]
+  
+  set_GR_list[[setname]] <- regions
+}
+
+names(set_GR_list)
+sapply(set_GR_list, length)
+
+for (i in c(2, 6, 7, 9, 10)) {
+  contrast <- names(set_GR_list)[i]
+  message("##### ", contrast)
+  df_set_GR_list <- make_df_metagene_Reddy(chip_target = c("GR", "EP300"), peaks = set_GR_list[[i]], merge_replicates = TRUE)
+  title_group <- paste(contrast, paste(length(set_GR_list[[i]]), "regions"), sep = " | ")
+  p <- plot_metagene_Reddy(df_set_GR_list, title = title_group)
+  saveMetagene(metagene_plot = p,
+               output_dir = "output/analyses/GR_diffbind_downreg_setlist",
+               output_file = paste("GR_diffbind_downreg_GR_EP300", contrast, sep = "_"),
+               width = 20, height = 9)
+}
+
+
+

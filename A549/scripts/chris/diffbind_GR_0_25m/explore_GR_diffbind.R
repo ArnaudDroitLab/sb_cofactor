@@ -1,3 +1,4 @@
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 
 for (i in 1:(ltp-1)) {
