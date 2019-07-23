@@ -85,12 +85,12 @@ make_metadata_from_design <- function(design) {
 }
 
 #####
-make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks, merge_replicates = FALSE) {
+make_df_metagene_Reddy <- function(chip_target = c("GR", "EP300", "H3K27ac", "JUN"), peaks, merge_replicates = FALSE, reps = "123") {
   chip_target <- gsub("GR", "NR3C1", chip_target)
   
   bigdf <- data.frame()
   for (target in chip_target) {
-    bam_pattern <- paste0("(", target, ").*\\.bam$")
+    bam_pattern <- paste0("^", target, "_([0-9]+.*)_rep([", reps, "])_(.*\\.bam$)")
     bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
     # bam_files <- bam_files %>% .[matches("rep[12]", vars = .)] # allow to filter replicate
     metadata <- make_metadata_from_bam_list(bam_files)

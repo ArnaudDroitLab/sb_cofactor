@@ -7,9 +7,9 @@ library(ComplexHeatmap)
 source("scripts/chris/metagene2_Reddy.utils.R")
 
 #####
-build_sSheet <- function(target, bam_folder, bed_folder) {
+build_sSheet <- function(target, bam_folder, bed_folder, reps = "123") {
   # BAM
-  bam_pattern <- paste0("^", target, "_([0-9]+minute)_rep(.)_(.*\\.bam$)")
+  bam_pattern <- paste0("^", target, "_([0-9]+minute)_rep([", reps, "])_(.*\\.bam$)")
   bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
   nb_bam <- length(bam_files)
   
@@ -24,11 +24,11 @@ build_sSheet <- function(target, bam_folder, bed_folder) {
   bamReads <- bam_files
   
   # BED
-  bed_pattern <- paste0("^", target, "_([0-9]+minute)_rep(.)_(.*\\.bed.gz$)")
+  bed_pattern <- paste0("^", target, "_([0-9]+minute)_rep([", reps, "])_(.*\\.bed.gz$)")
   bed_files <- list.files(path = bed_folder, pattern = bed_pattern, full.names = TRUE)
   Peaks <- bed_files
   PeakCaller <- rep("bed", nb_bam)
-  
+
   # sSheet
   sSheet <- data.frame(SampleID, Tissue, Antibody,
                        Treatment, Treatment_bis,
@@ -38,7 +38,7 @@ build_sSheet <- function(target, bam_folder, bed_folder) {
 }
 
 #####
-perform_diffbind <- function(target, sSheet, tp1, tp2, output_dir) {
+perform_diffbind <- function(target, sSheet, tp1, tp2, reps = "123", output_dir) {
   message("#######################")
   message("### ", tp2, " vs ", tp1)
   message("#######################")
@@ -69,25 +69,25 @@ perform_diffbind <- function(target, sSheet, tp1, tp2, output_dir) {
   
   message("  > Reporting...")
   report_pval <- dba.report(analyze, bCounts = T, bUsePval = TRUE)
-  df_filename_pval <- paste0("diffbind_", target, "_", contrast_name, "_pval.txt")
+  df_filename_pval <- paste0("diffbind_", target, "_", contrast_name, "_reps", reps, "_pval.txt")
   output_path <- file.path(output_dir, df_filename_pval)
   write.table(report_pval, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
   message("     > Differential binding saved in ", output_path)
 
   report <- dba.report(analyze, bCounts = T)
-  df_filename <- paste0("diffbind_", target, "_", contrast_name, "_fdr.txt")
+  df_filename <- paste0("diffbind_", target, "_", contrast_name, "_reps", reps, "_fdr.txt")
   output_path <- file.path(output_dir, df_filename)
   write.table(report, file = output_path, quote = FALSE, sep = "\t", row.names = FALSE)
   message("     > Differential binding saved in ", output_path)
 }
 
 #####
-open_diffBind <- function(target, tp1, tp2, pval = FALSE, output_dir) {
+open_diffBind <- function(target, tp1, tp2, reps = "123", pval = FALSE, output_dir) {
   message("#######################")
   message("### ", tp2, " VS ", tp1)
   message("#######################")
   contrast_name <- paste0(tp2, "VS", tp1)
-  filename <- paste0("diffbind_", target, "_", contrast_name)
+  filename <- paste0("diffbind_", target, "_", contrast_name, "_reps", reps)
   
   if (pval) {
     df_filename <- paste(filename, "pval.txt", sep = "_")
@@ -121,9 +121,9 @@ open_diffBind <- function(target, tp1, tp2, pval = FALSE, output_dir) {
 
 #####
 bam_folder <- "input/ENCODE/A549/GRCh38/chip-seq/bam"
-# bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
-# sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder)
-# sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder)
+bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
+sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder, reps = "123")
+# sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder, reps = "123")
 
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
@@ -131,7 +131,7 @@ for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
     tp1 <- timepoint[i]
     tp2 <- timepoint[j]
-    # perform_diffbind("GR", sSheet_GR, tp1, tp2, output_dir = "output/analyses/GR_diffbind")
+    # perform_diffbind("GR", sSheet_GR, tp1, tp2, reps = "123", output_dir = "output/analyses/GR_diffbind")
   }
 }
 
@@ -143,7 +143,7 @@ for (i in 1:(ltp-1)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
       contrast_name <- paste0(tp2, "VS", tp1)
-      report <- open_diffBind("GR", tp1, tp2, pval = TF, output_dir = "output/analyses/GR_diffbind")
+      report <- open_diffBind("GR", tp1, tp2, pval = TF, reps = "123", output_dir = "output/analyses/GR_diffbind")
       
       if (!is.null(report)) {
         upreg <- report %>% dplyr::filter(Fold > 0)
@@ -204,12 +204,12 @@ m <- make_comb_mat(matrix, remove_empty_comb_set = TRUE)
 UpSet(m)
 comb_size(m)
 
-annot <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m), 
+annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m), 
                                                                border = FALSE, gp = gpar(fill = "black"), height = unit(3, "cm")), 
                            annotation_name_side = "left", annotation_name_rot = 0,
                            "Size" = anno_text(comb_size(m), rot = 0, just = "center", location = 0.25))
 
-UpSet(m, top_annotation = annot)
+UpSet(m, top_annotation = annot_top)
 
 # comb_size > 10
 m2 <- m[comb_size(m) >= 10]
@@ -217,12 +217,14 @@ UpSet(m2)
 comb_size(m2)
 comb_degree(m2)
 
-annot <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m2), 
+annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m2), 
                                                       border = FALSE, gp = gpar(fill = "black"), height = unit(3, "cm")), 
                   annotation_name_side = "left", annotation_name_rot = 0,
                   "Size" = anno_text(comb_size(m2), rot = 0, just = "center", location = 0.25))
 
-UpSet(m2, top_annotation = annot)
+annot_right <- HeatmapAnnotation("Size" = anno_text(set_size(m2)))
+
+UpSet(m2, top_annotation = annot_top) #, right_annotation = annot_right)
 
 #
 idToName <- function(id, set_names) {
