@@ -55,9 +55,9 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
       message("####\t", cofactor, " | ", condition)
       basename <- paste0("A549_", condition, "_", cofactor, "_rep1")
       peaks_path <- file.path(peaks_dir, basename, paste0(basename, "_peaks.narrowPeak.stdchr.bed"))
-      message(peaks_path)
+      message(" > ", peaks_path)
       peaks <- rtracklayer::import(peaks_path)
-      message("Number of regions : ", length(peaks))
+      message("   > Number of regions : ", length(peaks))
       cofactors_peaks <- append(cofactors_peaks, GRangesList(peaks))
       name_cofactors_peaks <- c(name_cofactors_peaks, paste0(cofactor, "_", condition))
     }
@@ -71,17 +71,39 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
 
 #####
 load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
-  peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
+  peaks_dir <- "output/chip-pipeline-GRCh38/binding_diff"
   diffbind_cofactors_peaks <- GRangesList()
   name_diffbind_cofactors_peaks <- c()
   for (cofactor in cofactors) {
+    message("####\t", cofactor)
+    cofactor_folder <- file.path(paste("A549", cofactor, sep = "_"), "output_filters")
+    
+    # up
+    peaks_up_path <- file.path(peaks_dir, cofactor_folder, paste("A549_DEX", cofactor, "rep1_peaks.narrowPeak_M_above_0.5_biased_peaks.bed", sep = "_"))
+    message(" > ",peaks_up_path)
+    peaks_up <- rtracklayer::import(peaks_up_path)
+    message("   > Number of regions : ", length(peaks_up))
+      
+    # down
+    peaks_down_path <- file.path(peaks_dir, cofactor_folder, paste("A549_CTRL", cofactor, "rep1_peaks.narrowPeak_M_below_-0.5_biased_peaks.bed", sep = "_"))
+    message(" > ",peaks_down_path)
+    peaks_down <- rtracklayer::import(peaks_down_path)
+    message("   > Number of regions : ", length(peaks_down))
+    
+    # unbiased
+    peaks_unbiased_path <- file.path(peaks_dir, cofactor_folder, paste("A549", cofactor, "unbiased_peaks.bed", sep = "_"))
+    message(" > ",peaks_unbiased_path)
+    peaks_unbiased <- rtracklayer::import(peaks_unbiased_path)
+    message("   > Number of regions : ", length(peaks_unbiased))
+    
+    # gather everything
+    diffbind_cofactors_peaks <- append(diffbind_cofactors_peaks, GRangesList(peaks_up, peaks_down, peaks_unbiased))
+    name_diffbind_cofactors_peaks <- c(name_diffbind_cofactors_peaks, c(paste(cofactor, c("UP", "DOWN", "UNBIASED"), sep = "_")))
+    
     # for (condition in c("CTRL", "DEX")) {
-    #   message("####\t", cofactor, " | ", condition)
     #   basename <- paste0("A549_", condition, "_", cofactor, "_rep1")
     #   peaks_path <- file.path(peaks_dir, basename, paste0(basename, "_peaks.narrowPeak.bed"))
-    #   message(peaks_path)
-    #   peaks <- rtracklayer::import(peaks_path)
-    #   message("Number of regions : ", length(peaks))
+
     #   diffbind_cofactors_peaks <- append(cofactors_peaks, GRangesList(peaks))
     #   name_diffbind_cofactors_peaks <- c(name_cofactors_peaks, paste0(cofactor, "_", condition))
     # }

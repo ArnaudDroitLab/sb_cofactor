@@ -271,7 +271,7 @@ sapply(set_GR_list, length)
 for (i in c(1, 2, 3, 6, 7, 9, 11, 12, 14)) {
   contrast <- names(set_GR_list)[i]
   message("##### ", contrast)
-  df_set_GR_list <- make_df_metagene_Reddy(chip_target = c("GR", "EP300"), peaks = set_GR_list[[i]], merge_replicates = TRUE, reps = "12")
+  # df_set_GR_list <- make_df_metagene_Reddy(chip_target = c("GR", "EP300"), peaks = set_GR_list[[i]], merge_replicates = TRUE, reps = "12")
   title_group <- paste(contrast, paste(length(set_GR_list[[i]]), "regions"), sep = " | ")
   p <- plot_metagene_Reddy(df_set_GR_list, title = title_group)
   saveMetagene(metagene_plot = p,
@@ -284,7 +284,9 @@ for (i in c(1, 2, 3, 6, 7, 9, 11, 12, 14)) {
 source("scripts/ckn_utils.R")
 # diffbind_cofactors <- load_diffbind_cofactors_peaks(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A"))
 
-cofactors <- load_cofactor_peaks(cofactors = c("NIPBL"))
+cofactors <- load_diffbind_cofactors_peaks()
+cofactors <- cofactors[grep("_DOWN", names(cofactors))]
+names(cofactors)
 set_GR_list_with_cofactors <- c(cofactors, set_GR_list)
 names(set_GR_list_with_cofactors)
 sapply(set_GR_list_with_cofactors, length)
@@ -297,7 +299,7 @@ sum(matrix_cofactors > 1)
 colnames(matrix_cofactors)
 
 m3 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
-m3 <- m3[comb_size(m3) >= 10]
+m3 <- m3[comb_size(m3) >= 50]
 UpSet(m3)
 comb_size(m3)
 
