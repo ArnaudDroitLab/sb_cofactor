@@ -9,26 +9,26 @@ source("scripts/chris/metagene2_Reddy.utils.R")
 #####
 build_sSheet <- function(target, bam_folder, bed_folder, reps = "123") {
   # BAM
-  bam_pattern <- paste0("^", target, "_([0-9]+minute)_rep([", reps, "])_(.*\\.bam$)")
+  bam_pattern <- paste0("^", target, "_([0-9]+.*)_rep([", reps, "])_(.*\\.bam$)")
   bam_files <- list.files(path = bam_folder, pattern = bam_pattern, full.names = TRUE)
   nb_bam <- length(bam_files)
   
   SampleID <- basename(bam_files) %>% gsub(pattern = bam_pattern, replacement = paste0(target, "_", "\\1", "_rep\\2")) %>%
-    gsub(pattern = "minute", replacement = "m")
-  Timepoint <- gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\1", SampleID)
-  Replicate <- gsub(pattern = paste0("^", target, "_([0-9]+m)_rep(.)"), replacement = "\\2", SampleID)
+    gsub(pattern = "minute", replacement = "m") %>% gsub(pattern = "hour", replacement = "h")
+  Timepoint <- gsub(pattern = paste0("^", target, "_([0-9]+(m|h))_rep(.)"), replacement = "\\1", SampleID)
+  Replicate <- gsub(pattern = paste0("^", target, "_([0-9]+(m|h))_rep(.)"), replacement = "\\3", SampleID)
   Treatment <- Timepoint
-  Treatment_bis <- ifelse(Timepoint == "0m", "EtOH", "DEX")
+  Treatment_bis <- ifelse(Timepoint == "0m" | Timepoint == "0h", "EtOH", "DEX")
   Tissue <- "A549"
   Antibody <- target
   bamReads <- bam_files
   
   # BED
-  bed_pattern <- paste0("^", target, "_([0-9]+minute)_rep([", reps, "])_(.*\\.bed.gz$)")
+  bed_pattern <- paste0("^", target, "_([0-9]+.*)_rep([", reps, "])_(.*\\.bed.gz$)")
   bed_files <- list.files(path = bed_folder, pattern = bed_pattern, full.names = TRUE)
   Peaks <- bed_files
   PeakCaller <- rep("bed", nb_bam)
-
+  
   # sSheet
   sSheet <- data.frame(SampleID, Tissue, Antibody,
                        Treatment, Treatment_bis,
@@ -122,8 +122,8 @@ open_diffBind <- function(target, tp1, tp2, reps = "123", pval = FALSE, output_d
 #####
 bam_folder <- "input/ENCODE/A549/GRCh38/chip-seq/bam"
 bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
-sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder, reps = "12")
-# sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder, reps = "123")
+# sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder, reps = "12")
+sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder, reps = "123")
 
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
@@ -134,6 +134,10 @@ for (i in 1:(ltp-1)) {
     # perform_diffbind("GR", sSheet_GR, tp1, tp2, reps = "12", output_dir = "output/analyses/GR_diffbind")
   }
 }
+
+# perform diffbind for EP300 0h 1h
+perform_diffbind("EP300", sSheet_EP300, "0h", "1h", reps = "123", output_dir = "output/analyses/EP300_diffbind")
+open_diffBind("EP300", tp1 = "0h", tp2 = "1h", pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind")
 
 # explore GR diffbind 
 GR_diffbind_downreg <- list()
