@@ -129,17 +129,18 @@ sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder, reps = "123")
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
 for (i in 1:(ltp-1)) {
+# for (i in 1) {
   for (j in (i+1):ltp) {
     tp1 <- timepoint[i]
     tp2 <- timepoint[j]
     # perform_diffbind("GR", sSheet_GR, tp1, tp2, reps = "12", output_dir = "output/analyses/GR_diffbind")
-    perform_diffbind("EP300", sSheet_EP300, tp1, tp2, reps = "123", output_dir = "output/analyses/EP300_diffbind")
-    # open_diffBind("EP300", tp1, tp2, pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind")
+    # perform_diffbind("EP300", sSheet_EP300, tp1, tp2, reps = "123", output_dir = "output/analyses/EP300_diffbind")
+    open_diffBind("EP300", tp1, tp2, pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind")
   }
 }
 
 ## perform diffbind for EP300 0h 1h
-# perform_diffbind("EP300", sSheet_EP300, "0h", "1h", reps = "123", output_dir = "output/analyses/EP300_diffbind")
+perform_diffbind("EP300", sSheet_EP300, "0h", "1h", reps = "123", output_dir = "output/analyses/EP300_diffbind")
 EP300_DOWN <- open_diffBind("EP300", tp1 = "0h", tp2 = "1h", pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind") %>%
   dplyr::filter(Fold < 0) %>% makeGRangesFromDataFrame
 
