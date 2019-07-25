@@ -115,7 +115,7 @@ GENE_name = "FRMD3"
 
 # visualisation 2
 displayTracks <- function(GENE_name) {
-  GENE_region <- resize(hg38_refseq_promoters[GENE_name], fix = "center", width = 500000)
+  GENE_region <- resize(hg38_refseq_promoters[GENE_name], fix = "center", width = 250000)
   interaction_track <- InteractionTrack(hic_1h, name = "HiC", chromosome = "chr9")
   # plotTracks(interaction_track, chromosome="chr9", 
   #            from=start(GENE_region), to=end(GENE_region))
@@ -143,4 +143,4 @@ displayTracks <- function(GENE_name) {
              sizes=c(0.6, 0.2, 0.2))
 }
 
-displayTracks("DCAF12")
+displayTracks("NFX1")
