@@ -126,16 +126,15 @@ bed_folder <- "input/ENCODE/A549/GRCh38/chip-seq/narrow"
 # sSheet_GR <- build_sSheet("NR3C1", bam_folder, bed_folder, reps = "12")
 sSheet_EP300 <- build_sSheet("EP300", bam_folder, bed_folder, reps = "123")
 
-timepoint <- c("0h", "5m", "10m", "15m", "20m", "25m")
+timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
-# for (i in 1:(ltp-1)) {
-for (i in 1) {
+for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
     tp1 <- timepoint[i]
     tp2 <- timepoint[j]
     # perform_diffbind("GR", sSheet_GR, tp1, tp2, reps = "12", output_dir = "output/analyses/GR_diffbind")
-    # perform_diffbind("EP300", sSheet_EP300, tp1, tp2, reps = "123", output_dir = "output/analyses/EP300_diffbind")
-    open_diffBind("EP300", tp1, tp2, pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind")
+    perform_diffbind("EP300", sSheet_EP300, tp1, tp2, reps = "123", output_dir = "output/analyses/EP300_diffbind")
+    # open_diffBind("EP300", tp1, tp2, pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind")
   }
 }
 
@@ -145,32 +144,32 @@ EP300_DOWN <- open_diffBind("EP300", tp1 = "0h", tp2 = "1h", pval = TRUE, reps =
   dplyr::filter(Fold < 0) %>% makeGRangesFromDataFrame
 
 ## perform diffbind for EP300 0h 0m
-perform_diffbind("EP300", sSheet_EP300, "0h", "0m", reps = "123", output_dir = "output/analyses/EP300_diffbind")
+# perform_diffbind("EP300", sSheet_EP300, "0h", "0m", reps = "123", output_dir = "output/analyses/EP300_diffbind")
 open_diffBind("EP300", "0h", "0m", pval = TRUE, reps = "123", output_dir = "output/analyses/EP300_diffbind")
 
-# explore GR diffbind 
-GR_diffbind_downreg <- list()
+# explore EP300 diffbind 
+EP300_diffbind_downreg <- list()
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
     for (TF in c(TRUE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
       contrast_name <- paste0(tp2, "VS", tp1)
-      report <- open_diffBind("GR", tp1, tp2, pval = TF, reps = "12", output_dir = "output/analyses/GR_diffbind")
+      report <- open_diffBind("EP300", tp1, tp2, pval = TF, reps = "123", output_dir = "output/analyses/EP300_diffbind")
       
       if (!is.null(report)) {
         upreg <- report %>% dplyr::filter(Fold > 0)
         downreg <- report %>% dplyr::filter(Fold < 0)
         if (nrow(downreg) != 0) {
-          GR_diffbind_downreg[[paste0(contrast_name, "_downreg")]] <- makeGRangesFromDataFrame(downreg)
+          EP300_diffbind_downreg[[paste0(contrast_name, "_downreg")]] <- makeGRangesFromDataFrame(downreg)
         }
       }
     }
   }
 }
 
-names(GR_diffbind_downreg)
-sapply(GR_diffbind_downreg, length)
+names(EP300_diffbind_downreg)
+sapply(EP300_diffbind_downreg, length)
 
 # Overlaps Cofactors_down and GR_DOWN
 cofactors <- load_diffbind_cofactors_peaks()
@@ -178,11 +177,11 @@ cofactors <- cofactors[grep("_DOWN", names(cofactors))]
 cofactors <- append(cofactors, GRangesList("EP300_DOWN" = EP300_DOWN))
 names(cofactors)
 
-set_GR_list_with_cofactors <- c(cofactors, GR_diffbind_downreg)
-names(set_GR_list_with_cofactors)
-sapply(set_GR_list_with_cofactors, length)
+set_EP300_list_with_cofactors <- c(cofactors, EP300_diffbind_downreg)
+names(set_EP300_list_with_cofactors)
+sapply(set_EP300_list_with_cofactors, length)
 
-inter_cofactors <- build_intersect(set_GR_list_with_cofactors)
+inter_cofactors <- build_intersect(set_EP300_list_with_cofactors)
 matrix_cofactors <- inter_cofactors$Matrix
 sum(matrix_cofactors > 1)
 matrix_cofactors[matrix_cofactors > 1] <- 1
@@ -190,7 +189,7 @@ sum(matrix_cofactors > 1)
 colnames(matrix_cofactors)
 
 m4 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
-m4 <- m4[comb_size(m4) >= 30]
+m4 <- m4[comb_size(m4) >= 50]
 UpSet(m4)
 comb_size(m4)
 
