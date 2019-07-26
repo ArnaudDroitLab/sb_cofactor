@@ -52,13 +52,14 @@ per_cluster <- left_join(prom12_esng, clusters, by = "gene")
 
 sum(!is.na(per_cluster$cluster))
 
-# 54 genes belongs to cluster
+# 57 genes belongs to cluster
 myClusters <- per_cluster[!is.na(per_cluster$cluster), ]
 myClusters$cluster<- paste0("cluster", myClusters$cluster)
 
 recap <- myClusters %>% group_by(cluster) %>% tally
 
-for (geneENSG in myClusters$gene[25]) {
+
+for (geneENSG in myClusters$gene[30:length(myClusters$gene)]) {
   region <- hg38_promoters[geneENSG] %>% as.data.frame
   symbol <- region %>% dplyr::select(geneSymbol) %>% pull(geneSymbol)
   if (symbol == "") {
@@ -66,10 +67,26 @@ for (geneENSG in myClusters$gene[25]) {
   }
   chr <- region %>% dplyr::select(seqnames) %>% pull(seqnames) %>% as.character
   cluster <- myClusters %>% dplyr::filter(gene == geneENSG) %>% pull(cluster)
-  message("### ", symbol, " | ", gene, " | ", chr, " | ", cluster)
-  title <- paste0(symbol, " | ", gene, " | ", chr, " | ", cluster)
-  u <- displayTracks(geneENSG, chr, title)
+  message("### ", symbol, " | ", geneENSG, " | ", chr, " | ", cluster)
+  title <- paste0(symbol, " | ", geneENSG, " | ", chr, " | ", cluster)
+  displayTracks(geneENSG, chr, title)
+  Sys.sleep(2)
+  saveTracks(tracks = displayTracks(geneENSG, chr, title),
+             output_dir = "output/analyses/annotate_peaks_with_hic",
+             output_file = paste("20190726", symbol, cluster, geneENSG, sep = "_"),
+             format = "pdf",
+             width = 20, height = 12)
+  Sys.sleep(2)
 }
+
+saveTracks <- function(tracks, output_dir, output_file, width_val = 25, height_val = 22, format = "pdf") {
+  output_filepath <- file.path(output_dir, paste0(output_file, ".", format))
+  pdf(file = output_filepath, width = width_val, height = height_val)
+  tracks
+  dev.off()
+  message(" > Tracks saved in ", output_filepath)
+}
+
 
 displayTracks <- function(GENE_name, chr, title) {
   GENE_region <- resize(hg38_promoters[GENE_name], fix = "center", width = 1000000)
