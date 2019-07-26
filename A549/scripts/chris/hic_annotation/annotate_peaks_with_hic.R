@@ -3,13 +3,16 @@
 library(GenomicInteractions)
 library(tidyverse)
 library(Gviz)
+source("scripts/ckn_utils.R")
 
 # load GR_DOWN
-GR_diffbind_downreg <- readRDS(file = "output/analyses/annotate_peaks_with_hic/GR_diffbind_downreg.rds")
-names(GR_diffbind_downreg)
-sapply(GR_diffbind_downreg, length)
-GR_25mVS10m <- GR_diffbind_downreg[["25mVS10m_downreg"]] # 4450 regions
-names(GR_25mVS10m) <- paste("GR_25mVS10m", paste0("peak", 1:length(GR_25mVS10m)), sep = "_")
+# GR_diffbind_downreg <- readRDS(file = "output/analyses/annotate_peaks_with_hic/GR_diffbind_downreg.rds")
+# names(GR_diffbind_downreg)
+# sapply(GR_diffbind_downreg, length)
+# GR_25mVS10m <- GR_diffbind_downreg[["25mVS10m_downreg"]] # 4450 regions
+# names(GR_25mVS10m) <- paste("GR_25mVS10m", paste0("peak", 1:length(GR_25mVS10m)), sep = "_")
+NIPBL_DOWN <- load_diffbind_cofactors_peaks(c = ("NIPBL"))[["NIPBL_DOWN"]]
+names(NIPBL_DOWN) <- paste("NIPBL_DOWN", paste0("peak", 1:length(NIPBL_DOWN)), sep = "_")
 
 # load hg38_promoters
 hg38_promoters <- readRDS("output/analyses/annotate_peaks_with_hic/hg38_refseq_promoters.rds")
@@ -18,7 +21,7 @@ hg38_promoters <- readRDS("output/analyses/annotate_peaks_with_hic/hg38_refseq_p
 hic_1h <- readRDS("output/analyses/annotate_peaks_with_hic/hic_1h_GIObject.rds")
 
 # Annotate interactions
-annotation.features <- list(promoter = hg38_promoters, enhancer = GR_25mVS10m)
+annotation.features <- list(promoter = hg38_promoters, enhancer = NIPBL_DOWN)
 annotateInteractions(hic_1h, annotation.features)
 
 # explore results in hic_1h
@@ -28,7 +31,7 @@ regions(hic_1h)
 table(regions(hic_1h)$node.class)
 
 # Interactions types
-plotInteractionAnnotations(hic_1h, legend = TRUE)
+plotInteractionAnnotations(hic_1h, legend = TRUE, viewpoints = "enhancer")
 length(hic_1h[isInteractionType(hic_1h, "enhancer", "promoter")])
 length(hic_1h[isInteractionType(hic_1h, "enhancer", "distal")])
 length(hic_1h[isInteractionType(hic_1h, "enhancer", "enhancer")])
@@ -94,10 +97,10 @@ displayTracks <- function(GENE_name, chr, title) {
   # plotTracks(interaction_track, chromosome="chr9", 
   #            from=start(GENE_region), to=end(GENE_region))
   
-  promoterTrack <- AnnotationTrack(hg38_promoters, genome="hg38", name="Promoters",
-                                   id=hg38_promoters$geneSymbol,  featureAnnotation="id")
-  enhTrack <- AnnotationTrack(GR_25mVS10m, genome="hg38", name="GR_25mVS10m", stacking = "dense")
-  
+  promoterTrack <- AnnotationTrack(hg38_promoters[GENE_name], genome="hg38", name="Promoters",
+                                   id=hg38_promoters[GENE_name]$geneSymbol,  featureAnnotation="id",
+                                   stacking="dense")
+  enhTrack <- AnnotationTrack(NIPBL_DOWN, genome="hg38", name="NIPBL_DOWN", stacking = "dense")
   displayPars(promoterTrack) <- list(fill = "deepskyblue", col = NA, 
                                      fontcolor.feature = "black", fontsize=8,
                                      just.group="below")
@@ -111,11 +114,11 @@ displayTracks <- function(GENE_name, chr, title) {
                                         plot.outside = TRUE, 
                                         col.outside="lightblue", 
                                         anchor.height = 0.1)
-  gtrack <- GenomeAxisTrack()
+  gtrack <- GenomeAxisTrack(name = "Scale")
   
   plotTracks(list(interaction_track, promoterTrack, enhTrack, gtrack),
              chromosome=chr, from=start(GENE_region), to=end(GENE_region), 
-             sizes=c(0.6, 0.2, 0.2, 0.2), main = title)
+             sizes=c(3, 1, 1, 1), main = title)
 }
 
 
