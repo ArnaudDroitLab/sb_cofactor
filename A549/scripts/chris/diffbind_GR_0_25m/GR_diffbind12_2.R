@@ -133,7 +133,7 @@ for (i in 1:(ltp-1)) {
     tp1 <- timepoint[i]
     tp2 <- timepoint[j]
     # perform_diffbind("GR", sSheet_GR, tp1, tp2, reps = "12", output_dir = "output/analyses/GR_diffbind")
-    perform_diffbind("EP300", sSheet_EP300, tp1, tp2, reps = "123", output_dir = "output/analyses/EP300_diffbind")
+    # perform_diffbind("EP300", sSheet_EP300, tp1, tp2, reps = "123", output_dir = "output/analyses/EP300_diffbind")
     # open_diffBind("EP300", tp1, tp2, pval = TF, reps = "123", output_dir = "output/analyses/EP300_diffbind")
   }
 }
@@ -166,6 +166,7 @@ for (i in 1:(ltp-1)) {
 
 names(GR_diffbind_downreg)
 sapply(GR_diffbind_downreg, length)
+saveRDS(GR_diffbind_downreg, file = "output/GR_diffbind_downreg")
 
 # Overlaps Cofactors_down and GR_DOWN
 cofactors <- load_diffbind_cofactors_peaks()
