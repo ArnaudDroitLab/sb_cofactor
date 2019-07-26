@@ -59,7 +59,7 @@ myClusters$cluster<- paste0("cluster", myClusters$cluster)
 recap <- myClusters %>% group_by(cluster) %>% tally
 
 
-for (geneENSG in myClusters$gene[30:length(myClusters$gene)]) {
+for (geneENSG in myClusters$gene) {
   region <- hg38_promoters[geneENSG] %>% as.data.frame
   symbol <- region %>% dplyr::select(geneSymbol) %>% pull(geneSymbol)
   if (symbol == "") {

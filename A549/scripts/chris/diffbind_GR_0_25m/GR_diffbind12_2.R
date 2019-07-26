@@ -147,7 +147,7 @@ EP300_DOWN <- open_diffBind("EP300", tp1 = "0h", tp2 = "1h", pval = TRUE, reps =
 GR_diffbind_downreg <- list()
 for (i in 1:(ltp-1)) {
   for (j in (i+1):ltp) {
-    for (TF in c(TRUE)) {
+    for (TF in c(FALSE)) {
       tp1 <- timepoint[i]
       tp2 <- timepoint[j]
       contrast_name <- paste0(tp2, "VS", tp1)
@@ -166,7 +166,7 @@ for (i in 1:(ltp-1)) {
 
 names(GR_diffbind_downreg)
 sapply(GR_diffbind_downreg, length)
-saveRDS(GR_diffbind_downreg, file = "output/GR_diffbind_downreg")
+saveRDS(GR_diffbind_downreg, file = "output/analyses/annotate_peaks_with_hic/GR_diffbind_downreg_fdr.rds")
 
 # Overlaps Cofactors_down and GR_DOWN
 cofactors <- load_diffbind_cofactors_peaks()
@@ -186,7 +186,7 @@ sum(matrix_cofactors > 1)
 colnames(matrix_cofactors)
 
 m4 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
-m4 <- m4[comb_size(m4) >= 30]
+m4 <- m4[comb_size(m4) >= 10]
 UpSet(m4)
 comb_size(m4)
 
