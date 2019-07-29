@@ -108,8 +108,10 @@ load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9",
 }
 
 #####
-annotatePeaks <- function(gr, output = "df", tss = 3000) {
+annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_TxDb) {
   # difference between txdb and most expressed txdb???
+  # output can be: "df" or "anno"
+  # TxDb can be: most_expressed_TxDb or txdb.hg38
   gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
   if (output == "anno") {
     message("Return a csAnno object")
@@ -119,26 +121,7 @@ annotatePeaks <- function(gr, output = "df", tss = 3000) {
     gr_anno_df$Annot <- gr_anno_df$annotation
     gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)
     gr_anno_df$Annot <- as.factor(gr_anno_df$Annot)
-    # gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
-    gr_anno_df$Coordinates <- paste0(gr_anno_df$seqnames, ":", gr_anno_df$start, "-", gr_anno_df$end)
-    message("Return a data.frame object")
-    return(gr_anno_df)
-  }
-}
-
-#####
-annotatePeaks2 <- function(gr, output = "df", tss = 3000) {
-  # difference between txdb and most expressed txdb???
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
-  if (output == "anno") {
-    message("Return a csAnno object")
-    return(gr_anno)
-  } else if (output == "df") {
-    gr_anno_df <- as.data.frame(gr_anno)
-    gr_anno_df$Annot <- gr_anno_df$annotation
-    gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)
-    gr_anno_df$Annot <- as.factor(gr_anno_df$Annot)
-    # gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
+    gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
     gr_anno_df$Coordinates <- paste0(gr_anno_df$seqnames, ":", gr_anno_df$start, "-", gr_anno_df$end)
     message("Return a data.frame object")
     return(gr_anno_df)
