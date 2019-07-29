@@ -99,14 +99,6 @@ load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9",
     # gather everything
     diffbind_cofactors_peaks <- append(diffbind_cofactors_peaks, GRangesList(peaks_up, peaks_down, peaks_unbiased))
     name_diffbind_cofactors_peaks <- c(name_diffbind_cofactors_peaks, c(paste(cofactor, c("UP", "DOWN", "UNBIASED"), sep = "_")))
-    
-    # for (condition in c("CTRL", "DEX")) {
-    #   basename <- paste0("A549_", condition, "_", cofactor, "_rep1")
-    #   peaks_path <- file.path(peaks_dir, basename, paste0(basename, "_peaks.narrowPeak.bed"))
-
-    #   diffbind_cofactors_peaks <- append(cofactors_peaks, GRangesList(peaks))
-    #   name_diffbind_cofactors_peaks <- c(name_cofactors_peaks, paste0(cofactor, "_", condition))
-    # }
   }
   names(diffbind_cofactors_peaks) <- name_diffbind_cofactors_peaks
   message("#####################################")
