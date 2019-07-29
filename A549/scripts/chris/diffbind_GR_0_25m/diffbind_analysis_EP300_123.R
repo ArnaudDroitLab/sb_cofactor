@@ -1,4 +1,15 @@
+# setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
+library(knitr)
+library(DiffBind)
+library(GenomicRanges)
+library(ComplexHeatmap)
+source("scripts/chris/metagene2_Reddy.utils.R")
+source("scripts/chris/diffbind_GR_0_25m/diffbind.utils.R")
+
+##### Gather all down GR regions
+timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
+ltp <- length(timepoint)
 
 # explore EP300 diffbind 
 EP300_diffbind_downreg <- list()
@@ -58,49 +69,3 @@ annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(m4),
 )
 
 UpSet(m4, top_annotation = annot_top, right_annotation = annot_right)
-
-# Let's extract the intersection set
-idToName <- function(id, set_names) {
-  name <- c()
-  for (i in 1:nchar(id)) {
-    if (substring(id, i, i) == "1") {
-      good_set <- strsplit(set_names[i], "_")[[1]][1]
-      name <- paste(name, good_set, sep = "+")
-    }
-  }
-  return(substring(name, 2))
-}
-
-cs <- comb_size(m4)
-de <- comb_degree(m4)
-set_GR_list <- list()
-for (id in names(cs)){
-  i <- extract_comb(m4, id)
-  setname <- idToName(id, colnames(matrix_cofactors))
-  message("##### ", id, " | degree ", de[id], " | ", setname)
-  regions <- inter_cofactors$Regions[i]
-  
-  set_GR_list[[setname]] <- regions
-}
-
-names(set_GR_list)
-sapply(set_GR_list, length)
-
-# for (i in c(35, 30, 36, 28, 38, 33, 31, 27, 21)) {
-#   contrast <- names(set_GR_list)[i]
-#   message("##### ", contrast)
-#   df_set_GR_list <- make_df_metagene_Reddy(chip_target = c("GR", "EP300"), peaks = set_GR_list[[i]], merge_replicates = TRUE, reps = "12")
-#   title_group <- paste(contrast, paste(length(set_GR_list[[i]]), "regions"), sep = " | ")
-#   p <- plot_metagene_Reddy(df_set_GR_list, title = title_group)
-#   saveMetagene(metagene_plot = p,
-#                output_dir = "output/analyses/GR_diffbind_downreg_setlist_2",
-#                output_file = paste("GR_diffbind_downreg_GR_EP300", contrast, "reps12", sep = "_"),
-#                width = 20, height = 9)
-# }
-
-t <- set_GR_list[["NIPBL+BRD4+CDK9+MED1+SMC1A+25mVS10m"]] %>% as.data.frame
-t$seqnames <- as.character(t$seqnames)
-t <- t %>% arrange(seqnames) %>%
-  mutate(coord = paste0(seqnames, ":", start, "-", end),
-         index = 1:length(coord))
-kable(t)

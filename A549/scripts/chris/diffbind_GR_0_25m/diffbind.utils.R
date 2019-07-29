@@ -116,3 +116,29 @@ open_diffBind <- function(target, tp1, tp2, reps = "123", pval = FALSE, output_d
     message("  ### Empty file")
   }
 }
+
+###### Fron intersectionID, build a readable name for an intersection set
+idToName <- function(id, set_names) {
+  name <- c()
+  for (i in 1:nchar(id)) {
+    if (substring(id, i, i) == "1") {
+      good_set <- strsplit(set_names[i], "_")[[1]][1]
+      name <- paste(name, good_set, sep = "+")
+    }
+  }
+  return(substring(name, 2))
+}
+
+####### Build intersection matrix for UpSet plot visualisation
+build_intersect <- function(grl) {
+  all.regions = GenomicRanges::reduce(unlist(grl))
+  overlap.matrix <- matrix(0, nrow=length(all.regions), ncol=length(grl))
+  overlap.list = list()
+  
+  for(i in 1:length(grl)) {
+    overlap.matrix[,i] <- GenomicRanges::countOverlaps(all.regions, grl[[i]], type="any")
+    overlap.list[[ names(grl)[i] ]] <- which(overlap.matrix[,i] != 0)
+  }
+  colnames(overlap.matrix) <- names(grl)
+  return(list(Regions = all.regions, Matrix=overlap.matrix, List=overlap.list, Names=colnames(overlap.matrix), Length=ncol(overlap.matrix)))
+}
