@@ -1,6 +1,7 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 library(tidyverse)
+library(DiffBind)
 
 ##### Build sample sheet for differential binding with DiffBind package
 build_sSheet <- function(target, bam_folder, bed_folder, reps = "123") {

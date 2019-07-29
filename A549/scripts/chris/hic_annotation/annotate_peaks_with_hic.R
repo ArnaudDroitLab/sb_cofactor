@@ -61,7 +61,6 @@ myClusters$cluster<- paste0("cluster", myClusters$cluster)
 
 recap <- myClusters %>% group_by(cluster) %>% tally
 
-
 for (geneENSG in myClusters$gene) {
   region <- hg38_promoters[geneENSG] %>% as.data.frame
   symbol <- region %>% dplyr::select(geneSymbol) %>% pull(geneSymbol)
@@ -94,8 +93,6 @@ saveTracks <- function(tracks, output_dir, output_file, width_val = 25, height_v
 displayTracks <- function(GENE_name, chr, title) {
   GENE_region <- resize(hg38_promoters[GENE_name], fix = "center", width = 1000000)
   interaction_track <- InteractionTrack(hic_1h, name = "HiC", chromosome = chr)
-  # plotTracks(interaction_track, chromosome="chr9", 
-  #            from=start(GENE_region), to=end(GENE_region))
   
   promoterTrack <- AnnotationTrack(hg38_promoters[GENE_name], genome="hg38", name="Promoters",
                                    id=hg38_promoters[GENE_name]$geneSymbol,  featureAnnotation="id",
@@ -120,16 +117,3 @@ displayTracks <- function(GENE_name, chr, title) {
              chromosome=chr, from=start(GENE_region), to=end(GENE_region), 
              sizes=c(3, 1, 1, 1), main = title)
 }
-
-
-
-# visualisation 1
-anchorOne(ep)
-anchorTwo(ep)
-
-ensg = "FRMD3"
-
-# GENE_region <- resize(hg38_refseq_promoters[GENE_name], fix = "center", width = 1000000)
-# interaction_track <- InteractionTrack(hic_1h, name = "HiC", chromosome = "chr9")
-# plotTracks(interaction_track, chromosome="chr9", 
-#            from=start(GENE_region), to=end(GENE_region))

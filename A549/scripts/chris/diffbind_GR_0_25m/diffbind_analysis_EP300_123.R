@@ -7,7 +7,7 @@ library(ComplexHeatmap)
 source("scripts/chris/metagene2_Reddy.utils.R")
 source("scripts/chris/diffbind_GR_0_25m/diffbind.utils.R")
 
-##### Gather all down GR regions
+##### Gather all down EP300 regions
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
 ltp <- length(timepoint)
 
