@@ -4,7 +4,7 @@ library(ComplexHeatmap)
 source("scripts/ckn_utils.R")
 
 cofactors <- load_diffbind_cofactors_peaks()
-cofactors <- cofactors[grep("_DOWN|_UP", names(cofactors))]
+cofactors <- cofactors[grep("NIPBL|BRD4", names(cofactors))]
 sapply(cofactors, length)
 
 inter_cofactors <- build_intersect(cofactors)
@@ -14,9 +14,11 @@ matrix_cofactors[matrix_cofactors > 1] <- 1
 sum(matrix_cofactors > 1)
 colnames(matrix_cofactors)
 
+cofactors_names <- c("BRD4", "NIPBL")
+cofactors_set_order <- c(paste0(cofactors_names, "_UP"), paste0(cofactors_names, "_UNBIASED"), paste0(cofactors_names, "_DOWN"))
 m4 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
-m4 <- m4[comb_size(m4) >= 30]
-UpSet(m4)
+m4 <- m4[comb_size(m4) >= 10]
+UpSet(m4, set_order = cofactors_set_order)
 comb_size(m4)
 
 annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m4), 
@@ -30,4 +32,7 @@ annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(m4),
                              "Size" = anno_text(set_size(m4))
 )
 
-UpSet(m4, top_annotation = annot_top, right_annotation = annot_right)
+cofactors_names <- c("BRD4", "NIPBL")
+UpSet(m4, top_annotation = annot_top, right_annotation = annot_right,
+      set_order = cofactors_set_order)
+
