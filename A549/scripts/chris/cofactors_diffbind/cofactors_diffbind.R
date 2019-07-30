@@ -35,4 +35,3 @@ annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(m4),
 cofactors_names <- c("BRD4", "NIPBL")
 UpSet(m4, top_annotation = annot_top, right_annotation = annot_right,
       set_order = cofactors_set_order)
-
