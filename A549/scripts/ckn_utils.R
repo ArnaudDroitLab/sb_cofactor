@@ -191,3 +191,30 @@ load_diffbind_POLR2A_peaks_Myers <- function() {
   print(names(peaks))
   return(peaks)
 }
+
+##### make UpSet plot
+# 
+displayUpSet <- function(combMat, threshold = 1, customSetOrder = FALSE) {
+  combMat <- combMat[comb_size(combMat) >= threshold]
+  annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(combMat), 
+                                                                     border = FALSE,
+                                                                     gp = gpar(fill = "black"),
+                                                                     height = unit(3, "cm")), 
+                                 "Size" = anno_text(comb_size(combMat),
+                                                    rot = 0,
+                                                    just = "center",
+                                                    location = 0.25),
+                                 annotation_name_side = "left", annotation_name_rot = 0)
+  annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(combMat), 
+                                                         border = FALSE, 
+                                                         gp = gpar(fill = "black"), 
+                                                         width = unit(2, "cm")),
+                               "Size" = anno_text(set_size(combMat)))
+  
+  if (customSetOrder != FALSE) {
+    UpSet(combMat, top_annotation = annot_top, right_annotation = annot_right,
+          set_order = customSetOrder)
+  } else {
+    UpSet(combMat, top_annotation = annot_top, right_annotation = annot_right)
+  }
+}
