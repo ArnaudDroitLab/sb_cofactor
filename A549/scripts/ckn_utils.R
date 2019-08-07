@@ -193,7 +193,7 @@ load_diffbind_POLR2A_peaks_Myers <- function() {
 }
 
 ##### make UpSet plot
-# 
+# input: matrix of overlaps (can be made with build_intersect function)
 displayUpSet <- function(combMat, threshold = 1, customSetOrder = FALSE) {
   combMat <- combMat[comb_size(combMat) >= threshold]
   annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(combMat), 
