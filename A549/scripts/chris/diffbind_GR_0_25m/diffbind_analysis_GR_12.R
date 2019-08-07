@@ -6,6 +6,7 @@ library(GenomicRanges)
 library(ComplexHeatmap)
 source("scripts/chris/metagene2_Reddy.utils.R")
 source("scripts/chris/diffbind_GR_0_25m/diffbind.utils.R")
+source("scripts/ckn_utils.R")
 
 ##### Gather all down GR regions
 timepoint <- c("0m", "5m", "10m", "15m", "20m", "25m")
@@ -61,22 +62,8 @@ colnames(matrix_cofactors)
 
 # UpSet plot
 m4 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
-m4 <- m4[comb_size(m4) >= 10]
-UpSet(m4)
-comb_size(m4)
-
-annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(m4), 
-                                                                   border = FALSE, gp = gpar(fill = "black"), height = unit(3, "cm")), 
-                               annotation_name_side = "left", annotation_name_rot = 0,
-                               "Size" = anno_text(comb_size(m4), rot = 0, just = "center", location = 0.25))
-annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(m4), 
-                                                       border = FALSE, 
-                                                       gp = gpar(fill = "black"), 
-                                                       width = unit(2, "cm")),
-                             "Size" = anno_text(set_size(m4))
-)
-
-UpSet(m4, top_annotation = annot_top, right_annotation = annot_right)
+m4_10_plot <- displayUpSet(m4, threshold = 10)
+m4_10_plot
 
 # Extract intersection regions
 cs <- comb_size(m4)
