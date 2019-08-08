@@ -54,7 +54,7 @@ sapply(set_GR_list_with_cofactors, length)
 
 # Build the intersection matrix
 inter_cofactors <- GenomicOperations::GenomicOverlaps(set_GR_list_with_cofactors)
-matrix_cofactors <- inter_cofactors$Matrix
+matrix_cofactors <- inter_cofactors@matrix
 sum(matrix_cofactors > 1)
 # build_intersect count the number of overlaps, we only need the absence/presence in that purpose
 matrix_cofactors[matrix_cofactors > 1] <- 1

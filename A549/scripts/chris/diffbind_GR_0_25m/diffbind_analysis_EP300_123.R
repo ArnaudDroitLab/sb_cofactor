@@ -46,8 +46,8 @@ set_EP300_list_with_cofactors <- c(cofactors, EP300_diffbind_downreg)
 names(set_EP300_list_with_cofactors)
 sapply(set_EP300_list_with_cofactors, length)
 
-inter_cofactors <- build_intersect(set_EP300_list_with_cofactors)
-matrix_cofactors <- inter_cofactors$Matrix
+inter_cofactors <- GenomicOperations::GenomicOverlaps(set_EP300_list_with_cofactors)
+matrix_cofactors <- inter_cofactors@matrix
 sum(matrix_cofactors > 1)
 matrix_cofactors[matrix_cofactors > 1] <- 1
 sum(matrix_cofactors > 1)
