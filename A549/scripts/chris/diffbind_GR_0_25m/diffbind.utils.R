@@ -12,8 +12,8 @@ build_sSheet <- function(target, bam_folder, bed_folder, reps = "123") {
   
   SampleID <- basename(bam_files) %>% gsub(pattern = bam_pattern, replacement = paste0(target, "_", "\\1", "_rep\\2")) %>%
     gsub(pattern = "minute", replacement = "m") %>% gsub(pattern = "hour", replacement = "h")
-  Timepoint <- gsub(pattern = paste0("^", target, "_([0-9]+(m|h))_rep(.)"), replacement = "\\1", SampleID)
-  Replicate <- gsub(pattern = paste0("^", target, "_([0-9]+(m|h))_rep(.)"), replacement = "\\3", SampleID)
+  Timepoint <- gsub(pattern = paste0("^", target, "_([0-9]+(m|h))_rep(.)"), replacement = "\\1", x = SampleID)
+  Replicate <- gsub(pattern = paste0("^", target, "_([0-9]+(m|h))_rep(.)"), replacement = "\\3", x = SampleID)
   Treatment <- Timepoint
   Treatment_bis <- ifelse(Timepoint == "0m" | Timepoint == "0h", "EtOH", "DEX")
   Tissue <- "A549"
