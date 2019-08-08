@@ -1,6 +1,7 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 
 library(ComplexHeatmap)
+library(GenomicOperations)
 source("scripts/ckn_utils.R")
 
 #####
@@ -8,8 +9,8 @@ cofactors <- load_diffbind_cofactors_peaks()
 cofactors <- cofactors[grep("NIPBL|BRD4", names(cofactors))]
 sapply(cofactors, length)
 
-inter_cofactors <- build_intersect(cofactors)
-matrix_cofactors <- inter_cofactors$Matrix
+inter_cofactors <- GenomicOperations::GenomicOverlaps(cofactors)
+matrix_cofactors <- inter_cofactors@matrix
 sum(matrix_cofactors > 1)
 matrix_cofactors[matrix_cofactors > 1] <- 1
 sum(matrix_cofactors > 1)

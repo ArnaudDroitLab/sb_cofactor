@@ -4,6 +4,7 @@ library(knitr)
 library(DiffBind)
 library(GenomicRanges)
 library(ComplexHeatmap)
+library(GenomicOperations)
 source("scripts/chris/metagene2_Reddy.utils.R")
 source("scripts/chris/diffbind_GR_0_25m/diffbind.utils.R")
 source("scripts/ckn_utils.R")
@@ -52,7 +53,7 @@ names(set_GR_list_with_cofactors)
 sapply(set_GR_list_with_cofactors, length)
 
 # Build the intersection matrix
-inter_cofactors <- build_intersect(set_GR_list_with_cofactors)
+inter_cofactors <- GenomicOperations::GenomicOverlaps(set_GR_list_with_cofactors)
 matrix_cofactors <- inter_cofactors$Matrix
 sum(matrix_cofactors > 1)
 # build_intersect count the number of overlaps, we only need the absence/presence in that purpose
