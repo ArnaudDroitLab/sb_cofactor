@@ -54,7 +54,7 @@ sapply(set_GR_list_with_cofactors, length)
 
 # Build the intersection matrix
 inter_cofactors <- GenomicOperations::GenomicOverlaps(set_GR_list_with_cofactors)
-matrix_cofactors <- inter_cofactors@matrix
+matrix_cofactors <- intersect_matrix(inter_cofactors)
 sum(matrix_cofactors > 1)
 # build_intersect count the number of overlaps, we only need the absence/presence in that purpose
 matrix_cofactors[matrix_cofactors > 1] <- 1
@@ -83,6 +83,7 @@ names(set_GR_list)
 sapply(set_GR_list, length)
 
 # Metagene plot to control the intersection set
+# intersection_set can be accessed with set names instead of index
 # for (i in c(35, 30, 36, 28, 38, 33, 31, 27, 21)) {
 #   contrast <- names(set_GR_list)[i]
 #   message("##### ", contrast)

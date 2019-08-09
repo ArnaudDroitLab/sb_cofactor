@@ -4,6 +4,7 @@ library(knitr)
 library(DiffBind)
 library(GenomicRanges)
 library(ComplexHeatmap)
+library(GenomicOperations)
 source("scripts/chris/metagene2_Reddy.utils.R")
 source("scripts/chris/diffbind_GR_0_25m/diffbind.utils.R")
 source("scripts/ckn_utils.R")
@@ -47,7 +48,7 @@ names(set_EP300_list_with_cofactors)
 sapply(set_EP300_list_with_cofactors, length)
 
 inter_cofactors <- GenomicOperations::GenomicOverlaps(set_EP300_list_with_cofactors)
-matrix_cofactors <- inter_cofactors@matrix
+matrix_cofactors <- intersect_matrix(inter_cofactors)
 sum(matrix_cofactors > 1)
 matrix_cofactors[matrix_cofactors > 1] <- 1
 sum(matrix_cofactors > 1)
