@@ -22,7 +22,7 @@ makeGenomicInteractionsFromDF <- function(file_path) {
   return(hic_interactions)
 }
 
-hic_1h_path <- "/home/chris/Bureau/sb_cofactor_hr/A549/input/ENCODE/A549/GRCh38/hic long range interactions/ENCFF385DHX.tsv"
+hic_1h_path <- "input/ENCODE/A549/GRCh38/hic long range interactions/ENCFF385DHX.tsv"
 hic_1h <- makeGenomicInteractionsFromDF(hic_1h_path)
 saveRDS(hic_1h, file = "output/analyses/annotate_peaks_with_hic/hic_1h_GIObject.rds")
 mcols(hic_1h)

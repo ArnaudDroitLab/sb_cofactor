@@ -65,9 +65,9 @@ for (geneENSG in myClusters$gene) {
   region <- hg38_promoters[geneENSG] %>% as.data.frame
   symbol <- region %>% dplyr::select(geneSymbol) %>% pull(geneSymbol)
   if (symbol == "") {
-    symbol = "NA"
+    symbol = NA
   }
-  chr <- region %>% dplyr::select(seqnames) %>% pull(seqnames) %>% as.character
+  chr <- region$seqnames %>% as.character
   cluster <- myClusters %>% dplyr::filter(gene == geneENSG) %>% pull(cluster)
   message("### ", symbol, " | ", geneENSG, " | ", chr, " | ", cluster)
   title <- paste0(symbol, " | ", geneENSG, " | ", chr, " | ", cluster)
