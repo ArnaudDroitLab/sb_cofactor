@@ -12,7 +12,7 @@ seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
 txdb.hg38 <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
 #####
-load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1","SMC1A")) {
+load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
   peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
   cofactors_peaks <- GRangesList()
   name_cofactors_peaks <- c()
@@ -55,9 +55,9 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
       message("####\t", cofactor, " | ", condition)
       basename <- paste0("A549_", condition, "_", cofactor, "_rep1")
       peaks_path <- file.path(peaks_dir, basename, paste0(basename, "_peaks.narrowPeak.stdchr.bed"))
-      message(peaks_path)
+      message(" > ", peaks_path)
       peaks <- rtracklayer::import(peaks_path)
-      message("Number of regions : ", length(peaks))
+      message("   > Number of regions : ", length(peaks))
       cofactors_peaks <- append(cofactors_peaks, GRangesList(peaks))
       name_cofactors_peaks <- c(name_cofactors_peaks, paste0(cofactor, "_", condition))
     }
@@ -69,8 +69,49 @@ load_cofactor_stdchr_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "M
   return(cofactors_peaks)
 }
 
-annotatePeaks <- function(gr, output = "df", tss = 3000) {
+#####
+load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
+  peaks_dir <- "output/chip-pipeline-GRCh38/binding_diff"
+  diffbind_cofactors_peaks <- GRangesList()
+  name_diffbind_cofactors_peaks <- c()
+  for (cofactor in cofactors) {
+    message("####\t", cofactor)
+    cofactor_folder <- file.path(paste("A549", cofactor, sep = "_"), "output_filters")
+    
+    # up
+    peaks_up_path <- file.path(peaks_dir, cofactor_folder, paste("A549_DEX", cofactor, "rep1_peaks.narrowPeak_M_above_0.5_biased_peaks.bed", sep = "_"))
+    message(" > ",peaks_up_path)
+    peaks_up <- rtracklayer::import(peaks_up_path)
+    message("   > Number of regions : ", length(peaks_up))
+      
+    # down
+    peaks_down_path <- file.path(peaks_dir, cofactor_folder, paste("A549_CTRL", cofactor, "rep1_peaks.narrowPeak_M_below_-0.5_biased_peaks.bed", sep = "_"))
+    message(" > ",peaks_down_path)
+    peaks_down <- rtracklayer::import(peaks_down_path)
+    message("   > Number of regions : ", length(peaks_down))
+    
+    # unbiased
+    peaks_unbiased_path <- file.path(peaks_dir, cofactor_folder, paste("A549", cofactor, "unbiased_peaks.bed", sep = "_"))
+    message(" > ",peaks_unbiased_path)
+    peaks_unbiased <- rtracklayer::import(peaks_unbiased_path)
+    message("   > Number of regions : ", length(peaks_unbiased))
+    
+    # gather everything
+    diffbind_cofactors_peaks <- append(diffbind_cofactors_peaks, GRangesList(peaks_up, peaks_down, peaks_unbiased))
+    name_diffbind_cofactors_peaks <- c(name_diffbind_cofactors_peaks, c(paste(cofactor, c("UP", "DOWN", "UNBIASED"), sep = "_")))
+  }
+  names(diffbind_cofactors_peaks) <- name_diffbind_cofactors_peaks
+  message("#####################################")
+  message("Available set of regions: ")
+  print(names(diffbind_cofactors_peaks))
+  return(diffbind_cofactors_peaks)
+}
+
+#####
+annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_TxDb) {
   # difference between txdb and most expressed txdb???
+  # output can be: "df" or "anno"
+  # TxDb can be: most_expressed_TxDb or txdb.hg38
   gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
   if (output == "anno") {
     message("Return a csAnno object")
@@ -80,25 +121,7 @@ annotatePeaks <- function(gr, output = "df", tss = 3000) {
     gr_anno_df$Annot <- gr_anno_df$annotation
     gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)
     gr_anno_df$Annot <- as.factor(gr_anno_df$Annot)
-    # gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
-    gr_anno_df$Coordinates <- paste0(gr_anno_df$seqnames, ":", gr_anno_df$start, "-", gr_anno_df$end)
-    message("Return a data.frame object")
-    return(gr_anno_df)
-  }
-}
-
-annotatePeaks2 <- function(gr, output = "df", tss = 3000) {
-  # difference between txdb and most expressed txdb???
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=txdb.hg38, annoDb = "org.Hs.eg.db")
-  if (output == "anno") {
-    message("Return a csAnno object")
-    return(gr_anno)
-  } else if (output == "df") {
-    gr_anno_df <- as.data.frame(gr_anno)
-    gr_anno_df$Annot <- gr_anno_df$annotation
-    gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)
-    gr_anno_df$Annot <- as.factor(gr_anno_df$Annot)
-    # gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
+    gr_anno_df$Symbol <- mapIds(org.Hs.eg.db, gr_anno_df$geneId, "SYMBOL", "ENSEMBL")
     gr_anno_df$Coordinates <- paste0(gr_anno_df$seqnames, ":", gr_anno_df$start, "-", gr_anno_df$end)
     message("Return a data.frame object")
     return(gr_anno_df)
@@ -167,4 +190,31 @@ load_diffbind_POLR2A_peaks_Myers <- function() {
   message("Available set of regions: ")
   print(names(peaks))
   return(peaks)
+}
+
+##### make UpSet plot
+# input: matrix of overlaps (can be made with build_intersect function)
+displayUpSet <- function(combMat, threshold = 1, customSetOrder = FALSE) {
+  combMat <- combMat[comb_size(combMat) >= threshold]
+  annot_top <- HeatmapAnnotation("Intersection\nsize" = anno_barplot(comb_size(combMat), 
+                                                                     border = FALSE,
+                                                                     gp = gpar(fill = "black"),
+                                                                     height = unit(3, "cm")), 
+                                 "Size" = anno_text(comb_size(combMat),
+                                                    rot = 0,
+                                                    just = "center",
+                                                    location = 0.25),
+                                 annotation_name_side = "left", annotation_name_rot = 0)
+  annot_right <- rowAnnotation("Set size" = anno_barplot(set_size(combMat), 
+                                                         border = FALSE, 
+                                                         gp = gpar(fill = "black"), 
+                                                         width = unit(2, "cm")),
+                               "Size" = anno_text(set_size(combMat)))
+  
+  if (customSetOrder != FALSE) {
+    UpSet(combMat, top_annotation = annot_top, right_annotation = annot_right,
+          set_order = customSetOrder)
+  } else {
+    UpSet(combMat, top_annotation = annot_top, right_annotation = annot_right)
+  }
 }

@@ -9,7 +9,10 @@ make_report_bed <- function(target_name, all_chip_bed) {
   bed <- all_chip_bed %>% filter(target == target_name, assembly == "GRCh38", lab == "Tim Reddy, Duke")
   report_bed <- bed %>% dplyr::select(accession, file_accession, file_size, submitted_by, target, treatment_duration, treatment_duration_unit, biological_replicates, controls)
   report_bed$treatment_duration[is.na(report_bed$treatment_duration)] <- 0
-  report_bed$treatment_duration_unit[is.na(report_bed$treatment_duration_unit)] <- "minute"
+  report_bed$treatment_duration_unit[is.na(report_bed$treatment_duration_unit) &
+                                     report_bed$submitted_by == "Ian McDowell"] <- "hour"
+  report_bed$treatment_duration_unit[is.na(report_bed$treatment_duration_unit) &
+                                       report_bed$submitted_by == "Alejandro Barrera"] <- "minute"
   report_bed <- report_bed %>% arrange(desc(treatment_duration_unit), treatment_duration, submitted_by, biological_replicates)
   print(kable(report_bed))
   return(report_bed)
@@ -70,5 +73,5 @@ chip_bed_dir = "input/ENCODE/A549/GRCh38/chip-seq/narrow"
 ### All bed files associated with ChIP-seq experiments in A549
 all_chip_bed <- ENCODExplorer::queryEncodeGeneric(biosample_name="A549", file_format = "bed", assay="ChIP-seq")
 
-download_Reddy_Peaks("NR3C1")
-
+# download_Reddy_Peaks("NR3C1")
+download_Reddy_Peaks("EP300")
