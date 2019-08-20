@@ -79,13 +79,13 @@ load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9",
     cofactor_folder <- file.path(paste("A549", cofactor, sep = "_"), "output_filters")
     
     # up
-    peaks_up_path <- file.path(peaks_dir, cofactor_folder, paste("A549_DEX", cofactor, "rep1_peaks.narrowPeak_M_above_0.5_biased_peaks.bed", sep = "_"))
+    peaks_up_path <- file.path(peaks_dir, cofactor_folder, paste("A549_DEX", cofactor, "rep1_peaks.narrowPeak.stdchr_M_above_0.5_biased_peaks.bed", sep = "_"))
     message(" > ",peaks_up_path)
     peaks_up <- rtracklayer::import(peaks_up_path)
     message("   > Number of regions : ", length(peaks_up))
       
     # down
-    peaks_down_path <- file.path(peaks_dir, cofactor_folder, paste("A549_CTRL", cofactor, "rep1_peaks.narrowPeak_M_below_-0.5_biased_peaks.bed", sep = "_"))
+    peaks_down_path <- file.path(peaks_dir, cofactor_folder, paste("A549_CTRL", cofactor, "rep1_peaks.narrowPeak.stdchr_M_below_-0.5_biased_peaks.bed", sep = "_"))
     message(" > ",peaks_down_path)
     peaks_down <- rtracklayer::import(peaks_down_path)
     message("   > Number of regions : ", length(peaks_down))
