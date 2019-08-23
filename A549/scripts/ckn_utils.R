@@ -117,6 +117,7 @@ annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_T
     message("Return a csAnno object")
     return(gr_anno)
   } else if (output == "df") {
+    browser()
     gr_anno_df <- as.data.frame(gr_anno)
     gr_anno_df$Annot <- gr_anno_df$annotation
     gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)

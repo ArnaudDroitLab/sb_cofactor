@@ -27,16 +27,16 @@ sapply(stchr, length)
 sapply(diffbind, length)
 
 ##### MED1
-MED1 <- diffbind[grep("BRD4", names(diffbind))]
+MED1 <- diffbind[grep("MED1", names(diffbind))]
 sapply(MED1, length)
 
 # linear annotation
-linear_annot_MED1 <- lapply(MED1, annotatePeaks, tss = 3000, TxDb = hg38)
+linear_annot_MED1 <- lapply(MED1, annotatePeaks, tss = 3000, TxDb = most_expressed_TxDb)
 
 ##########################
 # analyse MED1_UP
 ##########################
-med1_up_annot <- linear_annot_MED1$BRD4_UP
+med1_up_annot <- linear_annot_MED1$MED1_UP
 plotAnnotation(med1_up_annot)
 
 med1_up_not_distal <- med1_up_annot %>% dplyr::filter(Annot %notin% c("Distal Intergenic", "Downstream"))
@@ -68,7 +68,7 @@ nb_downreg <- sum(res$downreg)
 ##########################
 # analyse MED1_DOWN
 ##########################
-med1_down_annot <- linear_annot_MED1$BRD4_DOWN
+med1_down_annot <- linear_annot_MED1$MED1_DOWN
 plotAnnotation(med1_down_annot)
 
 med1_down_not_distal <- med1_down_annot %>% dplyr::filter(Annot %notin% c("Distal Intergenic", "Downstream"))
@@ -98,7 +98,7 @@ nb_downreg <- sum(res$downreg)
 ##########################
 # analyse MED1_UNBIASED
 ##########################
-med1_un_annot <- linear_annot_MED1$BRD4_UNBIASED
+med1_un_annot <- linear_annot_MED1$MED1_UNBIASED
 plotAnnotation(med1_un_annot)
 
 med1_un_not_distal <- med1_un_annot %>% dplyr::filter(Annot %notin% c("Distal Intergenic", "Downstream"))
