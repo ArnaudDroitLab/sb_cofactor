@@ -1,6 +1,7 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
-# setwd("/Users/chris/Desktop/sb_cofactor_hr")
+# setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
+library(knitr)
 library(tidyverse)
 options(readr.num_columns = 0)
 
@@ -70,9 +71,9 @@ for (FC in paste0("FC", c("0", "0p5", "1", "1p5", "2", "2p5", "3"))) {
       print(intersect(upreg_list, downreg_list))
     }
     
-    vna <- rep(NA, length(is_deg$gene_id))
-    vna[is_deg$gene_id %in% upreg_list] = "up"
-    vna[is_deg$gene_id %in% downreg_list] = "down"
+    vna <- rep(0, length(is_deg$gene_id))
+    vna[is_deg$gene_id %in% upreg$gene_id] = 2
+    vna[is_deg$gene_id %in% downreg$gene_id] = 1
     is_deg <- cbind(is_deg, vna)
   }
   message("     # Number of differentially upregulated genes : ", length(upreg_list))
@@ -94,20 +95,8 @@ deg_numbers <- cbind(deg_numbers, deg_overtime, deg_overtime_unique)
 colnames(deg_numbers) <- c(time_point, "total", "total_unique")
 kable(deg_numbers)
 
-
-
-
-
-
+deg$deg_numbers <- deg_numbers
 
 # saveRDS(deg, file = "output/analyses/deg.rds")
-
-# Are some genes are differentially up and downregulated during the time course?
-FC_val = 0.5
-
-
-for (time in time_point) {
-  
-}
 
 
