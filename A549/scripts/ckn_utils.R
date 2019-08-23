@@ -108,16 +108,17 @@ load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9",
 }
 
 #####
-annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_TxDb) {
+annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_TxDb, verbose_TF = FALSE) {
   # difference between txdb and most expressed txdb???
   # output can be: "df" or "anno"
   # TxDb can be: most_expressed_TxDb or txdb.hg38
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
+  gr_anno <- ChIPseeker::annotatePeak(gr, overlap = "all", 
+                                      tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db",
+                                      verbose = verbose_TF)
   if (output == "anno") {
     message("Return a csAnno object")
     return(gr_anno)
   } else if (output == "df") {
-    browser()
     gr_anno_df <- as.data.frame(gr_anno)
     gr_anno_df$Annot <- gr_anno_df$annotation
     gr_anno_df$Annot <- gsub(" \\(.*\\)", "", gr_anno_df$Annot)
