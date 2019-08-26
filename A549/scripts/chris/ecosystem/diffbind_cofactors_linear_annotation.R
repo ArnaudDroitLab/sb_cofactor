@@ -38,6 +38,7 @@ cofactors <- c("MED1")
 
 clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/groenland_FC1/groenland_FC1_optimal_clustering.txt")
 
+genes_reg_by_cofactors_viaLinear <- list()
 for (cofactor in cofactors) {
   message("##### ", cofactor)
   regionSets <- diffbind[grep(cofactor, names(diffbind))]
@@ -76,5 +77,11 @@ for (cofactor in cofactors) {
     message("     Associated with ",  nb_upreg, " induced genes > ", round(nb_upreg/nrow(res)*100, 2), " %")
     message("     Associated with ",  nb_downreg, " repressed genes > ", round(nb_downreg/nrow(res)*100, 2), " %")
     message(" ")
+    
+    # save genes_list
+    genes_reg_by_cofactors_viaLinear[[sets]] <- genes_sets_ID %>% pull(gene) %>% as.character
   }
 }
+
+sapply(genes_reg_by_cofactors_viaLinear, length)
+saveRDS(genes_reg_by_cofactors_viaLinear, file = "output/analyses/ecosystem/genes_reg_by_cofactors_viaLinear.rds")

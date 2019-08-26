@@ -32,19 +32,20 @@ downreg <- deg$gene_list$FC1$downreg
 
 #### Define cofactors
 cofactors <- c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A")
-cofactors <- c("MED1")
+# cofactors <- c("MED1")
 
+genes_reg_by_cofactors_via3D <- list()
 for (cofactor in cofactors) {
   message("##### ", cofactor)
   regionSets <- diffbind[grep(cofactor, names(diffbind))]
   print(sapply(regionSets, length))
   
-  for(sets in names(regionSets)) {
+  for(setsName in names(regionSets)) {
     message("     ####################")
-    message("     ### ", sets)
+    message("     ### ", setsName)
     message("     ####################")
     
-    sets <- regionSets[[sets]]
+    sets <- regionSets[[setsName]]
     message("     Number of regions : ", length(sets))
     
     sets_with_GR <- subsetByOverlaps(sets, gr_regions)
@@ -87,5 +88,11 @@ for (cofactor in cofactors) {
     message("     Associated with ",  nb_upreg, " induced genes > ", round(nb_upreg/nrow(res)*100, 2), " %")
     message("     Associated with ",  nb_downreg, " repressed genes > ", round(nb_downreg/nrow(res)*100, 2), " %")
     message(" ")
+    
+    # save genes_list
+    genes_reg_by_cofactors_via3D[[setsName]] <- prom12 %>% pull(gene) %>% as.character
   }
 }
+
+sapply(genes_reg_by_cofactors_via3D, length)
+saveRDS(genes_reg_by_cofactors_via3D, file = "output/analyses/ecosystem/genes_reg_by_cofactors_via3D.rds")
