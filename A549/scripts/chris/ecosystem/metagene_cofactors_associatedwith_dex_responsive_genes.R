@@ -8,10 +8,19 @@ source("scripts/ckn_utils.R")
 source("scripts/load_reddy.R")
 
 ##### Get bam filepath 
-get_bam_filepath <- function(cofactors = c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A")) {
-  chip_bam_dir <- "output/chip-pipeline-GRCh38/alignment"
-  
+get_bam_filepath <- function(cofactors = c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A", "GR")) {
   bam_filepath_list <- c()
+  
+  if ("GR" %in% cofactors) {
+    chip_bam_GR_dir <- "input/ENCODE/A549/GRCh38/chip-seq/bam"
+    gr_ctrl <- file.path(chip_bam_GR_dir, "NR3C1_0hour_rep2_ENCFF181HLP.bam")
+    gr_dex <- file.path(chip_bam_GR_dir, "NR3C1_1hour_rep1_ENCFF331QXR.bam")
+    bam_filepath_list <- c(bam_filepath_list, gr_ctrl, gr_dex)
+    
+    cofactors <- cofactors[!(cofactors == "GR")]
+  }
+
+  chip_bam_dir <- "output/chip-pipeline-GRCh38/alignment"
   for (cofactor in cofactors) {
     for (condition in c("CTRL", "DEX")) {
       basename <- paste("A549", condition, cofactor, "rep1", sep = "_")
@@ -29,10 +38,16 @@ make_metadata_from_bam_filepath_list <- function(bam_filepath_list) {
   splitted <- strsplit(bam_names, split = "_")
   
   basename <- gsub(".bam", "", bam_names)
+  
   target <- splitted %>% purrr:::map(3) %>% unlist
+  target <- gsub("rep1|rep2", "GR", target)
+  
   condition <- splitted %>% purrr:::map(2) %>% unlist
+  condition <- gsub("0hour", "CTRL", condition)
+  condition <- gsub("1hour", "DEX", condition)
   
   metadata <- data.frame(design = basename, target, condition, stringsAsFactors = FALSE)
+  
   return(metadata)
 }
 
@@ -46,10 +61,13 @@ plot_metagene_cofactor <- function(df_metagene, customColors = c("#F5A623", "#4A
     theme_classic() +
     theme(strip.text.x = element_text(size = 11, face = "bold"),
           strip.text.y = element_text(size = 11, face = "bold", angle = 0, hjust = 0),
+          axis.text = element_text(size = 7),
           strip.background = element_rect(colour = NA)) +
+    scale_x_continuous(breaks = seq(0, 100, 25),
+                       labels = c("-1.5", "-0.75", "0", "0.75", "1.5")) +
     facet_grid(target ~ region) + 
     ggtitle(title) + theme(plot.title = element_text(size = 20, face = "bold")) +
-    xlab("Distance in bins") +
+    xlab("Distance in kb") +
     ylab("RPM")
   return(metagene_plot)
 }
@@ -70,7 +88,7 @@ sapply(stchr, length)
 ##### Load GR binding sites
 all_gr_regions <- load_reddy_gr_binding_consensus()
 gr_regions_list <- GRangesList(c(all_gr_regions[grep("minutes", names(all_gr_regions))], "1 hour" = all_gr_regions[["1 hour"]]))
-gr_regions <- reduce(unlist(gr_regions_list))
+gr_regions <- GenomicRanges::reduce(unlist(gr_regions_list))
 
 ##### Load induced and repressed gene categories
 deg <- readRDS(file = "output/analyses/deg.rds")
@@ -79,7 +97,7 @@ downreg <- deg$gene_list$FC1$downreg
 responsive_genes <- c(upreg, downreg) %>% unique
 
 ##### Define bam_files
-bam_filepath <- get_bam_filepath(cofactors = c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A"))
+bam_filepath <- get_bam_filepath(cofactors = c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A", "GR"))
 
 ##### Define cofactors
 cofactors <- c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A")
@@ -98,7 +116,7 @@ for (cofactor in cofactors) {
 
   all_peaks_raw <- c(ctrl_gr, dex_gr)
   message("    # Total number of regions with GR : ", length(all_peaks_raw))
-  all_peaks <- reduce(all_peaks_raw)
+  all_peaks <- GenomicRanges::reduce(all_peaks_raw)
   message("    # Total number of non-overlapping regions with GR : ", length(all_peaks))
   
   # linear annotation
@@ -118,15 +136,17 @@ for (cofactor in cofactors) {
   message("    Number of regions (associated with responsive genes) : ", nrow(dex_genes))
   message("         > Unique dex responsive genes : ", dex_genes$geneId %>% unique %>% length)
   
-  coordinate_regions <- GRangesList("Upregulated genes" = GRanges(upreg_genes),
+  coordinate_regions_raw <- GRangesList("Upregulated genes" = GRanges(upreg_genes),
                                     "Downregulated genes" = GRanges(downreg_genes))
+  coordinate_regions <- lapply(coordinate_regions_raw, resize, width = 3000, fix= "center")
+  
   # save regions in an object
   upname <- paste(cofactor, "associated_w_upgene", sep = "_")
   downname <- paste(cofactor, "associated_w_downgene", sep = "_")
   regions[[upname]] <- GRanges(upreg_genes)
   regions[[downname]] <- GRanges(downreg_genes)
   
-  # metagene df
+  # # metagene df
   # bam_filepath_list <- get_bam_filepath()
   # metadata <- make_metadata_from_bam_filepath_list(bam_filepath_list)
   # mg <- metagene2$new(regions = coordinate_regions,
@@ -134,12 +154,15 @@ for (cofactor in cofactors) {
   #                     normalization = "RPM",
   #                     force_seqlevels = TRUE,
   #                     assay = 'chipseq',
-  #                     cores = 4)
+  #                     cores = 4,
+  #                     bin_count = 100)
   # mg$add_metadata(design_metadata = metadata)
   # df_cofactor <- mg$get_data_frame()
   # 
   # # metagene_plot
   # title_df <- paste0("Based on ", cofactor, " regions")
+  # df_cofactor$target <- factor(df_cofactor$target, levels = c("GR", "MED1", "BRD4", "CDK9", "NIPBL", "SMC1A"))
+  # 
   # metagene_plot <- plot_metagene_cofactor(df_cofactor, title = title_df, customColors = c("#008000", "#8C001A"))
   # saveMetagene(metagene_plot,
   #              output_dir = "output/analyses/ecosystem/metagene_cofactors",
