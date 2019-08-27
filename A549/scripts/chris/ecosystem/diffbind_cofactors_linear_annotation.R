@@ -29,7 +29,7 @@ sapply(diffbind, length)
 
 #####
 cofactors <- c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A")
-cofactors <- c("MED1", "BRD4")
+# cofactors <- c("MED1", "BRD4")
 
 clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/groenland_FC1/groenland_FC1_optimal_clustering.txt")
 
@@ -89,6 +89,7 @@ summary(width(hcr))
 
 raw_promoters_A549 <- promoters(most_expressed_TxDb, columns = c("gene_id"))
 stdchr_promoters_A549 <- keepStdChr(raw_promoters_A549)
+stdchr_promoters_A549$tx_id <- names(stdchr_promoters_A549)
 names(stdchr_promoters_A549) <- stdchr_promoters_A549$gene_id
 
 # hcr_vs_genes <- list()
@@ -123,3 +124,43 @@ names(stdchr_promoters_A549) <- stdchr_promoters_A549$gene_id
 # sapply(hcr_vs_genes, length)
 # 
 # saveRDS(hcr_vs_genes, file = "output/analyses/hcr/hcr_vs_genes.rds")
+
+### Work with TAD
+tad_1h_raw <- read_delim(file = "input/ENCODE/A549/GRCh38/hic_TAD/hic_dex.t1.tads.bedpe", delim = "\t")[, 1:3]
+colnames(tad_1h_raw) <- c("seqnames", "start", "end")
+tad_1h <- GRanges(tad_1h_raw)
+
+tad_vs_genes <- list()
+for (cofactor in cofactors) {
+  geneup <- genes_reg_by_cofactors_viaLinear[[paste(cofactor, "UP", sep = "_")]]
+  tss_up <- stdchr_promoters_A549[geneup]
+  tss_up$direction <- "up"
+  genedown <- genes_reg_by_cofactors_viaLinear[[paste(cofactor, "DOWN", sep = "_")]]
+  tss_down <- stdchr_promoters_A549[genedown]
+  tss_down$direction <- "down"
+
+  tad_cofactor <- tad_vs_genes[[cofactor]]
+
+  for (i in 1:length(tad_1h)) {
+    tad_name <- paste("TAD", i, sep = "_")
+    tad_x <- tad_1h[i]
+
+    ov <- GRanges()
+    ov <- c(ov,
+            subsetByOverlaps(tss_up, tad_x),
+            subsetByOverlaps(tss_down, tad_x))
+
+    if (length(ov) > 1) {
+      names(ov) <- c()
+      tad_vs_genes[[cofactor]][[tad_name]] <- as.data.frame(ov)
+      message("##### ", cofactor, " | ", tad_name, " | ", width(tad_x), " | ", length(ov), " !!!!!!!!!!!!! ")
+    } else {
+      message("##### ", cofactor, " | ", tad_name, " | ", width(tad_x), " | ", length(ov))
+    }
+  }
+}
+
+sapply(tad_vs_genes, length)
+saveRDS(tad_vs_genes, file = "output/analyses/hcr/tad_vs_genes_v1.rds")
+
+# reperform TAD identification?
