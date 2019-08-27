@@ -1,19 +1,14 @@
 # setwd("/home/chris/Bureau/sb_cofactor_hr/A549")
 # setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(tidyverse)
 source("scripts/ckn_utils.R")
 source("scripts/load_reddy.R")
 
-hg38 <- TxDb.Hsapiens.UCSC.hg38.knownGene
-# genes_hg38 <- genes(hg38)
-# txdb_genes_hg38 <- makeTxDbFromGRanges(genes_hg38)
-
 # Load GR binding sites
 all_gr_regions <- load_reddy_gr_binding_consensus()
-gr_regions <- GRangesList(c(all_gr_regions[grep("minutes", names(all_gr_regions))], "1 hour" = all_gr_regions[["1 hour"]]))
-gr_regions <- unlist(gr_regions)
+gr_regions_list <- GRangesList(c(all_gr_regions[grep("minutes", names(all_gr_regions))], "1 hour" = all_gr_regions[["1 hour"]]))
+gr_regions <- GenomicRanges::reduce(unlist(gr_regions_list))
 
 #####
 `%notin%` <- Negate(`%in%`)
@@ -34,7 +29,7 @@ sapply(diffbind, length)
 
 #####
 cofactors <- c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A")
-cofactors <- c("MED1")
+cofactors <- c("MED1", "BRD4")
 
 clusters <- read_tsv("output/analyses/DPGP_on_a549_dex_0_6hr/groenland_FC1/groenland_FC1_optimal_clustering.txt")
 
@@ -84,4 +79,47 @@ for (cofactor in cofactors) {
 }
 
 sapply(genes_reg_by_cofactors_viaLinear, length)
-saveRDS(genes_reg_by_cofactors_viaLinear, file = "output/analyses/ecosystem/genes_reg_by_cofactors_viaLinear.rds")
+# saveRDS(genes_reg_by_cofactors_viaLinear, file = "output/analyses/ecosystem/genes_reg_by_cofactors_viaLinear.rds")
+
+# HCR
+hcr <- GenomicRanges::reduce(gr_regions, min.gapwidth = 25000)
+summary(width(hcr))
+hcr <- hcr[width(hcr) > 0]
+summary(width(hcr))
+
+raw_promoters_A549 <- promoters(most_expressed_TxDb, columns = c("gene_id"))
+stdchr_promoters_A549 <- keepStdChr(raw_promoters_A549)
+names(stdchr_promoters_A549) <- stdchr_promoters_A549$gene_id
+
+# hcr_vs_genes <- list()
+# for (cofactor in cofactors) {
+#   geneup <- genes_reg_by_cofactors_viaLinear[[paste(cofactor, "UP", sep = "_")]]
+#   tss_up <- stdchr_promoters_A549[geneup]
+#   tss_up$direction <- "up"
+#   genedown <- genes_reg_by_cofactors_viaLinear[[paste(cofactor, "DOWN", sep = "_")]]
+#   tss_down <- stdchr_promoters_A549[genedown]
+#   tss_down$direction <- "down"
+#   
+#   hcr_cofactor <- hcr_vs_genes[[cofactor]]
+#   
+#   for (i in 1:length(hcr)) {
+#     hcr_name <- paste("HCR", i, sep = "_")
+#     hcr_x <- hcr[i]
+#     
+#     ov <- GRanges()
+#     ov <- c(ov,
+#             subsetByOverlaps(tss_up, hcr_x),
+#             subsetByOverlaps(tss_down, hcr_x))
+#     
+#     if (length(ov) > 1) {
+#       hcr_vs_genes[[cofactor]][[hcr_name]] <- as.data.frame(ov)
+#       message("##### ", cofactor, " | ", hcr_name, " | ", width(hcr_x), " | ", length(ov), " !!!!!!!!!!!!! ")
+#     } else {
+#       message("##### ", cofactor, " | ", hcr_name, " | ", width(hcr_x), " | ", length(ov))
+#     }
+#   }
+# }
+# 
+# sapply(hcr_vs_genes, length)
+# 
+# saveRDS(hcr_vs_genes, file = "output/analyses/hcr/hcr_vs_genes.rds")
