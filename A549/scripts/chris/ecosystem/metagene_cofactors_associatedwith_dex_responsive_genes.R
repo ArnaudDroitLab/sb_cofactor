@@ -2,6 +2,8 @@
 # setwd("/Users/chris/Desktop/sb_cofactor_hr/A549")
 
 library(metagene2)
+library(GenomicOperations)
+library(ComplexHeatmap)
 source("scripts/ckn_utils.R")
 source("scripts/load_reddy.R")
 
@@ -67,8 +69,8 @@ sapply(stchr, length)
 
 ##### Load GR binding sites
 all_gr_regions <- load_reddy_gr_binding_consensus()
-gr_regions <- GRangesList(c(all_gr_regions[grep("minutes", names(all_gr_regions))], "1 hour" = all_gr_regions[["1 hour"]]))
-gr_regions <- unlist(gr_regions)
+gr_regions_list <- GRangesList(c(all_gr_regions[grep("minutes", names(all_gr_regions))], "1 hour" = all_gr_regions[["1 hour"]]))
+gr_regions <- reduce(unlist(gr_regions_list))
 
 ##### Load induced and repressed gene categories
 deg <- readRDS(file = "output/analyses/deg.rds")
@@ -83,6 +85,7 @@ bam_filepath <- get_bam_filepath(cofactors = c("MED1", "BRD4", "CDK9", "NIPBL", 
 cofactors <- c("MED1", "BRD4", "CDK9", "NIPBL", "SMC1A")
 # cofactors <- c("MED1")
 
+regions <- list()
 for (cofactor in cofactors) {
   message("##### ", cofactor)
   regionSets <- stchr[grep(cofactor, names(stchr))]
@@ -117,25 +120,48 @@ for (cofactor in cofactors) {
   
   coordinate_regions <- GRangesList("Upregulated genes" = GRanges(upreg_genes),
                                     "Downregulated genes" = GRanges(downreg_genes))
+  # save regions in an object
+  upname <- paste(cofactor, "associated_w_upgene", sep = "_")
+  downname <- paste(cofactor, "associated_w_downgene", sep = "_")
+  regions[[upname]] <- GRanges(upreg_genes)
+  regions[[downname]] <- GRanges(downreg_genes)
   
   # metagene df
-  bam_filepath_list <- get_bam_filepath()
-  metadata <- make_metadata_from_bam_filepath_list(bam_filepath_list)
-  mg <- metagene2$new(regions = coordinate_regions,
-                      bam_files = bam_filepath,
-                      normalization = "RPM",
-                      force_seqlevels = TRUE,
-                      assay = 'chipseq',
-                      cores = 4)
-  mg$add_metadata(design_metadata = metadata)
-  df_cofactor <- mg$get_data_frame()
-
-  # metagene_plot
-  title_df <- paste0("Based on ", cofactor, " regions")
-  metagene_plot <- plot_metagene_cofactor(df_cofactor, title = title_df, customColors = c("#008000", "#8C001A"))
-  saveMetagene(metagene_plot,
-               output_dir = "output/analyses/ecosystem/metagene_cofactors",
-               output_file = paste("metagene", cofactor, "at_promoters_of_dex_responsive_genes", sep = "_"),
-               width_val = 6, height_val = 8)
+  # bam_filepath_list <- get_bam_filepath()
+  # metadata <- make_metadata_from_bam_filepath_list(bam_filepath_list)
+  # mg <- metagene2$new(regions = coordinate_regions,
+  #                     bam_files = bam_filepath,
+  #                     normalization = "RPM",
+  #                     force_seqlevels = TRUE,
+  #                     assay = 'chipseq',
+  #                     cores = 4)
+  # mg$add_metadata(design_metadata = metadata)
+  # df_cofactor <- mg$get_data_frame()
+  # 
+  # # metagene_plot
+  # title_df <- paste0("Based on ", cofactor, " regions")
+  # metagene_plot <- plot_metagene_cofactor(df_cofactor, title = title_df, customColors = c("#008000", "#8C001A"))
+  # saveMetagene(metagene_plot,
+  #              output_dir = "output/analyses/ecosystem/metagene_cofactors",
+  #              output_file = paste("metagene", cofactor, "at_promoters_of_dex_responsive_genes", sep = "_"),
+  #              width_val = 6, height_val = 8)
 }
+
+# UpSet plot
+sapply(regions, length)
+
+comparison <- c(regions, "GR" = gr_regions)
+sapply(comparison, length)
+
+inter_cofactors <- GenomicOperations::GenomicOverlaps(GRangesList(comparison))
+matrix_cofactors <- intersect_matrix(inter_cofactors)
+sum(matrix_cofactors > 1)
+matrix_cofactors[matrix_cofactors > 1] <- 1
+sum(matrix_cofactors > 1)
+colnames(matrix_cofactors)
+
+m4 <- make_comb_mat(matrix_cofactors, remove_empty_comb_set = TRUE)
+m4_plot <- displayUpSet(combMat = m4, threshold = 1)
+m4_plot
+
 
