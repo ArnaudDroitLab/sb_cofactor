@@ -12,6 +12,11 @@ seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
 txdb.hg38 <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
 #####
+get_today <- function() {
+  
+}
+
+#####
 load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
   peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
   cofactors_peaks <- GRangesList()

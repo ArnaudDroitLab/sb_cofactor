@@ -1,5 +1,5 @@
 Experiment	Time	Order
-ENCSR150EFU	0 minute	1
+ENCSR150EFU	0 hour	1
 ENCSR620NWG	30 minute	2
 ENCSR768DOX	1 hour	3
 ENCSR981FDC	2 hour	4

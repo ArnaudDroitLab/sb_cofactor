@@ -1,5 +1,5 @@
 Experiment	Time	Order
-ENCSR193NSH	0 minute	1
+ENCSR193NSH	0 hour	1
 ENCSR895JMI	30 minute	2
 ENCSR956LGB	1 hour	3
 ENCSR247LSH	2 hour	4
