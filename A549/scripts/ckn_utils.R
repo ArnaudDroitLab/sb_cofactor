@@ -12,6 +12,11 @@ seqlevelsStyle(most_expressed_TxDb) <- "UCSC"
 txdb.hg38 <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
 #####
+get_today <- function() {
+  
+}
+
+#####
 load_cofactor_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9", "MED1", "SMC1A")) {
   peaks_dir <- "output/chip-pipeline-GRCh38/peak_call"
   cofactors_peaks <- GRangesList()
@@ -79,13 +84,13 @@ load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9",
     cofactor_folder <- file.path(paste("A549", cofactor, sep = "_"), "output_filters")
     
     # up
-    peaks_up_path <- file.path(peaks_dir, cofactor_folder, paste("A549_DEX", cofactor, "rep1_peaks.narrowPeak_M_above_0.5_biased_peaks.bed", sep = "_"))
+    peaks_up_path <- file.path(peaks_dir, cofactor_folder, paste("A549_DEX", cofactor, "rep1_peaks.narrowPeak.stdchr_M_above_0.5_biased_peaks.bed", sep = "_"))
     message(" > ",peaks_up_path)
     peaks_up <- rtracklayer::import(peaks_up_path)
     message("   > Number of regions : ", length(peaks_up))
       
     # down
-    peaks_down_path <- file.path(peaks_dir, cofactor_folder, paste("A549_CTRL", cofactor, "rep1_peaks.narrowPeak_M_below_-0.5_biased_peaks.bed", sep = "_"))
+    peaks_down_path <- file.path(peaks_dir, cofactor_folder, paste("A549_CTRL", cofactor, "rep1_peaks.narrowPeak.stdchr_M_below_-0.5_biased_peaks.bed", sep = "_"))
     message(" > ",peaks_down_path)
     peaks_down <- rtracklayer::import(peaks_down_path)
     message("   > Number of regions : ", length(peaks_down))
@@ -108,11 +113,13 @@ load_diffbind_cofactors_peaks <- function(cofactors = c("NIPBL", "BRD4", "CDK9",
 }
 
 #####
-annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_TxDb) {
+annotatePeaks <- function(gr, output = "df", tss = 3000, TxDb = most_expressed_TxDb, verbose_TF = FALSE) {
   # difference between txdb and most expressed txdb???
   # output can be: "df" or "anno"
   # TxDb can be: most_expressed_TxDb or txdb.hg38
-  gr_anno <- ChIPseeker::annotatePeak(gr, tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db")
+  gr_anno <- ChIPseeker::annotatePeak(gr, overlap = "all", 
+                                      tssRegion = c(-tss, tss), TxDb=most_expressed_TxDb, annoDb = "org.Hs.eg.db",
+                                      verbose = verbose_TF)
   if (output == "anno") {
     message("Return a csAnno object")
     return(gr_anno)

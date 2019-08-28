@@ -13,7 +13,7 @@ for cofactor in cofactors:
     start = time.time()
     basename_dex = "A549_DEX_" + cofactor + "_rep1"
     basename_ctrl = "A549_CTRL_" + cofactor + "_rep1"
-    extension_peak = "_peaks.narrowPeak.bed"
+    extension_peak = "_peaks.narrowPeak.stdchr.bed"
     extension_read = ".sorted.dup.bed"
     
     p1 = os.path.join(peak_path, basename_dex, basename_dex + extension_peak)
