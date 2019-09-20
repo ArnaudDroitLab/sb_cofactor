@@ -167,6 +167,7 @@ annotate_distant_gr_binding = function(promoter_regions, input_hic, input_TAD, g
     
     return(promoter_regions)
 }
+
 get_consensual_early_gr_binding = function(gr_regions) {
     # Build list of GR sites which are "consensual" in first 30 minutes 
     early_gr = GRangesList(gr_regions[grepl("minutes", names(gr_regions))])
@@ -237,6 +238,41 @@ find_per_gene_gr_sites = function(promoter_regions, gr_regions, input_hic) {
     return(gr_by_gene_any)
 }
 
+annotate_regulation_status <- function(promoters, cutoff) {
+    time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h", 
+                   "DE-1h", "DE-2h", "DE-3h", "DE-4h", "DE-5h", "DE-6h", "DE-7h",
+                   "DE-8h", "DE-10h", "DE-12h")
+
+    cutoff_index = which(time_order==cutoff)
+
+    promoters$ActivatedFast = FALSE
+    promoters$RepressedFast = FALSE
+    promoters$ActivatedSlow = FALSE
+    promoters$RepressedSlow = FALSE
+
+    for(i in 1:cutoff_index) {
+        promoters$ActivatedFast = promoters$ActivatedFast | mcols(promoters)[[time_order[i]]] == "Up"
+        promoters$RepressedFast = promoters$RepressedFast | mcols(promoters)[[time_order[i]]] == "Down"
+    }
+    
+    for(i in (1+cutoff_index):length(time_order)) {
+        promoters$ActivatedSlow = promoters$ActivatedSlow | mcols(promoters)[[time_order[i]]] == "Up"
+        promoters$RepressedSlow = promoters$RepressedSlow | mcols(promoters)[[time_order[i]]] == "Down"
+    }
+    
+    promoters$ActivatedSlow = promoters$ActivatedSlow & !promoters$ActivatedFast
+    promoters$RepressedSlow = promoters$RepressedSlow & !promoters$RepressedFast
+    
+    promoters$RegulationStatus = ifelse(promoters$ActivatedFast, "ActivatedFast",
+                                 ifelse(promoters$RepressedFast, "RepressedFast",
+                                 ifelse(promoters$ActivatedSlow, "ActivatedSlow",
+                                 ifelse(promoters$RepressedSlow, "RepressedSlow",
+                                        "Stable"))))
+                                        
+    return(promoters)
+}
+
+
 load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
     all_hic = load_reddy_hic()
     hic_res = all_hic[[hic_timepoint]]$LRI
@@ -266,6 +302,8 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
                                                    hic_res,
                                                    all_hic[[hic_timepoint]]$TAD,
                                                    gr_regions)
+    
+    promoter_regions = annotate_regulation_status(promoter_regions, "DE-4h")
     
     # Identify per-gene GR sites.
     gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_res)
@@ -355,3 +393,4 @@ visualize_region <- function(input_region, promoter_regions, gr_regions, tad_gr,
 # 
 # start(KLF6_region) = 3725000
 # end(KLF6_region) = 4780000
+             

@@ -336,7 +336,7 @@ load_cofactor_binding <- function(consensus_method="union", diagnostic_dir=NULL)
                     # Return the overlap between replicates.
                     results[[condition]][[cofactor]] = intersect_overlap(intersect_obj)
                 } else if(consensus_method=="union") { 
-                    results[[condition]][[cofactor]] = reduce(unlist(relevant_peaks[cofactors==cofactor]))
+                    results[[condition]][[cofactor]] = GenomicRanges::reduce(unlist(relevant_peaks[cofactors==cofactor]))
                 } else if(consensus_method=="separate") {
                     results[[condition]][[cofactor]] = relevant_peaks[cofactors==cofactor]
                     names(results[[condition]][[cofactor]]) = gsub(".*(rep.)", "\\1", names(results[[condition]][[cofactor]]))
