@@ -30,15 +30,25 @@ metrics_fun = function(time_point) {
 }
 
 ```{r GR_binding_regulation_status, echo=FALSE}
-as.data.frame(promoters) %>% 
+as.data.frame(hic_results$Promoters) %>% 
     group_by(RegulationStatus) %>% 
     summarize(N=n(), 
               EarlyBindingN=sum(EarlyBinding>0), 
               EarlyBindingP=EarlyBindingN/N, 
-              ContactBoundN=sum(ContactBound), 
+              ContactBoundN=sum(GR_ContactBound), 
               ContactBoundP=ContactBoundN/N,
-              AnyBindingN=sum(EarlyBinding>0 | ContactBound | WindowBound),
+              AnyBindingN=sum(EarlyBinding>0 | GR_ContactBound | GR_WindowBound),
               AnyBindingP=AnyBindingN/N)
+              
+as.data.frame(hic_results$Promoters) %>% 
+    group_by(RegulationStatus) %>% 
+    summarize(N=n(), 
+              EarlyBindingN=sum(BRD4_DEX>0), 
+              EarlyBindingP=EarlyBindingN/N, 
+              ContactBoundN=sum(BRD4_DEX_ContactBound), 
+              ContactBoundP=ContactBoundN/N,
+              AnyBindingN=sum(BRD4_DEX>0 | BRD4_DEX_ContactBound | BRD4_DEX_WindowBound),
+              AnyBindingP=AnyBindingN/N)              
 ```
 
 de_df = do.call(rbind, lapply(time_order, metrics_fun))
@@ -56,8 +66,8 @@ ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)
         is_de = hic_results$Promoters$"DE-2h" %in% de_value
         
         direct_indices = is_de & hic_results$Promoters$EarlyBinding>4
-        window_indices = is_de & hic_results$Promoters$WindowBound
-        contact_indices = is_de & hic_results$Promoters$ContactBound
+        window_indices = is_de & hic_results$Promoters$GR_WindowBound
+        contact_indices = is_de & hic_results$Promoters$GR_ContactBound
         
         gene_list = list(Direct=hic_results$Promoters$ensembl_gene_id[direct_indices],
                          Window=hic_results$Promoters$ensembl_gene_id[window_indices],
@@ -106,8 +116,8 @@ direction_list = list(DE=c("Up", "Down"), Up="Up", Down="Down")
 metrics_fun = function(y, time_point) {
     de_genes = mcols(hic_results$Promoters)[[time_point]] %in% direction_list[[y]]
     direct_binding = hic_results$Promoters$EarlyBinding > 0
-    indirect_binding = hic_results$Promoters$WindowBound |
-                       hic_results$Promoters$ContactBound 
+    indirect_binding = hic_results$Promoters$GR_WindowBound |
+                       hic_results$Promoters$GR_ContactBound 
     
     data.frame(DE=rep(sum(de_genes), 3),
                Bound=c(sum(de_genes & direct_binding),

@@ -64,25 +64,6 @@ load_reddy_hic = function() {
     return(res)
 }
 
-overlap_early_binding = function(gr_regions, target_regions) {
-    for(i in names(gr_regions)) {
-        gr_overlap = countOverlaps(target_regions, gr_regions[[i]])
-        mcols(target_regions)[[i]] = gr_overlap
-    }
-    
-    return(target_regions)
-}
-
-identify_early_binding = function(gr_regions, target_regions) {
-    target_regions = overlap_early_binding(gr_regions, target_regions)
-    
-    early_columns = names(gr_regions)[grepl("minutes", names(gr_regions))]
-    early_matrix = as.matrix(mcols(target_regions)[, early_columns])
-    early_binding = apply(early_matrix > 0, 1, sum)
-    
-    return(early_binding)
-}
-
 load_hg38_fantom_enhancers = function() {
     hg19_enhancers = get_fantom_enhancers_tpm(cell_lines = "A549")
     chain = rtracklayer::import.chain("input/hg19ToHg38.over.chain")
@@ -91,17 +72,48 @@ load_hg38_fantom_enhancers = function() {
     return(hg38_enhancers)
 }             
 
-annotate_regions_with_enh_gr = function(query_regions, 
-                            ehn_regions=load_hg38_fantom_enhancers(),
-                            gr_regions=load_reddy_gr_binding_consensus()) {
+annotate_regions_with_enh = function(query_regions, 
+                            ehn_regions=load_hg38_fantom_enhancers()) {
     if(!is.null(ehn_regions)) {
-        enh_overlap = countOverlaps(query_regions, ehn_regions)
-        query_regions$Enh = enh_overlap
+        query_regions = annotate_regions_with_overlap_count(query_regions, ehn_regions, "Enh")
     }
-    query_regions$EarlyBinding = identify_early_binding(gr_regions, query_regions)
-    query_regions = overlap_early_binding(gr_regions, query_regions) 
 
     return(query_regions)
+}
+
+annotate_regions_with_gr = function(query_regions,                            
+                            gr_regions=load_reddy_gr_binding_consensus()) {
+    for(i in names(gr_regions)) {
+        query_regions = annotate_regions_with_overlap_count(query_regions, gr_regions[[i]], paste0("GR_", i))
+    }                            
+                            
+    early_columns = names(gr_regions)[grepl("minutes", names(gr_regions))]
+    early_columns = paste0("GR_", early_columns)
+    early_matrix = as.matrix(mcols(query_regions)[, early_columns])
+    query_regions$EarlyBinding = apply(early_matrix > 0, 1, sum)                            
+
+    return(query_regions)
+}
+
+annotate_regions_with_cofactors = function(query_regions,                            
+                            regions=load_cofactor_binding()) {
+    for(treatment in names(regions)) {
+        for(cofactor in names(regions[[treatment]])) {
+            cof_gr = regions[[treatment]][[cofactor]]
+            query_regions = annotate_regions_with_overlap_count(query_regions, cof_gr, paste0(cofactor, "_", treatment))
+        }
+    }
+    
+    return(query_regions)
+}
+
+annotate_regions_with_overlap_count = function(query_regions,
+                                          cofactor_gr,
+                                          label) {
+    overlap_res = countOverlaps(query_regions, cofactor_gr)
+    mcols(query_regions)[[label]] = overlap_res    
+
+    query_regions
 }
 
 annotate_genes_with_reddy_de = function(query_tss) {
@@ -134,36 +146,37 @@ annotate_genes_with_reddy_de = function(query_tss) {
     return(query_tss)
 }
              
-annotate_distant_gr_binding = function(promoter_regions, input_hic, input_TAD, gr_regions) {
+annotate_distant_binding = function(promoter_regions, input_hic, input_TAD, colname, prefix) {
     # 3a. Identify genes with GR binding in their 5/10K window.
     gene_overlaps = findOverlaps(promoter_regions, regions(input_hic))
     
-    promoter_regions$WindowBound = FALSE
-    hit_binding = regions(input_hic)[subjectHits(gene_overlaps)]$EarlyBinding > 0
+    win_name= paste0(prefix, "_", "WindowBound")
+    mcols(promoter_regions)[[win_name]] = FALSE
+    hit_binding = mcols(regions(input_hic)[subjectHits(gene_overlaps)])[[colname]] > 0
         
     hit_df = data.frame(query=queryHits(gene_overlaps),
                    subject=subjectHits(gene_overlaps),
                    binding=hit_binding)
                    
     bind_status = hit_df %>% group_by(query) %>% summarize(Bound=any(binding))
-    promoter_regions$WindowBound[bind_status$query] = bind_status$Bound
+    mcols(promoter_regions)[[win_name]][bind_status$query] = bind_status$Bound
     
     # 3b. Identify genes with GR binding in contacts.
     promoter_hic_overlap = findOverlaps(input_hic, promoter_regions)
     
     f_a = anchors(input_hic, type="first")
     s_a = anchors(input_hic, type="second")
-    GR_in_interaction = f_a$EarlyBinding | s_a$EarlyBinding
+    GR_in_interaction = mcols(f_a)[[colname]] | mcols(s_a)[[colname]]
     
-    promoter_regions$ContactBound = FALSE
-    promoter_regions$ContactBound[subjectHits(promoter_hic_overlap)] = GR_in_interaction[queryHits(promoter_hic_overlap)]
+    contact_name = paste0(prefix, "_", "ContactBound")
+    mcols(promoter_regions)[[contact_name]] = FALSE
+    mcols(promoter_regions)[[contact_name]][subjectHits(promoter_hic_overlap)] = GR_in_interaction[queryHits(promoter_hic_overlap)]
     
     # 3c. Identify genes with GR binding in TADs
-    input_TAD$EarlyBinding = identify_early_binding(gr_regions, input_TAD)
-    
     tad_overlap = findOverlaps(promoter_regions, input_TAD)
-    promoter_regions$TADBound = FALSE
-    promoter_regions$TADBound[queryHits(tad_overlap)] = input_TAD$EarlyBinding[subjectHits(tad_overlap)] > 0
+    tad_name = paste0(prefix, "_", "TADBound")
+    mcols(promoter_regions)[[tad_name]] = FALSE
+    mcols(promoter_regions)[[tad_name]][queryHits(tad_overlap)] = mcols(input_TAD)[[colname]][subjectHits(tad_overlap)] > 0
     
     return(promoter_regions)
 }
@@ -284,24 +297,40 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
         hg38_enhancers = load_hg38_fantom_enhancers()
     }
     gr_regions = load_reddy_gr_binding_consensus()
-    
-    regions(hic_res) = annotate_regions_with_enh_gr(regions(hic_res),
-                                                   hg38_enhancers,
-                                                   gr_regions)
+    cof_regions = load_cofactor_binding()
+    regions(hic_res) = annotate_regions_with_enh(regions(hic_res),
+                                                 hg38_enhancers)
+
+    regions(hic_res) = annotate_regions_with_gr(regions(hic_res),
+                                                gr_regions)
+    regions(hic_res) = annotate_regions_with_cofactors(regions(hic_res),
+                                                       cof_regions)                                                
     
     # Load promoter regions and annotate with GR binding, DE status.
     promoter_regions = load_annotated_most_expressed_promoters(fix_chr=TRUE)
     
-    promoter_regions = annotate_regions_with_enh_gr(promoter_regions,
-                                                   hg38_enhancers,
-                                                   gr_regions)
+    promoter_regions = annotate_regions_with_enh(promoter_regions,
+                                                   hg38_enhancers)
+    promoter_regions = annotate_regions_with_gr(promoter_regions,
+                                                   gr_regions)                                                   
     promoter_regions = annotate_genes_with_reddy_de(promoter_regions)
-    
+    promoter_regions = annotate_regions_with_cofactors(promoter_regions, cof_regions)
+
     # Identify gene categories based on interactions.
-    promoter_regions = annotate_distant_gr_binding(promoter_regions, 
+    all_hic[[hic_timepoint]]$TAD = annotate_regions_with_gr(all_hic[[hic_timepoint]]$TAD,
+                                                   gr_regions)       
+    promoter_regions = annotate_distant_binding(promoter_regions, 
                                                    hic_res,
                                                    all_hic[[hic_timepoint]]$TAD,
-                                                   gr_regions)
+                                                   "EarlyBinding",
+                                                   "GR")
+    promoter_regions = annotate_distant_binding(promoter_regions, 
+                                                   hic_res,
+                                                   all_hic[[hic_timepoint]]$TAD,
+                                                   "EarlyBinding",
+                                                   "BRD4_DEX")
+
+
     
     promoter_regions = annotate_regulation_status(promoter_regions, "DE-4h")
     
