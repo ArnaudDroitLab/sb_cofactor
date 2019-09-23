@@ -72,15 +72,6 @@ load_hg38_fantom_enhancers = function() {
     return(hg38_enhancers)
 }             
 
-annotate_regions_with_enh = function(query_regions, 
-                            ehn_regions=load_hg38_fantom_enhancers()) {
-    if(!is.null(ehn_regions)) {
-        query_regions = annotate_regions_with_overlap_count(query_regions, ehn_regions, "Enh")
-    }
-
-    return(query_regions)
-}
-
 annotate_regions_with_gr = function(query_regions,                            
                             gr_regions=load_reddy_gr_binding_consensus()) {
     for(i in names(gr_regions)) {
@@ -93,27 +84,6 @@ annotate_regions_with_gr = function(query_regions,
     query_regions$EarlyBinding = apply(early_matrix > 0, 1, sum)                            
 
     return(query_regions)
-}
-
-annotate_regions_with_cofactors = function(query_regions,                            
-                            regions=load_cofactor_binding()) {
-    for(treatment in names(regions)) {
-        for(cofactor in names(regions[[treatment]])) {
-            cof_gr = regions[[treatment]][[cofactor]]
-            query_regions = annotate_regions_with_overlap_count(query_regions, cof_gr, paste0(cofactor, "_", treatment))
-        }
-    }
-    
-    return(query_regions)
-}
-
-annotate_regions_with_overlap_count = function(query_regions,
-                                          cofactor_gr,
-                                          label) {
-    overlap_res = countOverlaps(query_regions, cofactor_gr)
-    mcols(query_regions)[[label]] = overlap_res    
-
-    query_regions
 }
 
 annotate_genes_with_reddy_de = function(query_tss) {
@@ -145,41 +115,6 @@ annotate_genes_with_reddy_de = function(query_tss) {
     
     return(query_tss)
 }
-             
-annotate_distant_binding = function(promoter_regions, input_hic, input_TAD, colname, prefix) {
-    # 3a. Identify genes with GR binding in their 5/10K window.
-    gene_overlaps = findOverlaps(promoter_regions, regions(input_hic))
-    
-    win_name= paste0(prefix, "_", "WindowBound")
-    mcols(promoter_regions)[[win_name]] = FALSE
-    hit_binding = mcols(regions(input_hic)[subjectHits(gene_overlaps)])[[colname]] > 0
-        
-    hit_df = data.frame(query=queryHits(gene_overlaps),
-                   subject=subjectHits(gene_overlaps),
-                   binding=hit_binding)
-                   
-    bind_status = hit_df %>% group_by(query) %>% summarize(Bound=any(binding))
-    mcols(promoter_regions)[[win_name]][bind_status$query] = bind_status$Bound
-    
-    # 3b. Identify genes with GR binding in contacts.
-    promoter_hic_overlap = findOverlaps(input_hic, promoter_regions)
-    
-    f_a = anchors(input_hic, type="first")
-    s_a = anchors(input_hic, type="second")
-    GR_in_interaction = mcols(f_a)[[colname]] | mcols(s_a)[[colname]]
-    
-    contact_name = paste0(prefix, "_", "ContactBound")
-    mcols(promoter_regions)[[contact_name]] = FALSE
-    mcols(promoter_regions)[[contact_name]][subjectHits(promoter_hic_overlap)] = GR_in_interaction[queryHits(promoter_hic_overlap)]
-    
-    # 3c. Identify genes with GR binding in TADs
-    tad_overlap = findOverlaps(promoter_regions, input_TAD)
-    tad_name = paste0(prefix, "_", "TADBound")
-    mcols(promoter_regions)[[tad_name]] = FALSE
-    mcols(promoter_regions)[[tad_name]][queryHits(tad_overlap)] = mcols(input_TAD)[[colname]][subjectHits(tad_overlap)] > 0
-    
-    return(promoter_regions)
-}
 
 get_consensual_early_gr_binding = function(gr_regions) {
     # Build list of GR sites which are "consensual" in first 30 minutes 
@@ -191,65 +126,6 @@ get_consensual_early_gr_binding = function(gr_regions) {
     return(consensual_gr_regions)
 }
 
-# Define a function to go from promoter/enhancer indices to a GRangesList
-# of GR sites.
-build_list_of_gr_sites = function(promoter_regions, 
-                                  promoter_ids, 
-                                  gr_regions,
-                                  gr_ids) {
-    unique_query = unique(promoter_ids)
-    gr_by_gene = lapply(unique_query, function(x) {
-        gr_regions[gr_ids[promoter_ids==x] ]
-    })
-    names(gr_by_gene) = promoter_regions$ensembl_gene_id[unique_query]
-    gr_by_gene = GRangesList(gr_by_gene)
-
-    gr_by_gene
-}
-
-find_per_gene_gr_sites = function(promoter_regions, gr_regions, input_hic) {
-    consensual_gr_regions = get_consensual_early_gr_binding(gr_regions)
-        
-    # Direct binding
-    promoter_gr_overlap = findOverlaps(promoter_regions, consensual_gr_regions)
-    gr_by_gene_direct = build_list_of_gr_sites(promoter_regions,
-                                               queryHits(promoter_gr_overlap),
-                                               consensual_gr_regions,
-                                               subjectHits(promoter_gr_overlap))
-    
-    # In-window binding
-    gene_overlaps = findOverlaps(promoter_regions, regions(input_hic))
-    window_gr_overlap = findOverlaps(regions(input_hic), consensual_gr_regions)
-    overlap_df = inner_join(as.data.frame(gene_overlaps), 
-                            as.data.frame(window_gr_overlap),
-                            c(subjectHits="queryHits"))
-    gr_by_gene_window = build_list_of_gr_sites(promoter_regions,
-                                               overlap_df$queryHits,
-                                               consensual_gr_regions,
-                                               overlap_df$subjectHits.y)
-    
-    # Distant binding
-    promoter_gr_distant = linkOverlaps(input_hic, promoter_regions, consensual_gr_regions)
-    gr_by_gene_indirect = build_list_of_gr_sites(promoter_regions,
-                                                 promoter_gr_distant$subject1,
-                                                 consensual_gr_regions,
-                                                 promoter_gr_distant$subject2)
-    
-    unique_genes = unique(c(names(gr_by_gene_direct), 
-                            names(gr_by_gene_window), 
-                            names(gr_by_gene_indirect)))
-    
-    # All binding
-    gr_by_gene_any = list()
-    for(gene in unique_genes) {
-        grl = unlist(GRangesList(c(gr_by_gene_direct[[gene]],
-                                   gr_by_gene_window[[gene]],
-                                   gr_by_gene_indirect[[gene]])))
-        gr_by_gene_any[[gene]] = grl
-    }
-
-    return(gr_by_gene_any)
-}
 
 annotate_regulation_status <- function(promoters, cutoff) {
     time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h", 
@@ -290,58 +166,51 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
     all_hic = load_reddy_hic()
     hic_res = all_hic[[hic_timepoint]]$LRI
     
-    # Add enhancer annotation to HiC interactions.
-    if(!skip_enhancer) {
-        hg38_enhancers = NULL
-    } else {
-        hg38_enhancers = load_hg38_fantom_enhancers()
-    }
-    gr_regions = load_reddy_gr_binding_consensus()
-    cof_regions = load_cofactor_binding()
-    regions(hic_res) = annotate_regions_with_enh(regions(hic_res),
-                                                 hg38_enhancers)
-
-    regions(hic_res) = annotate_regions_with_gr(regions(hic_res),
-                                                gr_regions)
-    regions(hic_res) = annotate_regions_with_cofactors(regions(hic_res),
-                                                       cof_regions)                                                
-    
     # Load promoter regions and annotate with GR binding, DE status.
     promoter_regions = load_annotated_most_expressed_promoters(fix_chr=TRUE)
-    
-    promoter_regions = annotate_regions_with_enh(promoter_regions,
-                                                   hg38_enhancers)
-    promoter_regions = annotate_regions_with_gr(promoter_regions,
-                                                   gr_regions)                                                   
     promoter_regions = annotate_genes_with_reddy_de(promoter_regions)
-    promoter_regions = annotate_regions_with_cofactors(promoter_regions, cof_regions)
-
+    promoter_regions = annotate_regulation_status(promoter_regions, "DE-4h")    
+    
+    gr_regions = load_reddy_gr_binding_consensus()
+    annot_list = gr_regions
+    names(annot_list) = paste0("GR_", names(annot_list))
+    
+    annot_list$ConsensusGR = get_consensual_early_gr_binding(gr_regions)
+    
+    # early_columns = names(gr_regions)[grepl("minutes", names(gr_regions))]
+    # early_matrix = as.matrix(mcols(query_regions)[, early_columns])
+    # query_regions$EarlyBinding = apply(early_matrix > 0, 1, sum)  
+    
+    cof_regions = load_cofactor_binding()
+    for(treatment in names(cof_regions)) {
+        for(cofactor in names(cof_regions[[treatment]])) {
+            annot_name = paste0(treatment, "_", cofactor)
+            annot_list[[annot_name]] = cof_regions[[treatment]][[cofactor]]
+        }
+    }
+    
+    # Add enhancer annotation to HiC interactions.
+    if(!skip_enhancer) {
+        annot_list$Enh = load_hg38_fantom_enhancers()
+    }
+    
+    t_obj = transcriptomHiCs(promoter_regions,
+                             all_hic[[hic_timepoint]]$LRI,
+                             GRangesList(annot_list),
+                             GRangesList(TAD=all_hic[[hic_timepoint]]$TAD))
+    
     # Identify gene categories based on interactions.
-    all_hic[[hic_timepoint]]$TAD = annotate_regions_with_gr(all_hic[[hic_timepoint]]$TAD,
-                                                   gr_regions)       
-    promoter_regions = annotate_distant_binding(promoter_regions, 
-                                                   hic_res,
-                                                   all_hic[[hic_timepoint]]$TAD,
-                                                   "EarlyBinding",
-                                                   "GR")
-    promoter_regions = annotate_distant_binding(promoter_regions, 
-                                                   hic_res,
-                                                   all_hic[[hic_timepoint]]$TAD,
-                                                   "EarlyBinding",
-                                                   "BRD4_DEX")
+   
+    t_obj = annotate_distant_binding(t_obj, "ConsensusGR")
+    t_obj = annotate_distant_binding(t_obj, "BRD4_DEX")
 
-
+    gr_by_gene_any = get_all_sites(t_obj, "ConsensusGR")
     
-    promoter_regions = annotate_regulation_status(promoter_regions, "DE-4h")
-    
-    # Identify per-gene GR sites.
-    gr_by_gene_any = find_per_gene_gr_sites(promoter_regions, gr_regions, hic_res)
- 
-    return(list(HiC=all_hic,
-                Promoters=promoter_regions,
-                Enhancers=hg38_enhancers,
-                GR_all=gr_regions,
-                GR_by_gene=gr_by_gene_any))
+#    return(list(HiC=all_hic,
+#                Promoters=promoter_regions,
+#                Enhancers=hg38_enhancers,
+#                GR_all=gr_regions,
+#                GR_by_gene=gr_by_gene_any))
 }
      
 motif_by_de = function(promoter_regions, gr_by_gene, de_time, de_class) {
