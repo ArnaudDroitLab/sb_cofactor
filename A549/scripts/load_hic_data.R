@@ -4,6 +4,8 @@ library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(org.Hs.eg.db)
 library(FantomEnhancers.hg19)
 library(ENCODExplorer)
+library(TranscriptomHiCs)
+library(GenomicOperations)
 source("scripts/load_reddy.R")
 
 ####### Step 1: Load and annotate HiC data. 
@@ -119,9 +121,8 @@ annotate_genes_with_reddy_de = function(query_tss) {
 get_consensual_early_gr_binding = function(gr_regions) {
     # Build list of GR sites which are "consensual" in first 30 minutes 
     early_gr = GRangesList(gr_regions[grepl("minutes", names(gr_regions))])
-    gr_intersect = build_intersect(early_gr)
-    consensual_binding = apply(gr_intersect$Matrix > 0, 1, sum) >= 4
-    consensual_gr_regions = gr_intersect$Regions[consensual_binding]
+    gr_intersect = GenomicOverlaps(early_gr)
+    consensual_gr_regions = consensus_regions(gr_intersect, 4/6)
 
     return(consensual_gr_regions)
 }
@@ -184,7 +185,7 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
     cof_regions = load_cofactor_binding()
     for(treatment in names(cof_regions)) {
         for(cofactor in names(cof_regions[[treatment]])) {
-            annot_name = paste0(treatment, "_", cofactor)
+            annot_name = paste0(cofactor, "_", treatment)
             annot_list[[annot_name]] = cof_regions[[treatment]][[cofactor]]
         }
     }
@@ -206,11 +207,9 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
 
     gr_by_gene_any = get_all_sites(t_obj, "ConsensusGR")
     
-#    return(list(HiC=all_hic,
-#                Promoters=promoter_regions,
-#                Enhancers=hg38_enhancers,
-#                GR_all=gr_regions,
-#                GR_by_gene=gr_by_gene_any))
+    return(list(T=t_obj,
+                GR_all=gr_regions,
+                GR_by_gene=gr_by_gene_any))
 }
      
 motif_by_de = function(promoter_regions, gr_by_gene, de_time, de_class) {

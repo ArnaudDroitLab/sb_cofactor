@@ -8,11 +8,12 @@ output: html_document
 ```{r load_data, echo=FALSE}
 #source("scripts/load_hic_data.R")
 #hic_results = load_connection_data()
+#t_obj = hic_results$T
 ```
 
 # Summary of analyzed promoters
 
-Number of assessed genes: `r length(hic_results$Promoters)`
+Number of assessed genes: `r length(promoters(t_obj))`
 
 ## Differential expression across time:
 Genes are considered DE if they have an FDR < 0.05 and a abs(logFC) > log(1.5)
@@ -22,25 +23,25 @@ time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h",
                "DE-8h", "DE-10h", "DE-12h")
                
 metrics_fun = function(time_point) {
-    data.frame(Genes=c(sum(mcols(hic_results$Promoters)[[time_point]] == "Up"),
-                       sum(mcols(hic_results$Promoters)[[time_point]] == "Down"),
-                       sum(mcols(hic_results$Promoters)[[time_point]] == "Stable")),
+    data.frame(Genes=c(sum(mcols(promoters(t_obj))[[time_point]] == "Up"),
+                       sum(mcols(promoters(t_obj))[[time_point]] == "Down"),
+                       sum(mcols(promoters(t_obj))[[time_point]] == "Stable")),
                Direction=c("Up", "Down", "Stable"),
                Time=time_point)
 }
 
 ```{r GR_binding_regulation_status, echo=FALSE}
-as.data.frame(hic_results$Promoters) %>% 
+as.data.frame(promoters(t_obj)) %>% 
     group_by(RegulationStatus) %>% 
     summarize(N=n(), 
-              EarlyBindingN=sum(EarlyBinding>0), 
+              EarlyBindingN=sum(ConsensusGR>0), 
               EarlyBindingP=EarlyBindingN/N, 
-              ContactBoundN=sum(GR_ContactBound), 
+              ContactBoundN=sum(ConsensusGR_ContactBound), 
               ContactBoundP=ContactBoundN/N,
-              AnyBindingN=sum(EarlyBinding>0 | GR_ContactBound | GR_WindowBound),
+              AnyBindingN=sum(ConsensusGR>0 | ConsensusGR_ContactBound | ConsensusGR_WindowBound),
               AnyBindingP=AnyBindingN/N)
               
-as.data.frame(hic_results$Promoters) %>% 
+as.data.frame(promoters(t_obj)) %>% 
     group_by(RegulationStatus) %>% 
     summarize(N=n(), 
               EarlyBindingN=sum(BRD4_DEX>0), 
@@ -63,15 +64,15 @@ ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)
     library(VennDiagram)
 
     venn_plot <- function(de_value, main) {
-        is_de = hic_results$Promoters$"DE-2h" %in% de_value
+        is_de = promoters(t_obj)$"DE-2h" %in% de_value
         
-        direct_indices = is_de & hic_results$Promoters$EarlyBinding>4
-        window_indices = is_de & hic_results$Promoters$GR_WindowBound
-        contact_indices = is_de & hic_results$Promoters$GR_ContactBound
+        direct_indices = is_de & promoters(t_obj)$ConsensusGR>0
+        window_indices = is_de & promoters(t_obj)$ConsensusGR_WindowBound
+        contact_indices = is_de & promoters(t_obj)$ConsensusGR_ContactBound
         
-        gene_list = list(Direct=hic_results$Promoters$ensembl_gene_id[direct_indices],
-                         Window=hic_results$Promoters$ensembl_gene_id[window_indices],
-                         Contact=hic_results$Promoters$ensembl_gene_id[contact_indices])
+        gene_list = list(Direct=promoters(t_obj)$ensembl_gene_id[direct_indices],
+                         Window=promoters(t_obj)$ensembl_gene_id[window_indices],
+                         Contact=promoters(t_obj)$ensembl_gene_id[contact_indices])
         
         unrepresented = sum(is_de & !direct_indices & !window_indices & !contact_indices)
         precent_unrepresented = sprintf(" (%2.0f%%) ", (unrepresented / sum(is_de)) * 100)
@@ -114,10 +115,10 @@ time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h",
 direction_list = list(DE=c("Up", "Down"), Up="Up", Down="Down")
 
 metrics_fun = function(y, time_point) {
-    de_genes = mcols(hic_results$Promoters)[[time_point]] %in% direction_list[[y]]
-    direct_binding = hic_results$Promoters$EarlyBinding > 0
-    indirect_binding = hic_results$Promoters$GR_WindowBound |
-                       hic_results$Promoters$GR_ContactBound 
+    de_genes = mcols(promoters(t_obj))[[time_point]] %in% direction_list[[y]]
+    direct_binding = promoters(t_obj)$ConsensusGR > 0
+    indirect_binding = promoters(t_obj)$ConsensusGR_WindowBound |
+                       promoters(t_obj)$ConsensusGR_ContactBound 
     
     data.frame(DE=rep(sum(de_genes), 3),
                Bound=c(sum(de_genes & direct_binding),
@@ -149,18 +150,18 @@ ggplot(data_df, aes(x=Time, y=Bound/DE, color=Direction, group=Direction)) +
 
 ```{r TAD_intra_vs_inter, echo=FALSE}
 # Assess intra-TAD vs inter-TAD contacts.
-f_a = anchors(hic_results$HiC$Ctrl$LRI, type="first")
-s_a = anchors(hic_results$HiC$Ctrl$LRI, type="second")
+f_a = anchors(contacts(t_obj), type="first")
+s_a = anchors(contacts(t_obj), type="second")
 
-f_tad = findOverlaps(f_a, hic_results$HiC$Ctrl$TAD)
-s_tad = findOverlaps(s_a, hic_results$HiC$Ctrl$TAD)
+f_tad = findOverlaps(f_a, structures(t_obj)$TAD)
+s_tad = findOverlaps(s_a, structures(t_obj)$TAD)
 
 tad_df = data.frame(f=rep(NA, length(f_a)), s=rep(NA, length(s_a)))
 tad_df$f[queryHits(f_tad)] = subjectHits(f_tad)
 tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
 
-n_interactions = length(hic_results$HiC$Ctrl$LRI)
-n_regions = length(regions(hic_results$HiC$Ctrl$LRI))
+n_interactions = length(contacts(t_obj))
+n_regions = length(regions(contacts(t_obj)))
 prop_intra_tad = sprintf("%0.2f%%", sum(tad_df$f==tad_df$s, na.rm=TRUE) / nrow(tad_df))
 ```
 
