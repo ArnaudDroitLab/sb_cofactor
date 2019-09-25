@@ -13,7 +13,7 @@ output: html_document
 
 # Summary of analyzed promoters
 
-Number of assessed genes: `r length(promoters(t_obj))`
+Number of assessed genes: `r length(query_regions(t_obj)$Promoters)`
 
 ## Differential expression across time:
 Genes are considered DE if they have an FDR < 0.05 and a abs(logFC) > log(1.5)
@@ -23,34 +23,12 @@ time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h",
                "DE-8h", "DE-10h", "DE-12h")
                
 metrics_fun = function(time_point) {
-    data.frame(Genes=c(sum(mcols(promoters(t_obj))[[time_point]] == "Up"),
-                       sum(mcols(promoters(t_obj))[[time_point]] == "Down"),
-                       sum(mcols(promoters(t_obj))[[time_point]] == "Stable")),
+    data.frame(Genes=c(sum(mcols(query_regions(t_obj)$Promoters)[[time_point]] == "Up"),
+                       sum(mcols(query_regions(t_obj)$Promoters)[[time_point]] == "Down"),
+                       sum(mcols(query_regions(t_obj)$Promoters)[[time_point]] == "Stable")),
                Direction=c("Up", "Down", "Stable"),
                Time=time_point)
 }
-
-```{r GR_binding_regulation_status, echo=FALSE}
-as.data.frame(promoters(t_obj)) %>% 
-    group_by(RegulationStatus) %>% 
-    summarize(N=n(), 
-              EarlyBindingN=sum(ConsensusGR>0), 
-              EarlyBindingP=EarlyBindingN/N, 
-              ContactBoundN=sum(ConsensusGR_ContactBound), 
-              ContactBoundP=ContactBoundN/N,
-              AnyBindingN=sum(ConsensusGR>0 | ConsensusGR_ContactBound | ConsensusGR_WindowBound),
-              AnyBindingP=AnyBindingN/N)
-              
-as.data.frame(promoters(t_obj)) %>% 
-    group_by(RegulationStatus) %>% 
-    summarize(N=n(), 
-              EarlyBindingN=sum(BRD4_DEX>0), 
-              EarlyBindingP=EarlyBindingN/N, 
-              ContactBoundN=sum(BRD4_DEX_ContactBound), 
-              ContactBoundP=ContactBoundN/N,
-              AnyBindingN=sum(BRD4_DEX>0 | BRD4_DEX_ContactBound | BRD4_DEX_WindowBound),
-              AnyBindingP=AnyBindingN/N)              
-```
 
 de_df = do.call(rbind, lapply(time_order, metrics_fun))
 de_df$Time = factor(de_df$Time, levels=time_order)
@@ -60,19 +38,41 @@ ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+```{r GR_binding_regulation_status, echo=FALSE}
+kable(as.data.frame(query_regions(t_obj)$Promoters) %>% 
+    group_by(RegulationStatus) %>% 
+    summarize(N=n(), 
+              EarlyBindingN=sum(ConsensusGR>0), 
+              EarlyBindingP=EarlyBindingN/N, 
+              ContactN=sum(ConsensusGR_Contact), 
+              ContactP=ContactN/N,
+              AnyBindingN=sum(ConsensusGR>0 | ConsensusGR_Contact | ConsensusGR_Window),
+              AnyBindingP=AnyBindingN/N))
+              
+kable(as.data.frame(query_regions(t_obj)$Promoters) %>% 
+    group_by(RegulationStatus) %>% 
+    summarize(N=n(), 
+              EarlyBindingN=sum(BRD4_DEX>0), 
+              EarlyBindingP=EarlyBindingN/N, 
+              ContactN=sum(BRD4_DEX_Contact), 
+              ContactP=ContactN/N,
+              AnyBindingN=sum(BRD4_DEX>0 | BRD4_DEX_Contact | BRD4_DEX_Window),
+              AnyBindingP=AnyBindingN/N))
+```
+
 ```{r define_venn_plot_function, echo=FALSE}
     library(VennDiagram)
 
     venn_plot <- function(de_value, main) {
-        is_de = promoters(t_obj)$"DE-2h" %in% de_value
+        is_de = query_regions(t_obj)$Promoters$"DE-2h" %in% de_value
         
-        direct_indices = is_de & promoters(t_obj)$ConsensusGR>0
-        window_indices = is_de & promoters(t_obj)$ConsensusGR_WindowBound
-        contact_indices = is_de & promoters(t_obj)$ConsensusGR_ContactBound
+        direct_indices = is_de & query_regions(t_obj)$Promoters$ConsensusGR>0
+        window_indices = is_de & query_regions(t_obj)$Promoters$ConsensusGR_Window
+        contact_indices = is_de & query_regions(t_obj)$Promoters$ConsensusGR_Contact
         
-        gene_list = list(Direct=promoters(t_obj)$ensembl_gene_id[direct_indices],
-                         Window=promoters(t_obj)$ensembl_gene_id[window_indices],
-                         Contact=promoters(t_obj)$ensembl_gene_id[contact_indices])
+        gene_list = list(Direct=query_regions(t_obj)$Promoters$ensembl_gene_id[direct_indices],
+                         Window=query_regions(t_obj)$Promoters$ensembl_gene_id[window_indices],
+                         Contact=query_regions(t_obj)$Promoters$ensembl_gene_id[contact_indices])
         
         unrepresented = sum(is_de & !direct_indices & !window_indices & !contact_indices)
         precent_unrepresented = sprintf(" (%2.0f%%) ", (unrepresented / sum(is_de)) * 100)
@@ -115,10 +115,10 @@ time_order = c("DE-5m", "DE-10m", "DE-15m", "DE-20m", "DE-25m", "DE-0.5h",
 direction_list = list(DE=c("Up", "Down"), Up="Up", Down="Down")
 
 metrics_fun = function(y, time_point) {
-    de_genes = mcols(promoters(t_obj))[[time_point]] %in% direction_list[[y]]
-    direct_binding = promoters(t_obj)$ConsensusGR > 0
-    indirect_binding = promoters(t_obj)$ConsensusGR_WindowBound |
-                       promoters(t_obj)$ConsensusGR_ContactBound 
+    de_genes = mcols(query_regions(t_obj)$Promoters)[[time_point]] %in% direction_list[[y]]
+    direct_binding = query_regions(t_obj)$Promoters$ConsensusGR > 0
+    indirect_binding = query_regions(t_obj)$Promoters$ConsensusGR_Window |
+                       query_regions(t_obj)$Promoters$ConsensusGR_Contact 
     
     data.frame(DE=rep(sum(de_genes), 3),
                Bound=c(sum(de_genes & direct_binding),

@@ -4,7 +4,7 @@ library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(org.Hs.eg.db)
 library(FantomEnhancers.hg19)
 library(ENCODExplorer)
-library(TranscriptomHiCs)
+library(GenomHiCs)
 library(GenomicOperations)
 source("scripts/load_reddy.R")
 
@@ -195,17 +195,17 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
         annot_list$Enh = load_hg38_fantom_enhancers()
     }
     
-    t_obj = transcriptomHiCs(promoter_regions,
-                             all_hic[[hic_timepoint]]$LRI,
-                             GRangesList(annot_list),
-                             GRangesList(TAD=all_hic[[hic_timepoint]]$TAD))
+    t_obj = GenomHiCs(list(Promoters=promoter_regions),
+                      all_hic[[hic_timepoint]]$LRI,
+                      GRangesList(annot_list),
+                      GRangesList(TAD=all_hic[[hic_timepoint]]$TAD))
     
     # Identify gene categories based on interactions.
    
-    t_obj = annotate_distant_binding(t_obj, "ConsensusGR")
-    t_obj = annotate_distant_binding(t_obj, "BRD4_DEX")
+    t_obj = annotate_distant_binding(t_obj, "Promoters", "ConsensusGR")
+    t_obj = annotate_distant_binding(t_obj, "Promoters", "BRD4_DEX")
 
-    gr_by_gene_any = get_all_sites(t_obj, "ConsensusGR")
+    gr_by_gene_any = get_all_sites(t_obj, "Promoters", "ConsensusGR")
     
     return(list(T=t_obj,
                 GR_all=gr_regions,
