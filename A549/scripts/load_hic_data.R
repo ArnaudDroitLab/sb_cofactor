@@ -7,6 +7,7 @@ library(ENCODExplorer)
 library(GenomHiCs)
 library(GenomicOperations)
 source("scripts/load_reddy.R")
+source("scripts/ckn_utils.R")
 
 ####### Step 1: Load and annotate HiC data. 
 
@@ -195,15 +196,23 @@ load_connection_data = function(hic_timepoint="Ctrl", skip_enhancer=TRUE) {
         annot_list$Enh = load_hg38_fantom_enhancers()
     }
     
+    diff_regions = load_diffbind_cofactors_peaks()
+    diff_regions = diff_regions[!grepl("UNBIASED", names(diff_regions))]
+    
+    annot_list = GRangesList(annot_list)
+    annot_list = c(annot_list, diff_regions)
+    
     t_obj = GenomHiCs(list(Promoters=promoter_regions),
                       all_hic[[hic_timepoint]]$LRI,
-                      GRangesList(annot_list),
+                      annot_list,
                       GRangesList(TAD=all_hic[[hic_timepoint]]$TAD))
     
     # Identify gene categories based on interactions.
    
     t_obj = annotate_distant_binding(t_obj, "Promoters", "ConsensusGR")
-    t_obj = annotate_distant_binding(t_obj, "Promoters", "BRD4_DEX")
+    for(i in names(diff_regions)) {
+        t_obj = annotate_distant_binding(t_obj, "Promoters", i)
+    }
 
     gr_by_gene_any = get_all_sites(t_obj, "Promoters", "ConsensusGR")
     

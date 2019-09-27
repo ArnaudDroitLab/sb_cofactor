@@ -38,26 +38,34 @@ ggplot(de_df[de_df$Direction != "Stable",], aes(x=Time, y=Genes, fill=Direction)
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-```{r GR_binding_regulation_status, echo=FALSE}
-kable(as.data.frame(query_regions(t_obj)$Promoters) %>% 
-    group_by(RegulationStatus) %>% 
-    summarize(N=n(), 
-              EarlyBindingN=sum(ConsensusGR>0), 
-              EarlyBindingP=EarlyBindingN/N, 
-              ContactN=sum(ConsensusGR_Contact), 
-              ContactP=ContactN/N,
-              AnyBindingN=sum(ConsensusGR>0 | ConsensusGR_Contact | ConsensusGR_Window),
-              AnyBindingP=AnyBindingN/N))
-              
-kable(as.data.frame(query_regions(t_obj)$Promoters) %>% 
-    group_by(RegulationStatus) %>% 
-    summarize(N=n(), 
-              EarlyBindingN=sum(BRD4_DEX>0), 
-              EarlyBindingP=EarlyBindingN/N, 
-              ContactN=sum(BRD4_DEX_Contact), 
-              ContactP=ContactN/N,
-              AnyBindingN=sum(BRD4_DEX>0 | BRD4_DEX_Contact | BRD4_DEX_Window),
-              AnyBindingP=AnyBindingN/N))
+```{r GR_binding_regulation_status, echo=FALSE, results='asis'}
+print_factor_summary <- function(factor_column) {
+    contact_column = paste0(factor_column, "_Contact")
+    window_column = paste0(factor_column, "_Window")
+    tad_column = paste0(factor_column, "_TAD")
+    summary_df = as.data.frame(query_regions(t_obj)$Promoters) %>% 
+        group_by(RegulationStatus) %>% 
+        summarize(N=n(), 
+                  DirectBindingN=sum(!!as.symbol(factor_column)>0), 
+                  DirectBindingP=sprintf("%2.1f%%", DirectBindingN/N * 100), 
+                  ContactN=sum(!!as.symbol(contact_column)), 
+                  ContactP=sprintf("%2.1f%%", ContactN/N * 100),
+                  DirectOrContactN=sum(!!as.symbol(factor_column)>0 | !!as.symbol(contact_column) | !!as.symbol(window_column)),
+                  DirectOrContactP=sprintf("%2.1f%%", DirectOrContactN/N * 100),
+                  TADN=sum(!!as.symbol(tad_column)), 
+                  TADP=sprintf("%2.1f%%", TADN/N * 100),
+                  AnyN=sum(!!as.symbol(factor_column)>0 | !!as.symbol(contact_column) | !!as.symbol(window_column) | !!as.symbol(tad_column)),
+                  AnyP=sprintf("%2.1f%%", AnyN/N * 100))
+    
+    kable(summary_df, align="r")
+}
+
+up_down_names = names(annotations(t_obj))[grepl("UP|DOWN", names(annotations(t_obj)))]
+for(i in c("ConsensusGR", up_down_names)) {
+    cat(i, ", ", length(annotations(t_obj)[[i]]), " total regions:\n")
+    print(print_factor_summary(i))
+    cat("\n\n")
+}
 ```
 
 ```{r define_venn_plot_function, echo=FALSE}
@@ -162,7 +170,7 @@ tad_df$s[queryHits(s_tad)] = subjectHits(s_tad)
 
 n_interactions = length(contacts(t_obj))
 n_regions = length(regions(contacts(t_obj)))
-prop_intra_tad = sprintf("%0.2f%%", sum(tad_df$f==tad_df$s, na.rm=TRUE) / nrow(tad_df))
+prop_intra_tad = sprintf("%2.1f%%", sum(tad_df$f==tad_df$s, na.rm=TRUE) / nrow(tad_df) * 100)
 ```
 
 | metric | value |
